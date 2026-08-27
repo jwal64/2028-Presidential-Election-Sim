@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>THE 270 · Presidential Campaign Simulator 2028</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E7EEE2;
+  --bar:#D3E2C9;
+  --ink:#14181A;
+  --ink2:#54655A;
+  --rule:#A9BBA0;
+  --mark:#B7352A;
+  --gain:#2C6B4C;
+  --desk:#0B1B2E;
+  --desk2:#12293F;
+  --phos:#F2B33D;
+  --rep:#B7352A;
+  --dem:#2A5FA8;
+  --disp:"Oswald","Avenir Next Condensed","Arial Narrow",Impact,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.45;
+  padding-bottom:env(safe-area-inset-bottom);
+  overflow-x:hidden;
+}
+body.desk{background:var(--desk);color:#fff}
+.wrap{max-width:640px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
+.hidden{display:none !important}
+button{font:inherit;color:inherit;cursor:pointer}
+
+/* ---------- chyron ---------- */
+.chyron{
+  background:var(--desk);color:#fff;display:flex;align-items:stretch;
+  border-bottom:3px solid var(--mark);position:sticky;top:0;z-index:20;
+}
+.chyron.rep{border-bottom-color:var(--rep)}
+.chyron.dem{border-bottom-color:var(--dem)}
+.chyron .slug{
+  font-family:var(--disp);font-weight:600;letter-spacing:.06em;font-size:13px;
+  background:var(--mark);color:#fff;padding:9px 10px;display:flex;align-items:center;text-align:center;line-height:1.05;
+}
+.chyron.rep .slug{background:var(--rep)}
+.chyron.dem .slug{background:var(--dem)}
+.chyron .date{
+  font-family:var(--mono);font-size:11px;padding:9px 10px;flex:1;
+  display:flex;align-items:center;gap:8px;letter-spacing:.02em;color:#cfe0f0
+}
+.chyron .clock{font-family:var(--disp);font-size:19px;color:var(--phos);font-weight:600;line-height:1}
+.chyron .clock small{font-family:var(--mono);font-size:9px;color:#8fa8bd;display:block;letter-spacing:.1em}
+.trailbtn{background:none;border:0;border-left:1px solid #26415c;padding:0 11px;font-family:var(--mono);font-size:10px;color:#9fb8cd;letter-spacing:.08em;line-height:1.2}
+
+/* ---------- wire ticker ---------- */
+.wire{background:#0a1524;color:#8fa8bd;font-family:var(--mono);font-size:10px;
+  letter-spacing:.04em;padding:5px 10px;border-bottom:1px solid #24435f;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wire b{color:var(--phos);font-weight:500;letter-spacing:.1em}
+
+/* ---------- gauges ---------- */
+.gauges{
+  background:repeating-linear-gradient(180deg,var(--bar) 0 26px,var(--paper) 26px 52px);
+  border-bottom:1px solid var(--rule);padding:6px 12px 8px;
+}
+.g{display:grid;grid-template-columns:62px 1fr 78px;align-items:center;gap:8px;height:26px}
+.g .lab{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--ink2)}
+.g .track{height:9px;background:#fff;border:1px solid var(--rule);position:relative;overflow:hidden}
+.g .fill{position:absolute;inset:0 auto 0 0;background:var(--ink);transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.g.money .fill{background:var(--gain)}
+.g.deleg .fill{background:var(--mark)}
+.pullbars{font-family:var(--mono);font-size:11px;color:var(--mark);letter-spacing:.5px}
+.pullbars b{font-family:var(--mono);font-size:9px;color:var(--ink2);font-weight:400;margin-right:3px;letter-spacing:.06em}
+.g .val{font-family:var(--disp);font-size:15px;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.delta{font-family:var(--mono);font-size:10px;margin-left:5px}
+.up{color:var(--gain)}.down{color:var(--mark)}
+
+/* ---------- main ---------- */
+main{flex:1;padding:16px 14px 40px}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--ink2);text-transform:uppercase;margin:0 0 2px}
+h1,h2,h3{font-family:var(--disp);font-weight:600;letter-spacing:.01em;margin:0}
+.head{font-family:var(--disp);font-size:29px;line-height:1.03;font-weight:600;margin:6px 0 8px;text-transform:uppercase}
+.body{font-size:15.5px;color:#26302b;margin:0 0 16px}
+.receipt{
+  font-family:var(--mono);font-size:11.5px;line-height:1.5;color:#33413a;
+  background:#fff;border:1px solid var(--rule);border-left:4px solid var(--mark);
+  padding:8px 10px;margin:0 0 16px;
+}
+.receipt b{color:var(--ink)}
+.quotebox{font-family:var(--disp);font-size:17px;line-height:1.25;font-weight:400;
+  border-left:3px solid var(--mark);padding:2px 0 2px 11px;margin:0 0 16px;color:#1d2622}
+.quotebox cite{display:block;font-family:var(--mono);font-size:10px;font-style:normal;
+  color:var(--ink2);letter-spacing:.08em;margin-top:5px;text-transform:uppercase}
+
+/* choices */
+.choice{
+  display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--rule);
+  border-left:4px solid var(--rule);padding:11px 12px;margin:0 0 9px;transition:border-color .12s,transform .12s;
+}
+.choice:hover,.choice:focus-visible{border-left-color:var(--mark);transform:translateX(2px)}
+.choice:focus-visible{outline:2px solid var(--desk);outline-offset:2px}
+.choice .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;color:var(--ink2);display:block;margin-bottom:3px}
+.choice .t{font-family:var(--disp);font-size:17px;font-weight:500;line-height:1.15;display:block}
+.choice .s{font-size:13px;color:#4a584f;display:block;margin-top:4px}
+
+.btn{
+  display:block;width:100%;background:var(--mark);color:#fff;border:0;
+  font-family:var(--disp);font-size:19px;letter-spacing:.06em;padding:13px;text-transform:uppercase;
+}
+.btn.alt{background:var(--desk)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{background:#9aa79f}
+
+/* ---------- title ---------- */
+.title{padding:26px 18px 40px;text-align:center}
+.bigmark{font-family:var(--disp);font-size:clamp(64px,26vw,132px);line-height:.82;font-weight:700;letter-spacing:-.02em}
+.bigmark .x{color:var(--mark)}
+.sub{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--ink2);margin-top:10px}
+.tag{font-family:var(--disp);font-size:20px;line-height:1.15;margin:22px auto 24px;max-width:360px;text-transform:uppercase;font-weight:400}
+.ballot{max-width:340px;margin:0 auto 26px;border:1px solid var(--rule);background:#fff}
+.ballot .row{display:flex;align-items:center;gap:10px;padding:9px 11px;border-bottom:1px solid var(--rule);font-family:var(--mono);font-size:12px;text-align:left}
+.ballot .row:last-child{border-bottom:0}
+.box{width:15px;height:15px;border:1.5px solid var(--ink);flex:0 0 auto;position:relative}
+.box.on::after{content:"\2715";position:absolute;inset:-6px 0 0 1px;font-family:var(--disp);font-size:19px;color:var(--mark)}
+.disclaim{font-family:var(--mono);font-size:9.5px;line-height:1.6;color:var(--ink2);
+  border:1px dashed var(--rule);padding:9px 10px;margin:20px auto 0;max-width:400px;text-align:left}
+
+/* ---------- setup ---------- */
+.field{margin:0 0 20px}
+.field label{font-family:var(--mono);font-size:10px;letter-spacing:.13em;color:var(--ink2);display:block;margin-bottom:6px}
+.field .hint{font-family:var(--mono);font-size:10px;color:var(--ink2);margin:-2px 0 7px;letter-spacing:.02em}
+input[type=text],select{
+  width:100%;padding:11px;border:1px solid var(--rule);background:#fff;font-family:var(--disp);
+  font-size:20px;letter-spacing:.02em;color:var(--ink);border-radius:0;-webkit-appearance:none;appearance:none;
+}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);
+  background-position:calc(100% - 17px) 21px,calc(100% - 11px) 21px;background-size:6px 6px,6px 6px;background-repeat:no-repeat}
+input[type=text]:focus,select:focus{outline:2px solid var(--mark);outline-offset:-1px}
+.opt{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--rule);padding:10px 11px;margin-bottom:8px}
+.opt[aria-pressed=true]{border-color:var(--mark);border-left:4px solid var(--mark);background:#fffdf7}
+.opt .t{font-family:var(--disp);font-size:17px;font-weight:500;display:block}
+.opt .s{font-size:12.5px;color:#4a584f;display:block;margin-top:2px}
+.opt .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;color:var(--ink2);display:block;margin-top:5px}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.duo .opt{margin-bottom:0}
+.partybtn{text-align:center;padding:14px 8px}
+.partybtn .t{font-size:18px;line-height:1.05}
+.partybtn .s{font-size:11.5px;margin-top:5px}
+.partybtn[data-p=REP][aria-pressed=true]{border-color:var(--rep);border-left-color:var(--rep);background:#fff6f4}
+.partybtn[data-p=DEM][aria-pressed=true]{border-color:var(--dem);border-left-color:var(--dem);background:#f3f7fd}
+.setupsec{border-top:2px solid var(--ink);padding-top:14px;margin-bottom:22px}
+.setupsec>.eyebrow{margin-bottom:10px}
+
+/* ---------- candidate cards ---------- */
+.cand{display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center;
+  background:#fff;border:1px solid var(--rule);padding:8px 10px;margin-bottom:7px}
+.cand .ini{font-family:var(--disp);font-size:14px;font-weight:700;line-height:1;color:#fff;
+  background:var(--ink);width:40px;height:40px;display:flex;align-items:center;justify-content:center;letter-spacing:.02em}
+.cand.rep .ini{background:var(--rep)}.cand.dem .ini{background:var(--dem)}
+.cand .nm{font-family:var(--disp);font-size:16px;font-weight:500;line-height:1.1;display:block;text-transform:uppercase}
+.cand .ds{font-size:12.5px;color:#4a584f;display:block;margin-top:2px}
+.cand .pct{font-family:var(--disp);font-size:17px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.cand .pct small{display:block;font-family:var(--mono);font-size:9px;color:var(--ink2);font-weight:400;letter-spacing:.06em}
+.cand.out{opacity:.42}
+.cand.me{border-left:4px solid var(--mark);background:#fffdf7}
+.badge{font-family:var(--mono);font-size:9px;letter-spacing:.09em;background:var(--gain);color:#fff;
+  padding:1px 5px;margin-left:5px;text-transform:uppercase;white-space:nowrap;display:inline-block;vertical-align:1px}
+.badge.bad{background:var(--ink2)}
+.badge.hot{background:var(--mark)}
+
+/* ---------- delegate scoreboard ---------- */
+.delbox{background:#fff;border:1px solid var(--rule);padding:10px;margin:0 0 16px}
+.delbox .h{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;color:var(--ink2);
+  display:flex;justify-content:space-between;margin-bottom:7px}
+.delbar{height:20px;background:var(--bar);border:1px solid var(--rule);position:relative;display:flex}
+.delbar span{display:block;height:100%}
+.delbar .me{background:var(--mark)}
+.delbar .r1{background:#5d6f63}.delbar .r2{background:#8b9a8f}.delbar .r3{background:#b3bfb5}
+.delbar::after{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+.dellegend{font-family:var(--mono);font-size:10px;color:var(--ink2);margin-top:6px;line-height:1.7}
+.dellegend i{font-style:normal;display:inline-block;width:9px;height:9px;margin-right:4px;vertical-align:-1px}
+.resrow{display:grid;grid-template-columns:26px 1fr 56px 46px;gap:8px;align-items:center;
+  font-family:var(--mono);font-size:11.5px;padding:6px 0;border-bottom:1px dashed var(--rule)}
+.resrow .pl{font-family:var(--disp);font-size:15px;font-weight:600;color:var(--ink2)}
+.resrow .who{font-family:var(--disp);font-size:15px;font-weight:500;text-transform:uppercase;line-height:1.1}
+.resrow.win .pl,.resrow.win .who{color:var(--mark)}
+.resrow .sh{text-align:right;font-variant-numeric:tabular-nums}
+.resrow .dl{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink2)}
+.resrow.mine{background:#fffdf7}
+
+/* ---------- ad buy ---------- */
+.buy{display:grid;grid-template-columns:38px 1fr auto;gap:9px;align-items:center;background:#fff;border:1px solid var(--rule);padding:8px 10px;margin-bottom:7px}
+.buy .ab{font-family:var(--disp);font-size:20px;font-weight:600}
+.buy .nm{font-family:var(--mono);font-size:10.5px;color:var(--ink2);letter-spacing:.05em}
+.step{display:flex;align-items:center;gap:6px}
+.step button{width:30px;height:30px;border:1px solid var(--rule);background:var(--paper);font-family:var(--disp);font-size:17px;line-height:1}
+.step .n{font-family:var(--disp);font-size:15px;width:48px;text-align:center;font-variant-numeric:tabular-nums}
+.pips{letter-spacing:1px;font-family:var(--mono);font-size:11px;color:var(--mark)}
+
+/* ---------- trail overlay ---------- */
+.overlay{position:fixed;inset:0;background:rgba(11,27,46,.94);z-index:50;overflow-y:auto;padding:16px}
+.paper{max-width:640px;margin:0 auto;background:var(--paper);border:1px solid var(--rule)}
+.paper h2{background:var(--desk);color:#fff;font-size:18px;padding:9px 12px;letter-spacing:.08em}
+.trailrow{display:flex;gap:10px;padding:9px 12px;border-bottom:1px dashed var(--rule)}
+.trailrow:nth-child(odd){background:var(--bar)}
+.trailrow .w{font-family:var(--mono);font-size:10px;color:var(--ink2);flex:0 0 54px;padding-top:2px}
+.trailrow .c{flex:1;font-size:13px}
+.trailrow .c b{font-family:var(--disp);font-size:15px;font-weight:500;display:block;text-transform:uppercase}
+.trailrow .c i{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--ink2)}
+
+/* ---------- election desk ---------- */
+.desk .wrap{background:var(--desk)}
+.board{padding:14px}
+.tallybar{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:8px;margin-bottom:6px}
+.side{text-align:center}
+.side .pn{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:#8fa8bd;line-height:1.3}
+.side .ev{font-family:var(--disp);font-size:clamp(40px,14vw,64px);line-height:.9;font-weight:700;font-variant-numeric:tabular-nums}
+.side.you .ev{color:var(--phos)}
+.side.them .ev{color:#fff}
+.needle{font-family:var(--mono);font-size:10px;color:#8fa8bd;padding-bottom:10px;text-align:center}
+.evbar{height:12px;background:#0a1524;border:1px solid #24435f;display:flex;position:relative;margin-bottom:16px}
+.evbar .a{background:var(--phos)}
+.evbar .b{background:#d8e6f2;margin-left:auto}
+.evbar::after{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;width:2px;background:var(--mark)}
+.stater{display:grid;grid-template-columns:34px 1fr 40px;gap:8px;align-items:center;padding:7px 0;border-top:1px solid #1d3a55}
+.stater .sab{font-family:var(--disp);font-size:19px;font-weight:600;color:#cfe0f0}
+.stater .sev{font-family:var(--mono);font-size:11px;color:#8fa8bd;text-align:right}
+.mtrack{height:14px;background:#0a1524;border:1px solid #24435f;position:relative}
+.mtrack .m{position:absolute;top:0;bottom:0;background:#3c5e7d;transition:width .6s ease}
+.mtrack .m.win{background:var(--phos)}
+.mtrack .m.lose{background:#e8f0f7}
+.mtrack .lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9.5px;color:#fff;text-shadow:0 0 4px #0b1b2e;letter-spacing:.05em}
+.mtrack::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:#6b8aa5}
+.pending{opacity:.35}
+.callout{font-family:var(--disp);font-size:15px;color:var(--phos);letter-spacing:.05em;min-height:22px;margin:10px 0 4px;text-transform:uppercase}
+
+/* ---------- final ---------- */
+.verdict{font-family:var(--disp);font-size:clamp(40px,13vw,68px);line-height:.9;font-weight:700;text-transform:uppercase;margin:8px 0}
+.gradebox{display:flex;align-items:center;gap:14px;background:#12293f;border:1px solid #24435f;padding:12px;margin:14px 0}
+.gradebox .gr{font-family:var(--disp);font-size:54px;font-weight:700;color:var(--phos);line-height:.9}
+.gradebox .gt{font-family:var(--mono);font-size:11px;color:#cfe0f0;line-height:1.5}
+.statline{display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:12px;padding:6px 0;border-bottom:1px solid #1d3a55;color:#cfe0f0}
+.statline b{color:#fff;font-family:var(--disp);font-size:16px;font-weight:500;text-align:right}
+.quote{font-family:var(--disp);font-size:19px;line-height:1.25;color:#fff;border-left:3px solid var(--mark);padding-left:12px;margin:16px 0;text-transform:none;font-weight:400}
+.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.btn.ghost{background:transparent;border:1px solid #4b7295;color:#cfe0f0;font-size:15px}
+.foot{font-family:var(--mono);font-size:9.5px;color:var(--ink2);text-align:center;padding:18px 14px 30px;letter-spacing:.03em;line-height:1.6}
+.desk .foot{color:#5b7692}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ============ TITLE ============ -->
+<section id="s-title">
+  <div class="title">
+    <div class="bigmark">THE<br><span class="x">270</span></div>
+    <div class="sub">PRESIDENTIAL CAMPAIGN SIMULATOR &middot; 2028</div>
+    <p class="tag">Beat the field. Beat the other party. Beat the map.</p>
+    <div class="ballot">
+      <div class="row"><span class="box on"></span> WIN A REAL PRIMARY AGAINST REAL PEOPLE</div>
+      <div class="row"><span class="box"></span> SURVIVE THE PODCAST CIRCUIT</div>
+      <div class="row"><span class="box"></span> GET TO 270</div>
+    </div>
+    <button class="btn" id="go-setup">Start the campaign</button>
+    <div class="disclaim"><b>PARODY.</b> This is a work of political satire. Real public figures appear as
+      exaggerated characters. Every event, quote, poll, scandal and result in this game is invented
+      and did not happen. Nothing here is reporting, prediction, or a claim of fact about any real person.</div>
+  </div>
+</section>
+
+<!-- ============ SETUP ============ -->
+<section id="s-setup" class="hidden">
+  <div class="chyron" id="setup-chy"><span class="slug">FILING<br>DAY</span><span class="date">Build your candidate &middot; January 2027</span></div>
+  <main>
+    <div class="setupsec">
+      <p class="eyebrow">01 &middot; The name on the yard signs</p>
+      <div class="field">
+        <label for="cand">CANDIDATE NAME</label>
+        <input type="text" id="cand" maxlength="26" placeholder="Your name here" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="homest">HOME STATE</label>
+        <p class="hint">Sets your regional strength and gives you a hometown bump in the primary.</p>
+        <select id="homest"></select>
+      </div>
+    </div>
+
+    <div class="setupsec">
+      <p class="eyebrow">02 &middot; The primary you are entering</p>
+      <div class="field">
+        <label>PARTY</label>
+        <div class="duo" id="partyopts"></div>
+      </div>
+      <div id="fieldpreview"></div>
+    </div>
+
+    <div class="setupsec">
+      <p class="eyebrow">03 &middot; Who you were before this</p>
+      <div class="field">
+        <label>BACKGROUND</label>
+        <div id="bgopts"></div>
+      </div>
+    </div>
+
+    <div class="setupsec">
+      <p class="eyebrow">04 &middot; The thing you will say ten thousand times</p>
+      <div class="field">
+        <label>SIGNATURE ISSUE</label>
+        <div id="issueopts"></div>
+      </div>
+    </div>
+
+    <div class="setupsec">
+      <p class="eyebrow">05 &middot; What your staff says about you</p>
+      <div class="field">
+        <label>STRENGTH &mdash; PICK ONE</label>
+        <div id="perkopts"></div>
+      </div>
+      <div class="field">
+        <label>WEAKNESS &mdash; PICK ONE</label>
+        <div id="flawopts"></div>
+      </div>
+    </div>
+
+    <button class="btn" id="go-play">Announce</button>
+    <p class="sub" style="text-align:center">FILING FEE PAID &middot; NO REFUNDS</p>
+  </main>
+</section>
+
+<!-- ============ PLAY ============ -->
+<section id="s-play" class="hidden">
+  <div class="chyron" id="chy">
+    <span class="slug" id="c-slug">PRIMARY</span>
+    <span class="date"><span id="c-date">JAN 4, 2028</span></span>
+    <span class="date" style="flex:0 0 auto"><span class="clock"><span id="c-days">308</span><small>DAYS OUT</small></span></span>
+    <button class="trailbtn" id="c-trail">PAPER<br>TRAIL</button>
+  </div>
+  <div class="wire" id="wire"></div>
+  <div class="gauges" id="gauges"></div>
+  <main id="stage"></main>
+</section>
+
+<!-- ============ ELECTION NIGHT ============ -->
+<section id="s-night" class="hidden">
+  <div class="board" id="board"></div>
+</section>
+
+<div class="foot" id="foot">
+  Satire. Fictional events involving real public figures. No part of this simulation
+  describes anything that actually happened.
+</div>
+</div>
+
+<div class="overlay hidden" id="trail"></div>
+
+<script>
+(function(){
+"use strict";
+var $=function(s){return document.querySelector(s);};
+var RM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+/* regional pull has diminishing returns: the tenth trip to Michigan is not
+   worth what the first one was. */
+function addReg(k,v){
+  if(S.reg[k]==null)return;
+  if(v>0)v=v/(1+S.reg[k]/5);
+  S.reg[k]=Math.max(-2,S.reg[k]+v);
+}
+function noise(m){return (Math.random()+Math.random()+Math.random()-1.5)*m;}
+function rnd(a){return a[Math.floor(Math.random()*a.length)];}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function initials(n){var p=n.replace(/[^A-Za-z .'-]/g,"").split(/\s+/).filter(Boolean);
+  if(p.length===1)return p[0].slice(0,2).toUpperCase();
+  return (p[0][0]+p[p.length-1][0]).toUpperCase();}
+
+/* ================= GEOGRAPHY ================= */
+var REGION_NAME={MW:"THE MIDWEST",SO:"THE SOUTH",WE:"THE WEST",NE:"THE NORTHEAST"};
+var US=[
+["AL","Alabama","SO"],["AK","Alaska","WE"],["AZ","Arizona","WE"],["AR","Arkansas","SO"],
+["CA","California","WE"],["CO","Colorado","WE"],["CT","Connecticut","NE"],["DE","Delaware","NE"],
+["DC","District of Columbia","NE"],["FL","Florida","SO"],["GA","Georgia","SO"],["HI","Hawaii","WE"],
+["ID","Idaho","WE"],["IL","Illinois","MW"],["IN","Indiana","MW"],["IA","Iowa","MW"],
+["KS","Kansas","MW"],["KY","Kentucky","SO"],["LA","Louisiana","SO"],["ME","Maine","NE"],
+["MD","Maryland","NE"],["MA","Massachusetts","NE"],["MI","Michigan","MW"],["MN","Minnesota","MW"],
+["MS","Mississippi","SO"],["MO","Missouri","MW"],["MT","Montana","WE"],["NE","Nebraska","MW"],
+["NV","Nevada","WE"],["NH","New Hampshire","NE"],["NJ","New Jersey","NE"],["NM","New Mexico","WE"],
+["NY","New York","NE"],["NC","North Carolina","SO"],["ND","North Dakota","MW"],["OH","Ohio","MW"],
+["OK","Oklahoma","SO"],["OR","Oregon","WE"],["PA","Pennsylvania","MW"],["RI","Rhode Island","NE"],
+["SC","South Carolina","SO"],["SD","South Dakota","MW"],["TN","Tennessee","SO"],["TX","Texas","SO"],
+["UT","Utah","WE"],["VT","Vermont","NE"],["VA","Virginia","SO"],["WA","Washington","WE"],
+["WV","West Virginia","MW"],["WI","Wisconsin","MW"],["WY","Wyoming","WE"]
+];
+function stName(ab){for(var i=0;i<US.length;i++)if(US[i][0]===ab)return US[i][1];return ab;}
+function stReg(ab){for(var i=0;i<US.length;i++)if(US[i][0]===ab)return US[i][2];return "MW";}
+
+/* battleground map. lean = 2024 margin relative to the national result,
+   stated as a Republican advantage. negative numbers lean Democratic. */
+var STATES=[
+ {ab:"PA",name:"PENNSYLVANIA",ev:19,reg:"MW",lean:0.2},
+ {ab:"MI",name:"MICHIGAN",ev:15,reg:"MW",lean:-0.1},
+ {ab:"WI",name:"WISCONSIN",ev:10,reg:"MW",lean:-0.6},
+ {ab:"MN",name:"MINNESOTA",ev:10,reg:"MW",lean:-5.8},
+ {ab:"GA",name:"GEORGIA",ev:16,reg:"SO",lean:0.7},
+ {ab:"NC",name:"NORTH CAROLINA",ev:16,reg:"SO",lean:1.7},
+ {ab:"VA",name:"VIRGINIA",ev:13,reg:"SO",lean:-7.3},
+ {ab:"AZ",name:"ARIZONA",ev:11,reg:"WE",lean:4.0},
+ {ab:"NV",name:"NEVADA",ev:6,reg:"WE",lean:1.6},
+ {ab:"NH",name:"NEW HAMPSHIRE",ev:4,reg:"NE",lean:-4.3}
+];
+/* 538 total. 120 EV on the board, 418 off it. */
+var PARTIES={
+ REP:{id:"REP",name:"REPUBLICAN",short:"GOP",blurb:"Exurbs, small towns, men who own at least one boat trailer.",
+   safe:219,tilt:1,base:57,swing:44,cash:44,press:44,
+   pri:"The primary electorate is older, angrier, and watches one channel.",color:"var(--rep)"},
+ DEM:{id:"DEM",name:"DEMOCRATIC",short:"DEM",blurb:"Cities, inner suburbs, everyone with a graduate degree and a group chat.",
+   safe:199,tilt:-1,base:54,swing:47,cash:47,press:55,
+   pri:"The primary electorate is credentialed, anxious, and online at 1 a.m.",color:"var(--dem)"}
+};
+
+/* ================= THE FIELD ================= */
+/* str = raw primary strength. r = regional pull. lane = the slot they occupy. */
+var POOL={
+REP:[
+ {n:"J.D. VANCE",str:24,lane:"POP",home:"OH",r:{MW:2.2,SO:1.2,WE:.4,NE:.2},
+  d:"The sitting Vice President. A Yale Law millionaire who learned to talk like a man at a diner and has not stopped since.",
+  q:"Look, I'm not going to apologize for saying the thing I said in the way I said it."},
+ {n:"MARCO RUBIO",str:20,lane:"ESTAB",home:"FL",r:{SO:2.2,WE:1.2,NE:.8,MW:.4},
+  d:"Secretary of State. Message discipline so tight it squeaks. Has never once been caught without a talking point or a water bottle.",
+  q:"This election is a choice between two futures, and I want to be very clear about which one."},
+ {n:"RON DESANTIS",str:17,lane:"POP",home:"FL",r:{SO:2.4,MW:.8,WE:.6,NE:0},
+  d:"Runs on results and campaigns like a man who was briefed twenty minutes ago on how humans greet each other.",
+  q:"I don't do the vibes. I do the wins. People say I should do the vibes."},
+ {n:"NIKKI HALEY",str:16,lane:"ESTAB",home:"SC",r:{SO:1.6,NE:1.8,WE:1.2,MW:.6},
+  d:"Making the electability argument for the third consecutive cycle to a party that keeps clapping and then voting for someone else.",
+  q:"I'm the only one on this stage who beats them by double digits. I'll be saying that again in 2032."},
+ {n:"GLENN YOUNGKIN",str:14,lane:"ESTAB",home:"VA",r:{SO:1.4,NE:1.4,MW:1,WE:.4},
+  d:"Fleece vest, private equity money, and a strategy built entirely on being everybody's acceptable second choice.",
+  q:"I'm a basketball guy. I'm a dad. I'm also going to need you to look at these tax numbers."},
+ {n:"VIVEK RAMASWAMY",str:12,lane:"OUT",home:"OH",r:{MW:1.4,SO:1,WE:1,NE:.4},
+  d:"Speaks forty percent faster than anyone else on the stage and is completely certain that this constitutes an argument.",
+  q:"Let me be crystal clear, and I only need nine minutes to do it."},
+ {n:"TUCKER CARLSON",str:13,lane:"OUT",home:"ME",r:{MW:1.6,SO:1.4,NE:.8,WE:.4},
+  d:"Insisted for four years that he was not running. Is running. Would like to ask you some questions you are not supposed to ask.",
+  q:"And nobody, not one person in Washington, will tell you why. Which is interesting."},
+ {n:"TED CRUZ",str:11,lane:"POP",home:"TX",r:{SO:2,MW:.6,WE:.8,NE:0},
+  d:"Universally respected as the smartest man in any room, a fact he has confirmed personally with every man in the room.",
+  q:"I have read the statute. I have read it aloud. I will read it aloud again."},
+ {n:"SARAH HUCKABEE SANDERS",str:12,lane:"POP",home:"AR",r:{SO:2.2,MW:1,WE:.4,NE:0},
+  d:"Arkansas governor. Delivers every line like she has already heard your follow-up and thinks less of you for it.",
+  q:"Bless your heart. Next question."}
+],
+DEM:[
+ {n:"GAVIN NEWSOM",str:23,lane:"ESTAB",home:"CA",r:{WE:2.4,NE:1.4,MW:.6,SO:.4},
+  d:"Hair by executive order. Ran a podcast where he let his enemies talk, which his consultants called strategy and his base called a betrayal.",
+  q:"Look, I'm going to say something that's going to get me in trouble, and I've cleared it with three people."},
+ {n:"JOSH SHAPIRO",str:20,lane:"ESTAB",home:"PA",r:{MW:2.4,NE:1.6,SO:.6,WE:.4},
+  d:"Pennsylvania governor, 60 percent approval, and a speaking cadence that makes cable producers reach for the clipping software.",
+  q:"Get. Stuff. Done. That's it. That's the whole thing."},
+ {n:"GRETCHEN WHITMER",str:18,lane:"ESTAB",home:"MI",r:{MW:2.6,NE:1,WE:.6,SO:.4},
+  d:"Fixed the roads, says so constantly, and has decided that being normal in public is a governing philosophy.",
+  q:"I'm not going to litigate cable news. I'm going to litigate potholes."},
+ {n:"PETE BUTTIGIEG",str:17,lane:"ESTAB",home:"MI",r:{MW:1.8,NE:1.6,WE:1,SO:.6},
+  d:"Will go on any hostile show, answer in complete paragraphs, and leave the host wondering what just happened to them.",
+  q:"I appreciate the question. I'd like to reframe it entirely, and then answer the better one."},
+ {n:"ALEXANDRIA OCASIO-CORTEZ",str:19,lane:"PROG",home:"NY",r:{NE:2.4,WE:1.8,MW:.8,SO:.6},
+  d:"Can raise nine million dollars from a phone in a parked car. Every word is a headline, which is the asset and the problem.",
+  q:"We are not going to win by being a slightly politer version of the thing people hate."},
+ {n:"WES MOORE",str:15,lane:"ESTAB",home:"MD",r:{NE:1.8,SO:1.4,MW:.8,WE:.6},
+  d:"Maryland governor, combat veteran, bestselling author, and the only person in the race whose biography sounds like it was written by a campaign.",
+  q:"Leave no one behind. I mean that operationally, not as a slogan."},
+ {n:"ANDY BESHEAR",str:13,lane:"ESTAB",home:"KY",r:{SO:1.8,MW:1.6,NE:.4,WE:.4},
+  d:"Won Kentucky twice by refusing to say a single interesting thing on the internet.",
+  q:"We're going to keep doing the boring, decent work. I know that's not a great clip."},
+ {n:"J.B. PRITZKER",str:14,lane:"PROG",home:"IL",r:{MW:2.2,NE:1,WE:.6,SO:.4},
+  d:"Illinois governor. Can self-fund the entire primary and has made it clear he considers that a personality trait.",
+  q:"They're going to run ads about my money. I'm going to run more ads. With my money."},
+ {n:"RUBEN GALLEGO",str:12,lane:"POP",home:"AZ",r:{WE:2.4,SO:1.2,MW:.8,NE:.4},
+  d:"Marine, Arizona senator, the party's designated proof that you can win Latino men by not talking like a nonprofit.",
+  q:"I don't need a focus group to tell me what guys at my old job think. I was one of them."},
+ {n:"JASMINE CROCKETT",str:12,lane:"PROG",home:"TX",r:{SO:1.8,NE:1.4,MW:.8,WE:.8},
+  d:"Generates more viral clips per hearing than any member of Congress and has never once ended a sentence early.",
+  q:"I'm going to say it plain, because y'all keep pretending not to understand."}
+]};
+
+/* ================= RUNNING MATES ================= */
+var MATES={
+REP:[
+ {n:"BRIAN KEMP",st:"GA",d:"Georgia governor. Won twice by being boring on purpose and refusing every phone call he was supposed to take.",
+  eff:{swing:6,press:3,base:-2},r:{SO:1.4}},
+ {n:"SARAH HUCKABEE SANDERS",st:"AR",d:"Arkansas governor. The base loves her and no persuadable voter has ever been persuaded by her.",
+  eff:{base:10,swing:-5,cash:3},r:{SO:1.1,MW:.5}},
+ {n:"TIM SCOTT",st:"SC",d:"The most relentlessly cheerful man in the Senate. Fundraises like a megachurch and smiles through every attack ad.",
+  eff:{cash:13,press:4,base:-1},r:{SO:1,NE:.4}},
+ {n:"KATIE BRITT",st:"AL",d:"Young, telegenic, and delivers every speech in the intimate whisper of a woman describing a kitchen renovation.",
+  eff:{base:5,press:-2,swing:2},r:{SO:.9}},
+ {n:"BYRON DONALDS",st:"FL",d:"Fluent on every network at once. Will do six hits before lunch and win five of them.",
+  eff:{press:8,base:4,swing:-3},r:{SO:1.2,WE:.4}}
+],
+DEM:[
+ {n:"ANDY BESHEAR",st:"KY",d:"Two-term red-state governor with a voice like a man reading a weather advisory. Deeply, strategically unexciting.",
+  eff:{swing:7,press:2,base:-3},r:{SO:1,MW:1}},
+ {n:"MARK KELLY",st:"AZ",d:"Astronaut. Navy captain. Married to a gun-violence survivor. The oppo file is four pages and three of them are commendations.",
+  eff:{swing:6,press:4,base:-1},r:{WE:1.5}},
+ {n:"ROY COOPER",st:"NC",d:"Won North Carolina statewide four times while the top of the ticket lost it four times. Nobody knows how. He won't say.",
+  eff:{swing:5,base:1,press:1},r:{SO:1.5}},
+ {n:"WES MOORE",st:"MD",d:"Governor, veteran, and the best pure orator on either ticket. Will be running for this job himself in eight years and everyone knows it.",
+  eff:{base:8,press:5,swing:-2},r:{NE:1,SO:.8}},
+ {n:"RUBEN GALLEGO",st:"AZ",d:"The party's proof of concept for talking to men who have never voluntarily read a policy paper.",
+  eff:{base:4,swing:5,press:-1},r:{WE:1.4,SO:.5}}
+]};
+
+/* ================= THE CAST ================= */
+var ANCHORS={
+ REP:[["BRET BAIER","Fox News"],["JESSE WATTERS","Fox News"],["MARIA BARTIROMO","Fox Business"],["SHANNON BREAM","Fox News Sunday"]],
+ DEM:[["RACHEL MADDOW","MSNBC"],["JEN PSAKI","MSNBC"],["NICOLLE WALLACE","MSNBC"],["SYMONE SANDERS-TOWNSEND","MSNBC"]],
+ NEU:[["KAITLAN COLLINS","CNN"],["DANA BASH","CNN"],["KRISTEN WELKER","Meet the Press"],["NORAH O'DONNELL","60 Minutes"],["JAKE TAPPER","CNN"]]
+};
+var PODS={
+ REP:[["JOE ROGAN","The Joe Rogan Experience","three hours, no edit, one elk-meat tangent"],
+      ["THEO VON","This Past Weekend","he will ask you about your childhood and you will answer honestly"],
+      ["BEN SHAPIRO","The Ben Shapiro Show","friendly, fast, and clipped for the base within nine minutes"],
+      ["ANDREW SCHULZ","Flagrant","comedians who will absolutely go there, on camera, for two hours"],
+      ["THE ALL-IN PODCAST","All-In","four billionaires who would like to explain the economy to you"]],
+ DEM:[["JON FAVREAU","Pod Save America","friendly room, sharp follow-ups, an audience that already donated"],
+      ["ALEX COOPER","Call Her Daddy","eleven million young women and not one question about the CBO"],
+      ["CHARLAMAGNE THA GOD","The Breakfast Club","he will let you finish, then say the thing everyone was thinking"],
+      ["HASAN PIKER","Twitch","a live chat of forty thousand people grading you in real time"],
+      ["ZIWE","Ziwe","a comedy interview engineered to produce exactly one unsurvivable clip"]],
+ NEU:[["LEX FRIDMAN","Lex Fridman Podcast","four hours, long silences, at least one question about love"],
+      ["SMARTLESS","SmartLess","three actors, zero policy, an enormous audience of people who do not follow politics"]]
+};
+var CELEBS={
+ REP:[["KID ROCK","a stadium of people who will absolutely show up"],
+      ["MORGAN WALLEN","the biggest artist in the country and a publicist who is already sweating"],
+      ["HULK HOGAN","a man who will rip a shirt on your stage, brother"],
+      ["JASON ALDEAN","one song, one very specific set of feelings about small towns"]],
+ DEM:[["TAYLOR SWIFT","one Instagram post is worth more than your entire digital budget"],
+      ["BEYONCE","she will not speak, she will simply appear, and it will be the only story"],
+      ["KENDRICK LAMAR","a benefit show that sells out in ninety seconds"],
+      ["OPRAH WINFREY","the single most persuasive human being in the country, if she says yes"],
+      ["LEBRON JAMES","a turnout operation with a jump shot"]],
+ NEU:[["POST MALONE","genuinely beloved by everyone, committed to nothing"],
+      ["DOLLY PARTON","will politely decline, as she has declined everyone since 1974"],
+      ["ZACH BRYAN","will show up, play four songs, and say something unhelpful into the microphone"]]
+};
+var DONORS={
+ REP:[["ELON MUSK","will spend nine figures and post about it forty times a day"],
+      ["MIRIAM ADELSON","writes one check, has one condition, and never raises her voice"],
+      ["KEN GRIFFIN","wants the tax plan in writing and the culture war in a drawer"],
+      ["MARC ANDREESSEN","3,000 words on why your campaign is actually about the future of civilization"]],
+ DEM:[["REID HOFFMAN","strategic, patient, and extremely willing to fund a lawsuit"],
+      ["MICHAEL BLOOMBERG","will run his own parallel campaign whether you want one or not"],
+      ["MARK CUBAN","free media, sharp elbows, and a habit of negotiating in public"],
+      ["ALEX SOROS","comes with a hundred million dollars and every attack ad the other side has already written"]]
+};
+
+/* ================= BUILDER OPTIONS ================= */
+var BACKGROUNDS=[
+ {id:"GOV",n:"GOVERNOR",lane:"ESTAB",d:"Two terms running a state. You have signed things and cut ribbons in front of them.",
+  eff:{swing:5,cash:4,base:1,phi:3},k:"+SWING +CASH · strong at home"},
+ {id:"SEN",n:"U.S. SENATOR",lane:"ESTAB",d:"Twelve years of votes, all of them on the record, all of them findable.",
+  eff:{press:5,base:4,swing:-2,phi:4},k:"+PRESS +BASE · a long paper trail"},
+ {id:"VET",n:"COMBAT VETERAN",lane:"POP",d:"Two deployments and a story you have never had to embellish.",
+  eff:{swing:7,press:4,cash:-4,base:2,phi:1},k:"+SWING +PRESS · thin donor list"},
+ {id:"TEC",n:"TECH FOUNDER",lane:"OUT",d:"You built a company, sold it, and decided the country is basically a scaling problem.",
+  eff:{cash:18,press:2,base:-6,swing:-1,phi:0},k:"++CASH · the base does not trust you"},
+ {id:"MED",n:"CABLE AND PODCAST HOST",lane:"OUT",d:"Nine hundred hours of tape. The base already loves you. So does the opposition research shop.",
+  eff:{base:12,press:6,swing:-8,phi:5},k:"++BASE ++PRESS · brutal with swing voters"},
+ {id:"MAY",n:"BIG-CITY MAYOR",lane:"ESTAB",d:"You ran a city of two million people and every single one of them has your cell number.",
+  eff:{base:6,cash:7,swing:-2,phi:1},k:"+BASE +CASH · urban record to defend"},
+ {id:"LAB",n:"UNION PRESIDENT",lane:"POP",d:"Forty thousand members, one bargaining table, zero patience for consultants.",
+  eff:{base:10,swing:2,cash:-5,phi:1},r:{MW:1.2},k:"+BASE · owns the Rust Belt"},
+ {id:"AG",n:"STATE ATTORNEY GENERAL",lane:"ESTAB",d:"You prosecuted people on television and it went well enough that you are here.",
+  eff:{swing:4,press:5,base:1,phi:2},k:"+PRESS +SWING · balanced"}
+];
+var ISSUES=[
+ {id:"COST",n:"COST OF LIVING",d:"Groceries, rent, insurance. Everyone has an opinion and a receipt.",r:{MW:.5,SO:.3,WE:.4,NE:.3}},
+ {id:"CARE",n:"HEALTH CARE",d:"Premiums and rural hospitals. Slow to move, hard to attack, boring to cover.",r:{MW:.4,SO:.5,WE:.2,NE:.4}},
+ {id:"BORD",n:"THE BORDER",d:"Moves fast in both directions and never stops being on television.",r:{SO:.7,WE:.6,MW:.2,NE:.1}},
+ {id:"WORK",n:"JOBS AND ENERGY",d:"Plants, pipelines, data centers. Wins regions, not majorities.",r:{MW:.7,SO:.3,WE:.5,NE:.2}},
+ {id:"CRIM",n:"CRIME AND POLICING",d:"Local, visceral, and completely disconnected from the actual statistics.",r:{SO:.5,MW:.4,WE:.4,NE:.4}},
+ {id:"AI",n:"AI AND THE JOB MARKET",d:"Nobody has run on this yet. Half the electorate thinks it is science fiction.",r:{WE:.6,MW:.5,NE:.4,SO:.2}},
+ {id:"DEMO",n:"CORRUPTION AND THE RULE OF LAW",d:"Electrifies your base. Everyone else says they care and then votes on eggs.",r:{NE:.6,MW:.3,WE:.4,SO:.2}},
+ {id:"WAR",n:"AMERICA AND THE WORLD",d:"Presidential, unpollable, and one incident away from being the whole race.",r:{SO:.4,MW:.3,NE:.4,WE:.3}}
+];
+var PERKS=[
+ {id:"RETAIL",n:"RETAIL POLITICIAN",d:"You are better in a diner than on a teleprompter, and it shows on local news every night.",k:"Rallies and gate events hit 30% harder"},
+ {id:"MONEY",n:"FUNDRAISING MACHINE",d:"Your list is enormous and your bundlers are frightening.",k:"+$4M every turn"},
+ {id:"VIRAL",n:"NATIVE TO THE INTERNET",d:"You have never needed a digital consultant to explain a format to you.",k:"+2 PRESS every turn, media events safer"},
+ {id:"DEBATE",n:"DEBATE ASSASSIN",d:"You have never lost an exchange you cared about winning.",k:"Debate risks cut by half"},
+ {id:"MACHINE",n:"BACKED BY THE MACHINE",d:"The state party, the county chairs, and four members of Congress are already yours.",k:"+8% in every primary contest"},
+ {id:"TEFLON",n:"NOTHING STICKS",d:"Four scandals, four survivals. Voters have decided they already know who you are.",k:"All backfires are 40% less damaging"}
+];
+var FLAWS=[
+ {id:"GAFFE",n:"GAFFE PRONE",d:"You speak first and have the thought about ninety seconds later.",k:"All risky choices are riskier"},
+ {id:"THIN",n:"THIN-SKINNED",d:"You read every mention and you respond to some of them.",k:"Bad news costs extra PRESS"},
+ {id:"CARPET",n:"CARPETBAGGER",d:"You moved to the state in 2026 and everyone has seen the deed.",k:"No home-state advantage · +$10M to start"},
+ {id:"AGE",n:"THE AGE QUESTION",d:"Every profile mentions it in the fourth paragraph. Every one.",k:"Stamina events drain more · slower momentum"},
+ {id:"COLD",n:"COLD ON CAMERA",d:"You test badly. Focus groups use the word 'calculating' unprompted.",k:"-4 SWING at the start · ads work less well"},
+ {id:"FILE",n:"THERE IS A FILE",d:"Something from 2011. They have it. You know they have it.",k:"Guaranteed October surprise, and it is worse"}
+];
+
+/* ================= PRIMARY CALENDAR ================= */
+var CONTESTS=[
+ {id:"IA",n:"THE IOWA CAUCUSES",st:"IA",reg:"MW",del:40,d:"JAN 17",
+  note:"Forty delegates and an outsized amount of the entire country's attention."},
+ {id:"NH",n:"THE NEW HAMPSHIRE PRIMARY",st:"NH",reg:"NE",del:22,d:"JAN 25",
+  note:"Twenty-two delegates and a state that has never once cared what Iowa decided."},
+ {id:"NV",n:"THE NEVADA CAUCUSES",st:"NV",reg:"WE",del:36,d:"FEB 5",
+  note:"The Culinary Union decides this and everybody pretends otherwise."},
+ {id:"SC",n:"THE SOUTH CAROLINA PRIMARY",st:"SC",reg:"SO",del:50,d:"FEB 12",
+  note:"The first real test of whether your coalition exists below the Mason-Dixon line."},
+ {id:"ST",n:"SUPER TUESDAY",st:"",reg:"ALL",del:880,d:"MAR 7",
+  note:"Sixteen states, 880 delegates, one night. Most campaigns end here."},
+ {id:"RB",n:"THE RUST BELT PRIMARIES",st:"",reg:"MW",del:320,d:"MAR 21",
+  note:"Michigan, Ohio, Illinois, Wisconsin. The general election in miniature."},
+ {id:"SB",n:"THE SUN BELT PRIMARIES",st:"",reg:"SO",del:380,d:"APR 4",
+  note:"Florida, Texas, Georgia, Arizona. Delegate-rich and expensive."},
+ {id:"NY",n:"NEW YORK AND PENNSYLVANIA",st:"",reg:"NE",del:412,d:"APR 25",
+  note:"The last real bloc. After tonight the arithmetic is closed."}
+];
+var DELTOTAL=2140, DELMAJ=1071;
+
+/* ================= TIMELINE ================= */
+var STEPS=[
+ {k:"ev",ph:0,d:"JAN 4",o:308,s:"PRIMARY"},
+ {k:"ev",ph:0,d:"JAN 11",o:301,s:"PRIMARY"},
+ {k:"ct",ci:0,d:"JAN 17",o:295,s:"IOWA"},
+ {k:"ev",ph:0,d:"JAN 21",o:291,s:"PRIMARY"},
+ {k:"ct",ci:1,d:"JAN 25",o:287,s:"N.H."},
+ {k:"ev",ph:0,d:"FEB 1",o:280,s:"PRIMARY"},
+ {k:"ct",ci:2,d:"FEB 5",o:276,s:"NEVADA"},
+ {k:"ct",ci:3,d:"FEB 12",o:269,s:"S.C."},
+ {k:"ev",ph:0,d:"FEB 24",o:257,s:"PRIMARY"},
+ {k:"ct",ci:4,d:"MAR 7",o:245,s:"SUPER<br>TUESDAY"},
+ {k:"ev",ph:0,d:"MAR 15",o:237,s:"PRIMARY"},
+ {k:"ct",ci:5,d:"MAR 21",o:231,s:"RUST BELT"},
+ {k:"ev",ph:0,d:"MAR 29",o:223,s:"PRIMARY"},
+ {k:"ct",ci:6,d:"APR 4",o:217,s:"SUN BELT"},
+ {k:"ct",ci:7,d:"APR 25",o:196,s:"NY / PA"},
+ {k:"nom",d:"JUN 9",o:151,s:"NOMINEE"},
+ {k:"mate",d:"JUL 18",o:112,s:"CONVENTION"},
+ {k:"ev",ph:1,d:"JUL 22",o:108,s:"CONVENTION"},
+ {k:"ev",ph:1,d:"AUG 20",o:79,s:"CONVENTION"},
+ {k:"ads",d:"AUG 28",o:71,s:"AIR WAR"},
+ {k:"ev",ph:2,d:"SEP 3",o:65,s:"GENERAL"},
+ {k:"ev",ph:2,d:"SEP 15",o:53,s:"GENERAL"},
+ {k:"ev",ph:2,d:"SEP 26",o:42,s:"GENERAL"},
+ {k:"ev",ph:2,d:"OCT 1",o:37,s:"GENERAL"},
+ {k:"ev",ph:3,d:"OCT 8",o:30,s:"DEBATE"},
+ {k:"ev",ph:3,d:"OCT 15",o:23,s:"DEBATE"},
+ {k:"ads",d:"OCT 18",o:20,s:"CLOSING"},
+ {k:"ev",ph:4,d:"OCT 24",o:14,s:"CLOSING"},
+ {k:"ev",ph:4,d:"NOV 2",o:5,s:"CLOSING"}
+];
+
+/* ================= EVENTS =================
+   ph 0 primary · 1 convention · 2 general · 3 debate · 4 closing
+   pty  limits an event to one party.  d = stat deltas, r = region pull,
+   tag  matches your signature issue for a 35% bonus.
+   phi  moves your primary standing.  risk fires instead of the good outcome.
+========================================================================= */
+var EVENTS=[
+
+/* ---------------- PRIMARY ---------------- */
+{ph:0,head:"THE ANNOUNCEMENT",body:"Your team has three versions of the launch. {R1} announced last week to nine million livestream viewers and a drone show. Yours is Tuesday.",ch:[
+ {k:"HOMETOWN",t:"Announce in {HOME}, on a factory floor",s:"Local, rooted, cheap.",d:{base:6,press:3,cash:-2},phi:3,r:{HOMEREG:.8},out:"Twelve hundred people in a machine shop. Every local affiliate in the state carries it live and the national desks run ninety seconds of it."},
+ {k:"SPECTACLE",t:"Rent an arena and book a headliner",s:"Enormous. Expensive. Televised.",d:{press:7,cash:-11,base:4},phi:4,risk:{p:.3,out:"The arena is two-thirds full and every photographer in America shoots it from the same angle, the one with the empty seats.",d:{press:-11,base:-4},phi:-3},out:"Eighteen thousand people and a clip that runs on every network for two days. You look like a frontrunner before you are one."},
+ {k:"VIDEO",t:"Skip the rally, drop a six-minute video",s:"Modern, controlled, bloodless.",d:{cash:5,press:2,swing:2},phi:2,out:"Forty million views, no gaffe, no crowd shot, and a persistent sense among reporters that they have not actually met you yet."}
+]},
+
+{ph:0,head:"THE POLL THAT RUINS BREAKFAST",body:"The first serious national survey of the primary field is out. {R1} leads. You are in the bottom half with the people nobody is writing about yet.",ch:[
+ {k:"ATTACK",t:"Go directly at {R1} by name, today",s:"You will get on television.",d:{press:8,base:4,swing:-3},phi:5,risk:{p:.35,out:"{R1} does not respond and does not have to. You spend a week attacking a person twenty points ahead of you, which reads as exactly what it is.",d:{press:-9,base:-3},phi:-4},out:"You become the story of the week. Three cable panels debate your line and nobody debates {R1}’s lead."},
+ {k:"LANE",t:"Ignore the top line and build one state",s:"The Iowa strategy. It has worked twice.",d:{swing:3,cash:-4},phi:2,r:{MW:1.1},out:"You do eleven counties in nine days. Nobody nationally notices, which is the entire point."},
+ {k:"MONEY",t:"Use the bad poll to raise money",s:"Underdog email, 6 a.m., all caps.",d:{cash:13,press:-3},phi:1,out:"The email clears its number by lunch. A reporter screenshots the subject line with the word “again.”"}
+]},
+
+{ph:0,pty:"REP",head:"THE LOYALTY QUESTION",body:"A reporter at a Manchester diner asks whether you would pardon everyone the last administration prosecuted. Six cameras. {R1} answered yes in eleven seconds last month.",ch:[
+ {k:"YES",t:"Say yes, and say it faster than {R1} did",s:"The base is watching the clip, not the question.",d:{base:11,swing:-8,press:-4},phi:6,out:"It is the top clip on every right-leaning account by dinner. Your primary numbers move. A general-election consultant somewhere puts his head on his desk."},
+ {k:"CASE",t:"Say you would review them case by case",s:"The lawyer answer.",d:{swing:5,press:4,base:-6},phi:-2,out:"Editorial boards call it the only defensible answer given. Two talk hosts spend a segment on whether you are secretly a moderate."},
+ {k:"PIVOT",t:"Refuse the premise and pivot to {ISSUE}",s:"Discipline, or evasion, depending on the write-up.",d:{swing:2,press:-2,base:1},phi:1,out:"You do not answer it. You are asked it eleven more times that week, which is nine more than if you had just answered it."}
+]},
+
+{ph:0,pty:"DEM",head:"THE LITMUS TEST",body:"An activist group with a mailing list and a bullhorn wants a yes-or-no commitment on a policy that polls at 34 percent nationally and 71 percent in your primary. They are outside your event now.",ch:[
+ {k:"SIGN",t:"Sign the pledge on camera",s:"The room erupts. The clip is forever.",d:{base:12,swing:-9,press:-2},phi:6,out:"You win the room, the group, and four hundred volunteers. The other party’s ad team downloads the footage before you leave the building."},
+ {k:"NO",t:"Tell them no, to their faces",s:"Nobody does this.",d:{swing:8,press:9,base:-11},phi:-4,out:"Three columnists call it a Sister Souljah moment. Your own online coalition calls it something with more syllables and less affection."},
+ {k:"MEET",t:"Take the meeting, sign nothing",s:"Ninety minutes, no cameras, no commitment.",d:{base:3,swing:2,press:1},phi:1,out:"They leave without a pledge and without a grievance, which is the best available outcome and satisfies precisely nobody."}
+]},
+
+{ph:0,head:"THE PODCAST",body:"{POD} has an opening. {PODSHOW} — {PODNOTE}. Your comms director has three separate objections and no better idea.",ch:[
+ {k:"FULL",t:"Do the whole thing, no topics off limits",s:"No net.",d:{swing:7,press:6,base:3},phi:5,risk:{p:.35,out:"Ninety minutes in you say something about a subject you have never thought about for longer than a minute. It is clipped 400,000 times before you land.",d:{swing:-10,press:-9,base:-3},phi:-5},out:"You are patient, funny and specific for three hours. Two million people hear you undiluted and a chunk of them had no idea you existed."},
+ {k:"SHORT",t:"Offer forty minutes with topics agreed",s:"Safer. Smaller. Obvious.",d:{swing:2,press:-2},phi:1,out:"You get a clean segment and {POD} tells the audience you were afraid of the long version, which is true and which they can hear in your voice."},
+ {k:"NO",t:"Decline",s:"Nothing ventured.",d:{base:1,swing:-4,press:-3},phi:-2,out:"{POD} talks about your refusal for three hours instead. That is worse in every measurable way."}
+]},
+
+{ph:0,head:"THE OPPOSITION FILE",body:"A staffer slides a folder across the table. It is about {R1}. It is real, it is fifteen years old, and it is genuinely ugly.",ch:[
+ {k:"LEAK",t:"Get it to a friendly reporter tonight",s:"Fast. Traceable.",d:{press:-2},phi:6,integ:-2,risk:{p:.4,out:"The reporter names your campaign as the source in paragraph three. Two days of coverage about your campaign, zero about the file.",d:{press:-14,swing:-5},phi:-6},out:"{R1} spends nine days answering for it and never gets back to the message they started the month with."},
+ {k:"HOLD",t:"Put it in a drawer",s:"Nothing happens. That is the point.",integ:3,d:{press:3,base:-1},out:"Nobody ever knows. Your campaign manager brings it up at every reunion for the rest of your life."},
+ {k:"TRADE",t:"Hand it to the party committee",s:"Their fingerprints, your benefit.",d:{cash:9,press:-4},phi:3,integ:-1,out:"The committee runs with it inside a week. A donor who specifically liked your restraint stops returning calls."}
+]},
+
+{ph:0,head:"THE DEBATE STAGE",body:"Seven podiums, ninety seconds each. {R1} is up double digits and has not been laid a glove on all year. {R2} is standing directly to your left and would very much like your lane.",ch:[
+ {k:"KILL",t:"Go straight at {R1} in the opening block",s:"It will make air. It will make an enemy.",d:{press:9,base:2,swing:-2},phi:7,risk:{p:.35,out:"The line lands flat. {R1} smiles through it and answers the question you were supposed to be asking. The clip becomes a meme about you.",d:{press:-11,swing:-6},phi:-6},out:"You get the moment of the night and the two-day cable cycle that follows it. Your name recognition doubles overnight."},
+ {k:"FLANK",t:"Take out {R2} instead and consolidate the lane",s:"Quieter. More useful.",d:{press:3,swing:2},phi:5,out:"{R2} has a bad night and a worse week. Their voters have to go somewhere and a lot of them go to you."},
+ {k:"ABOVE",t:"Talk past all of them, straight to camera",s:"Presidential. Forgettable.",d:{press:3,swing:4,base:1},phi:1,out:"Nobody lays a hand on you. Nobody remembers you were there either."}
+]},
+
+{ph:0,head:"THE MONEY DINNER",body:"{DONOR} would like ninety minutes of your time. {DONORNOTE}. There is a table of eleven people and a number attached to it.",ch:[
+ {k:"TAKE",t:"Take the money and the photo",s:"Everything comes with strings. This comes with a rope.",d:{cash:21,press:-5,base:-3},phi:2,integ:-1,out:"The number is real and it lands in a week. So does the story about the dinner, with the guest list, in paragraph one."},
+ {k:"POLITE",t:"Take the meeting, take no commitment",s:"A dinner is not a deal.",d:{cash:8,press:1},phi:1,out:"You get a respectable check and no obligations. {DONOR} tells three people you were impressive and uncommitted, which is exactly half a compliment."},
+ {k:"PUBLIC",t:"Decline it, loudly, on your own terms",s:"Turn the ask into a message.",d:{press:9,base:7,swing:3,cash:-6},phi:3,integ:3,out:"You put the story out yourself before anyone else can. Small-dollar donations spike for six days and your finance director stops speaking to you for four."}
+]},
+
+{ph:0,head:"THE SNOW",body:"Eleven inches falling on Iowa with the caucuses close. Fourteen events are on the schedule. The bus driver needs an answer in the next ten minutes.",ch:[
+ {k:"DRIVE",t:"Do all fourteen anyway",s:"Nobody sleeps.",d:{base:6,swing:3,press:5,cash:-3},phi:4,stam:true,out:"You walk into a VFW hall at 9:40 p.m. and there are nine people in it. The photograph of you talking to those nine people runs everywhere."},
+ {k:"CUT",t:"Cut to four and protect your voice",s:"Boring and correct.",d:{swing:2,press:1},phi:1,out:"You keep your voice for the week that matters. Nobody has ever written a story about a candidate who paced himself."},
+ {k:"CALL",t:"Cancel and run tele-town halls all night",s:"Reach without frostbite.",d:{cash:2,base:-3},phi:2,out:"Forty thousand Iowans dial in. {R1} is on every local channel with a shovel and a coat that fits."}
+]},
+
+{ph:0,head:"THE ENDORSEMENT FIGHT",body:"A union with 90,000 members across three early states is deciding this week. {R1} has been courting them since 2026 and has promised something specific.",ch:[
+ {k:"OUTBID",t:"Promise more than {R1} did",s:"Locks in labor. Locks you in.",tag:"WORK",d:{base:9,cash:5,swing:-4,press:-2},phi:5,r:{MW:1.1},out:"The endorsement comes with sixty organizers, a phone bank, and a clause that will be read back to you in October by a man with a microphone."},
+ {k:"HONEST",t:"Tell the hall what you can actually deliver",s:"Half the boost, none of the trap.",d:{base:3,swing:3,press:4},phi:2,r:{MW:.6},out:"They go neutral instead of going to {R1}, which their political director calls the best outcome you could have earned by telling the truth."},
+ {k:"SKIP",t:"Skip it and spend the day with small business owners",s:"A different room, a different party.",d:{swing:5,cash:6,base:-7},phi:-1,r:{MW:-.4},out:"You get a strong day of coverage in the business press and the hall goes to {R1} by acclamation."}
+]},
+
+{ph:0,head:"THE CLIP",body:"Nineteen seconds of you at a county fair is at forty million views and has been set to seven different songs. Your daughter has sent it to you twice.",ch:[
+ {k:"LEAN",t:"Do it again on purpose, on late night",s:"Human. Undignified.",d:{press:6,swing:4,base:2},phi:3,risk:{p:.25,out:"The second time reads as a stunt because it is one. The internet turns on it within a day and turns on you within two.",d:{press:-8,swing:-4},phi:-2},out:"You become briefly, genuinely likable. Your numbers with voters under 35 move for the first time all cycle."},
+ {k:"IGNORE",t:"Never mention it",s:"It dies in four days.",d:{press:-1},out:"It dies in four days, exactly on schedule, having done nothing for you or to you."},
+ {k:"SELL",t:"Cut it into a fundraising ad",s:"Monetize the humiliation.",d:{cash:11,press:2,base:-1},phi:1,integ:-1,out:"It raises real money and one columnist calls it the most cynical thing you have done so far, correctly noting the qualifier."}
+]},
+
+{ph:0,head:"THE HOSTILE ROOM",body:"{OPPPOD} has offered you an hour. It is the other side’s biggest show. Their audience is nine million people who have been told for a year that you are a threat to the country.",ch:[
+ {k:"GO",t:"Take the hour",s:"Their audience, their rules, your face.",d:{swing:8,press:7,base:-4},phi:3,risk:{p:.4,out:"The host has done the reading. You have not. Forty minutes of it airs in the other party’s ads by the end of the month.",d:{swing:-9,press:-10},phi:-4},out:"You do not win them over and you were never going to. You are calm, specific, and unembarrassed, and a measurable slice of that audience stops believing the caricature."},
+ {k:"TERMS",t:"Counter-offer: live, unedited, or nothing",s:"Make the format the story.",d:{press:5,base:4},phi:2,out:"They decline. You post the exchange. Your side spends three days arguing you won something and the other side has no idea it happened."},
+ {k:"PASS",t:"Pass. There is nothing to win here.",s:"Correct, probably.",d:{base:2,swing:-3},phi:0,out:"There was nothing to win there. There was, it turns out, something to lose by not showing up, and it is small and it is real."}
+]},
+
+{ph:0,head:"THE CELEBRITY",body:"{CELEB} is willing to get involved. {CELEBNOTE}. The offer expires the moment their publicist reads the morning clips.",ch:[
+ {k:"BIG",t:"Build a whole event around it",s:"Enormous reach. Zero policy.",d:{press:8,base:6,cash:4,swing:-2},phi:4,risk:{p:.3,out:"Sixteen thousand people come for the music and roughly nine hundred stay for you. Every write-up leads with that ratio.",d:{press:-8,base:-3},phi:-3},out:"The registration numbers alone justify it. Two hundred thousand new sign-ups in a weekend and a week of coverage that has nothing to do with your opponents."},
+ {k:"SMALL",t:"Take the post, skip the appearance",s:"All of the reach, none of the risk.",d:{press:4,base:3},phi:2,out:"One post. Nine million impressions. No stage, no ratio, no story about a ratio."},
+ {k:"NO",t:"Decline. You are running a serious campaign.",s:"So is everybody.",d:{swing:3,press:-2,base:-3},phi:-1,out:"Your seriousness is noted in one paragraph of one profile. {R1} books them within a month."}
+]},
+
+{ph:0,head:"THE SUNDAY SHOW",body:"{ANCH} on {NET} wants you for the full block. It is the interview where primary candidates either become plausible or stop being mentioned.",ch:[
+ {k:"NUMBERS",t:"Bring one number and hammer it",s:"Repetition is a strategy.",tag:"COST",d:{swing:6,press:5},phi:4,out:"You say the same figure four times and it is in every write-up by Monday. Two rival campaigns start using a version of it."},
+ {k:"FIGHT",t:"Fight the premise of every question",s:"Your base will love the clips.",d:{base:9,press:-6,swing:-4},phi:3,out:"You get six minutes of viral content for your own supporters and a segment on the other network about candidates who cannot handle a follow-up."},
+ {k:"HUMAN",t:"Answer the personal question honestly",s:"Unplanned. Unpolled.",d:{press:7,swing:5,base:-1},phi:3,risk:{p:.25,out:"You go somewhere you did not intend to go on live television and the room goes quiet in a way that reads badly on tape.",d:{press:-9,swing:-3},phi:-2},out:"It is the most-shared political interview of the month and not one second of it is about strategy."}
+]},
+
+{ph:0,head:"THE FIELD OFFICE PROBLEM",body:"You can afford eleven more offices. Your state director wants them all in one early state. Your national team wants them spread across Super Tuesday.",ch:[
+ {k:"EARLY",t:"All eleven in the early states",s:"Win now or there is no later.",d:{cash:-9},phi:4,r:{MW:.9,NE:.6},out:"Your early-state organization is the best in the field and your Super Tuesday operation is four people and a spreadsheet."},
+ {k:"WIDE",t:"Spread them across Super Tuesday",s:"Build the thing that decides it.",d:{cash:-9},phi:2,r:{SO:.7,WE:.7,MW:.3,NE:.3},out:"Nothing about this helps you for eight weeks and then it helps you enormously, assuming you survive eight weeks."},
+ {k:"NONE",t:"Open none and bank the money",s:"Cash is a strategy until it isn’t.",d:{cash:11,base:-4},phi:-2,out:"You have the third-largest war chest in the field and the ninth-largest volunteer operation."}
+]},
+
+/* ---------------- CONVENTION ---------------- */
+{ph:1,head:"THE PLATFORM FIGHT",body:"Delegates want a plank that thrills the hall and polls at 36 percent nationally. {R1}’s delegates are whipping for it, partly on principle and partly because it would be funny.",ch:[
+ {k:"ADOPT",t:"Let it in",s:"Unity in the room.",d:{base:10,swing:-7,press:-2},out:"The floor erupts. The other campaign’s ad team has the footage cut before the gavel comes down."},
+ {k:"KILL",t:"Whip against it",s:"Ugly, brief, useful.",d:{swing:7,base:-9,press:3},out:"You win by 40 delegates. Every camera in the building finds every angry face in the hall and holds on it."},
+ {k:"BURY",t:"Send it to a committee that meets in December",s:"Nobody wins, nobody loses, everyone lies about it.",d:{base:-2,swing:3,press:1},out:"The plank disappears into procedure. Both sides claim victory and neither one means it."}
+]},
+{ph:1,head:"THE SPEECH",body:"Sixty-two minutes as drafted. The networks give you until 11:04 before they cut to five people at a desk explaining what you meant.",ch:[
+ {k:"LONG",t:"Give the whole thing",s:"Every constituency gets its sentence.",d:{base:8,press:-4,swing:-1},out:"Everybody in the coalition hears their line. Nine million people see the last twenty minutes on delay and no one hears the argument."},
+ {k:"TIGHT",t:"Cut to 34 minutes and one argument",s:"One idea, repeated.",tag:"COST",d:{swing:9,press:7,base:-2},out:"The argument survives the night intact, which almost never happens to an argument at a convention."},
+ {k:"STORY",t:"Throw the draft and tell your family’s story",s:"No policy. All feeling.",d:{base:5,swing:5,press:7,cash:-2},risk:{p:.3,out:"You lose the thread on live television for eleven seconds. The pause is the story, and it is the story for four days.",d:{press:-12,swing:-5}},out:"The hall is silent for the right reasons. The clip runs for a week and your favorables move three points."}
+]},
+{ph:1,head:"THE RIVAL’S SPEECH",body:"{R1} gets a Wednesday night slot. Their team has submitted a draft that does not contain your name, an endorsement, or any indication that they have accepted the result.",ch:[
+ {k:"CUT",t:"Demand an endorsement or cut the slot",s:"Force it. Publicly if necessary.",d:{base:4,press:-5,swing:-2},risk:{p:.4,out:"They walk. The story of your convention is a man in a hallway telling reporters he was silenced.",d:{base:-9,press:-9}},out:"They put one grudging sentence in it at 6 p.m. and the party gets its photograph."},
+ {k:"LET",t:"Let them give the speech they wrote",s:"Swallow it and move on.",d:{swing:3,press:2,base:-5},out:"They speak for eighteen minutes about themselves. Every reporter notices the omission and half of them lead with it, and by Friday it is gone."},
+ {k:"DEAL",t:"Offer something real in private",s:"A committee, a role, a promise.",d:{cash:6,base:5,swing:1},integ:-1,out:"They endorse you warmly. Two months from now a reporter will ask what you promised and you will not enjoy answering."}
+]},
+{ph:1,head:"OUTSIDE THE HALL",body:"Four thousand protesters, most of them technically on your side of the ballot, are blocking the delegate entrance and asking for a meeting.",ch:[
+ {k:"MEET",t:"Walk out and meet them",s:"On camera, unscripted.",d:{base:8,press:4,swing:-3},risk:{p:.35,out:"Someone shouts you down for six straight minutes and that footage is the only footage anyone uses.",d:{base:-6,press:-10}},out:"You take questions in the street for twenty minutes and walk back in clean, which nobody expected including you."},
+ {k:"SEND",t:"Send {VP}",s:"Delegation as strategy.",d:{base:3,press:1},out:"It defuses by dinner and costs you nothing, which is the entire reason you picked {VP}."},
+ {k:"CLEAR",t:"Ask police to open the entrance",s:"Order restored. Photographs taken.",d:{swing:3,base:-10,press:-4},out:"The delegates get in on time. The images follow you into September and then into the ads."}
+]},
+
+/* ---------------- GENERAL ---------------- */
+{ph:2,head:"THE AD",body:"{NOM} is up in three states with a spot that takes one sentence of yours out of context and runs it eleven times in thirty seconds.",ch:[
+ {k:"HIT",t:"Answer with a harder ad about them",s:"Escalate and hold.",d:{swing:3,press:-4,cash:-8},integ:-1,out:"Their numbers drop. So do yours. Undecided voters tell pollsters they now actively resent this election."},
+ {k:"FACT",t:"Run the full quote and a fact check",s:"Corrective. Unexciting.",d:{swing:5,press:5,cash:-6},out:"The distortion stops working by the weekend, which is the most a fact check has ever accomplished."},
+ {k:"IGNORE",t:"Stay on your own message",s:"Discipline or denial.",d:{base:2,swing:-4},out:"You save eight million dollars and let a lie run unanswered for ten days in three states you have to win."}
+]},
+{ph:2,head:"THE CLOSURE",body:"An auto supplier announces 1,800 layoffs in a county you have to win. {NOM} has already booked a flight.",ch:[
+ {k:"GATE",t:"Gate rally at shift change",s:"Loud, local, 6 a.m.",tag:"WORK",d:{base:7,swing:4,press:3,cash:-2},r:{MW:1.3},out:"Twelve hundred people in a parking lot before dawn. The regional numbers move inside a week and they stay moved."},
+ {k:"PLAN",t:"Release a supplier rescue plan",s:"Paper beats presence. Sometimes.",tag:"COST",d:{swing:5,press:5},r:{MW:.6},out:"Two trade reporters call it the most detailed thing either campaign has published all year. Nine hundred people read it."},
+ {k:"WAIT",t:"Stay on the fundraising swing",s:"The money is also real.",d:{cash:14,base:-5},r:{MW:-.8},out:"You bank a serious number. {NOM} stands at that gate instead and the photo is very good."}
+]},
+{ph:2,head:"THE STORM",body:"A hurricane makes landfall across the South. Both campaigns go dark on ads. You have 200 staff and a fleet of rented vans already down there.",ch:[
+ {k:"RELIEF",t:"Turn the field program into relief runs",s:"The right thing. Also the useful thing.",d:{press:9,swing:4,cash:-6,base:2},r:{SO:1},out:"Your vans are on local news for four straight days delivering water instead of literature, and nobody has to say a word about why."},
+ {k:"VISIT",t:"Fly in for a site visit",s:"Presidential optics, motorcade problems.",d:{press:3,swing:1,cash:-3},r:{SO:.3},risk:{p:.35,out:"A county sheriff tells a reporter your motorcade closed the only open road for two hours. That quote is the entire story.",d:{press:-11,swing:-5},r:{SO:-.7}},out:"You get the photograph and stay out of the way, which is much harder than it sounds and is noticed by exactly the right people."},
+ {k:"QUIET",t:"Stay out and keep the field program on turnout",s:"Cold. Efficient.",d:{swing:-2,press:-4},r:{SO:.5},out:"Your turnout targets stay exactly on schedule and one columnist writes four hundred words about where you were not."}
+]},
+{ph:2,head:"THE BILLIONAIRE",body:"{DONOR} wants to put nine figures behind you through a group you cannot legally coordinate with or control. {DONORNOTE}.",ch:[
+ {k:"WELCOME",t:"Say nothing and let it fly",s:"Free artillery. No aim.",d:{cash:12,press:-7},integ:-2,r:{MW:.4,SO:.4,WE:.4},risk:{p:.35,out:"The group runs a spot so nasty that you spend two days answering for an ad you did not make, could not stop, and mostly agree with.",d:{press:-12,swing:-7}},out:"An enormous amount of air cover arrives and lands roughly where you would have aimed it anyway."},
+ {k:"DISOWN",t:"Publicly ask them to stand down",s:"Costly. Clean.",d:{press:10,swing:5,cash:-5},integ:3,out:"They stand down. Your media director calculates the value of what you gave away and does not speak to you until October."},
+ {k:"GUIDE",t:"Say nothing publicly, signal through the press",s:"The wink strategy.",d:{cash:7,press:-2,swing:1},integ:-1,out:"The money goes almost exactly where you needed it. Two reporters describe the mechanism of how that happened in unpleasant detail."}
+]},
+{ph:2,head:"THE BUS TOUR",body:"Nine days on a bus. You get one region. Everything else gets {VP}, surrogates, and satellite interviews from a hotel ballroom.",ch:[
+ {k:"MW",t:"The Midwest route",s:"Diners, locals, four states.",d:{base:3,swing:2,cash:-4},r:{MW:1.7},out:"Nine days of local news in the states that actually decide this. National reporters complain about the food."},
+ {k:"SO",t:"The Southern route",s:"Churches, campuses, new suburbs.",d:{base:2,swing:3,cash:-4},r:{SO:1.7},out:"Registration organizers report spikes in four metros and your regional numbers close by a point and a half."},
+ {k:"WE",t:"The Western route",s:"Casinos, subdivisions, 108 degrees.",d:{base:2,swing:3,cash:-4},r:{WE:1.7},out:"Service unions turn out volunteers in numbers your own model did not think were possible."}
+]},
+{ph:2,head:"THE INTERVIEW YOU OWE",body:"{ANCH} of {NET} has asked eleven times. Your team has said no eleven times. The twelfth ask came with a note that they will run the segment either way.",ch:[
+ {k:"SIT",t:"Sit down for the full hour",s:"Take the hits in one sitting.",d:{press:8,swing:5,base:-2},risk:{p:.3,out:"There is a document you have not seen. They have it. The reaction shot is the thumbnail on every recap for a week.",d:{press:-13,swing:-6}},out:"You take four hard questions cleanly and one badly, and the write-ups agree that you showed up, which is now apparently a virtue."},
+ {k:"CONTROL",t:"Give them fifteen minutes at a rope line",s:"Their footage, your setting.",d:{press:1,swing:1},out:"You give them nothing usable and they run the segment anyway with the words “declined to answer” in it twice."},
+ {k:"WAR",t:"Attack the network instead",s:"A fight your base has been waiting for.",d:{base:9,press:-9,swing:-4},out:"Your supporters are thrilled. Every other outlet in the country now has a reason to cover the story as a media fight, which extends it by a week."}
+]},
+{ph:2,head:"THE RUNNING MATE",body:"{VP} went off script at a diner and said something about the other side’s voters that is now running on a loop with a chyron under it.",ch:[
+ {k:"BACK",t:"Back them fully, no daylight",s:"Loyalty over cleanup.",d:{base:6,swing:-6,press:-2},out:"The ticket holds. The quote runs in swing-state advertising for two weeks and tests exactly as badly as you feared."},
+ {k:"CLEAN",t:"Have {VP} apologize where it lands hardest",s:"Public, specific, done.",d:{swing:5,base:-3,press:4},out:"They do it well, in the right state, to the right room, and the story is dead within 48 hours."},
+ {k:"DUCK",t:"Say you have not seen the clip",s:"Nobody has ever believed this.",d:{press:-8,swing:-2},out:"You are asked about the clip you have not seen eleven more times that day and by the eighth you have stopped sounding human."}
+]},
+{ph:2,head:"THE NUMBERS",body:"Grocery inflation prints at its lowest level in three years. Both campaigns are certain this is their news.",ch:[
+ {k:"CREDIT",t:"Claim the trend and run on it",s:"Optimism as strategy.",tag:"COST",d:{swing:5,press:2,base:-2},risk:{p:.3,out:"Voters who are still paying more hear a politician telling them things are fine. The focus groups are unwatchable.",d:{swing:-9,base:-4}},out:"You get out ahead of a good story and own it for a full week, which is about six days longer than usual."},
+ {k:"TEMPER",t:"Say prices are still too high, here is the plan",s:"Meets people where they actually shop.",tag:"COST",d:{swing:7,base:3,press:3},out:"It tracks with what people feel at the register, which is the only poll that has ever mattered on this subject."},
+ {k:"PIVOT",t:"Change the subject to {ISSUE}",s:"Discipline.",d:{base:4,swing:-1},out:"Your message stays clean and you skip a fight you would probably have won."}
+]},
+{ph:2,head:"THE VIRAL ATTACK",body:"A 34-second edit of you, technically accurate and completely dishonest, is the number one video in the country. It has been viewed more times than your convention speech.",ch:[
+ {k:"POST",t:"Answer it yourself, on camera, in one take",s:"Same format, same speed.",d:{press:6,swing:4,base:4},risk:{p:.25,out:"Your response is longer, defensive, and gets clipped into the original video as the punchline.",d:{press:-8,swing:-4}},out:"Your version outperforms theirs by Thursday, which has happened maybe twice in the history of this."},
+ {k:"LAWYER",t:"Send letters to the platforms",s:"Slow. Loud. Legalistic.",d:{press:-5,base:2,cash:-3},out:"Nothing comes down and the letters themselves become the story, along with the phrase “tried to censor.”"},
+ {k:"RIDE",t:"Ignore it entirely",s:"The algorithm has a short memory.",d:{swing:-3},out:"It falls off in nine days having been seen by roughly forty million people, most of whom now believe it."}
+]},
+{ph:2,head:"THE THIRD PARTY",body:"An independent candidate polling at four percent is pulling almost entirely from you in two states you cannot afford to lose. Their team has hinted they would take a phone call.",ch:[
+ {k:"CALL",t:"Call and offer something",s:"There is always a price.",d:{swing:6,press:-4},integ:-2,r:{MW:.5,WE:.5},risk:{p:.35,out:"They post the transcript of the call. All of it. The word “offered” appears in every headline.",d:{press:-13,swing:-6}},out:"They stop campaigning in both states inside two weeks and never explain why, and neither do you."},
+ {k:"CRUSH",t:"Spend three million defining them",s:"Negative ads against a person nobody has heard of.",d:{cash:-6,swing:4,press:-3},out:"Their number is cut in half in a month and their supporters mostly do not come to you, but they do stop leaving."},
+ {k:"COURT",t:"Court their voters directly on their issue",s:"Do the actual work.",d:{swing:5,base:-2,press:4},r:{MW:.4,WE:.4},out:"You give a real speech about the thing they care about. About a third of them move and the rest respect you, which is worthless and pleasant."}
+]},
+{ph:2,head:"THE STAFF STORY",body:"A major outlet is publishing a piece on your campaign’s internal culture on Friday. Nineteen former staffers spoke to them. Four used their names.",ch:[
+ {k:"OWN",t:"Get ahead of it with real changes",s:"Announce the fix before the problem.",d:{press:6,swing:3,base:-2,cash:-2},integ:2,out:"By the time the piece runs it reads as history. Two of the named sources tell follow-up reporters that they were surprised."},
+ {k:"FIGHT",t:"Attack the outlet and the sourcing",s:"Nineteen people is a lot of people.",d:{base:7,press:-9,swing:-4},out:"The story runs and then a second story runs about your response, which is the outcome that always happens and that campaigns choose anyway."},
+ {k:"QUIET",t:"Say nothing and let it pass",s:"Two-day story, probably.",d:{press:-3,swing:-1},out:"It is a two-day story. The follow-up eight days later, with the texts, is a four-day story."}
+]},
+{ph:2,head:"THE SURROGATE WAR",body:"Both parties are deploying everyone they have. You get one week of the biggest names in your coalition and you have to choose where they go.",ch:[
+ {k:"BATTLE",t:"Everyone into the three closest states",s:"Concentrate the fire.",d:{swing:4,cash:-3},r:{MW:1.2},out:"Eleven principals in three states in seven days. Local coverage is wall to wall and your internals move in all three."},
+ {k:"BASE",t:"Send them to your safest, softest turf",s:"Shore up the floor.",d:{base:8,cash:-3},r:{SO:.4,NE:.4},out:"Your soft supporters firm up in places you were not supposed to have to worry about, and were quietly worried about."},
+ {k:"REACH",t:"Send them somewhere nobody expects",s:"A state you are not supposed to be able to win.",d:{press:7,swing:2,cash:-4},r:{WE:.9,SO:.5},risk:{p:.4,out:"You spend a week of surrogate time in a state you lose by nine, and the write-ups use the word “vanity.”",d:{press:-7,swing:-4}},out:"The map expands for real. Two networks move a state into the toss-up column and the other campaign has to spend there."}
+]},
+
+/* ---------------- DEBATE ---------------- */
+{ph:3,head:"DEBATE PREP",body:"Four days blocked out. Your team has built a mock stage in a hotel ballroom and hired someone who does an unsettling impression of {NOM}.",ch:[
+ {k:"DRILL",t:"Four full days of mock debates",s:"Exhausting. Effective.",d:{swing:5,press:3,base:-1,cash:-3},prep:2,out:"By the third day you have an answer for everything, including the one about your record that you have been dodging since March."},
+ {k:"SPLIT",t:"Two days prep, two days in a battleground",s:"Half ready, twice seen.",d:{swing:2,base:3,cash:-2},prep:1,r:{MW:.6},out:"You get the rallies, the rest, and a candidate who is roughly seventy percent prepared."},
+ {k:"WING",t:"Skip prep and trust your instincts",s:"This has worked for people before.",d:{base:4,cash:2},prep:0,out:"Your staff is furious. You feel loose, which is either the best sign or the first act of a disaster."}
+]},
+{ph:3,head:"THE MOMENT",body:"Ninety minutes in, {NOM} turns and reads a line from your own record back to you, correctly. The room goes quiet. You have about fifteen seconds.",ch:[
+ {k:"OWN",t:"Admit it and say what you learned",s:"Almost nobody does this.",d:{press:10,swing:7,base:-3},integ:2,out:"Every panel afterward opens with your answer. Two of them use the word “disarming” and one of them uses the word “presidential.”"},
+ {k:"COUNTER",t:"Hit back with their record",s:"Standard. Loud.",d:{base:7,swing:-2,press:-2},out:"Your side cheers. Undecided voters watch two adults yell about the past and go make a sandwich."},
+ {k:"JOKE",t:"Make a joke and move on",s:"Depends entirely on the joke.",d:{press:5,swing:4},risk:{p:.4,out:"It lands wrong. On split screen you are a person laughing at your own record while the other half of the frame does not laugh.",d:{press:-13,swing:-8}},out:"The room laughs, the moment dissolves, and the attack never gets a second life."}
+]},
+{ph:3,head:"THE FACT CHECK",body:"A number you used in the first hour is wrong. Your team knows. The moderator does not, yet. There are thirty minutes left.",ch:[
+ {k:"FIX",t:"Correct yourself on air",s:"Nobody does this either.",d:{press:11,swing:4,base:-2},integ:3,out:"You correct it in one sentence and the entire post-debate coverage is about the fact that you did it."},
+ {k:"HOLD",t:"Say nothing and hope",s:"A coin flip with a paper trail.",d:{swing:1},risk:{p:.55,out:"Three outlets have it by midnight. The correction cycle eats what was otherwise a very good night for you.",d:{press:-11,swing:-5}},out:"Nobody catches it before the news cycle turns. This time."},
+ {k:"DOUBLE",t:"Repeat it, with more confidence",s:"Bold. Traceable.",d:{base:5,press:-9,swing:-3},integ:-2,out:"It survives the night and becomes the lead paragraph of four separate fact checks by 7 a.m."}
+]},
+{ph:3,head:"THE SPLIT SCREEN",body:"You are on camera for the full two hours whether you are speaking or not. {NOM} is currently describing your record in terms you would describe as creative.",ch:[
+ {k:"STONE",t:"Absolutely nothing. Face of granite.",s:"Boring is a strategy on split screen.",d:{swing:4,press:3},out:"You give the edit nothing. The clip compilations the next day are entirely of the other guy."},
+ {k:"REACT",t:"Let them see what you think of it",s:"Human. Visible. Loopable.",d:{base:7,press:-3,swing:-3},risk:{p:.35,out:"One eye-roll, four seconds, ninety million views, and a week of coverage about your temperament.",d:{press:-10,swing:-5}},out:"Your supporters get the reaction shot they wanted and it plays as conviction rather than contempt, narrowly."},
+ {k:"NOTE",t:"Write notes and look up occasionally",s:"The safest thing anyone has ever done on a stage.",d:{swing:2,press:1,base:-1},out:"Nothing happens, which is what you paid four days of prep for."}
+]},
+{ph:3,head:"THE CLOSING STATEMENT",body:"Two minutes, straight to camera, no interruptions. The last unmediated thing 60 million people will ever hear from you.",ch:[
+ {k:"WARN",t:"Make it about the risk of the other side",s:"Fear moves turnout. It always has.",d:{base:9,swing:-4},out:"Your voters get out of bed on Election Day. So, it turns out, do some of theirs."},
+ {k:"HOPE",t:"Make it about the country in four years",s:"Aspirational, risky, memorable.",d:{swing:7,press:6,base:-1},out:"It is the most-quoted two minutes of the night and not one word of it is about your opponent."},
+ {k:"PLAN",t:"Make it about one concrete promise",s:"A thing they can hold you to.",tag:"COST",d:{swing:6,base:3,press:2},out:"Voters repeat it back to pollsters the next day almost verbatim, which is the entire test and it is rarely passed."}
+]},
+
+/* ---------------- CLOSING ---------------- */
+{ph:4,head:"THE OCTOBER SURPRISE",body:"Eleven days out. A story is coming about a decision you made twenty years ago. It is exaggerated, partly true, and lands tomorrow at 6 a.m.",ch:[
+ {k:"FIRST",t:"Get ahead of it tonight with the whole story",s:"You control exactly one news cycle.",d:{press:8,swing:2,base:-3},integ:3,out:"By the time their version runs it is a follow-up instead of a bombshell, and follow-ups do not move numbers."},
+ {k:"DENY",t:"Deny the exaggerated parts and fight",s:"Buys days. Spends trust.",d:{base:6,press:-6},integ:-2,risk:{p:.4,out:"A second document lands three days later and now the story is the denial, which is always a worse story.",d:{press:-13,swing:-9}},out:"The fight muddies it enough that voters split on whom to believe, which at eleven days out is a win."},
+ {k:"BURY",t:"Counter-program with a massive policy rollout",s:"Distraction at scale.",d:{swing:3,cash:-10,press:-1},out:"You buy two days of split coverage, which is two more days than most campaigns manage against a story like this."}
+]},
+{ph:4,head:"THE FIELD DECISION",body:"You have 1,100 organizers and nine days. Your field director wants low-propensity voters. Your data team wants persuadable suburbanites. Both of them are right.",ch:[
+ {k:"TURNOUT",t:"All in on your own low-propensity voters",s:"Raise the floor.",d:{base:10,swing:-2,cash:-5},r:{MW:.5,SO:.6},out:"Early vote in your strongest counties beats every internal model, including the optimistic one nobody was allowed to circulate."},
+ {k:"PERSUADE",t:"All in on persuasion in the suburbs",s:"Move the middle.",d:{swing:9,base:-3,cash:-5},r:{MW:.5,WE:.5,NE:.4},out:"Suburban tracking moves three points in eight days and your field director stops making eye contact with the data team."},
+ {k:"SPLIT",t:"Split the program",s:"Nothing maximized, nothing abandoned.",d:{base:5,swing:5,cash:-6},out:"Both programs run at seventy percent and both hit seventy percent of target, which is exactly what everyone predicted."}
+]},
+{ph:4,head:"THE STATE YOU ARE LOSING",body:"You are down four in a state worth sixteen electoral votes. Two days there costs you two days everywhere else, and everywhere else is also close.",ch:[
+ {k:"FIGHT",t:"Go and fight for it",s:"Pride and sixteen votes.",d:{cash:-6,base:3},r:{SO:1.4,MW:-.4},out:"You close it to within a point and a half. Your other states notice, in their internals, that you were gone."},
+ {k:"FORTIFY",t:"Skip it and lock down what you have",s:"Discipline over drama.",d:{swing:3,cash:-3},r:{MW:1},out:"You write it off in private and your firewall gets two more days of the candidate, which is the correct call and feels terrible."},
+ {k:"SEND",t:"Send {VP} and the entire surrogate operation",s:"Everyone but you.",d:{cash:-4,press:2},r:{SO:.8},out:"Nine principals in two days. It moves about half of what you would have moved in person, for a third of the cost."}
+]},
+{ph:4,head:"THE LAST AD",body:"Final buy. Forty million dollars, one creative decision, six days of saturation in every market that matters.",ch:[
+ {k:"NEG",t:"Close negative on {NOM}",s:"Depress theirs.",d:{swing:2,press:-5,cash:-3},integ:-2,r:{MW:.5,SO:.5,WE:.5},out:"Their soft supporters stay home in measurable numbers. So do a smaller but real number of yours."},
+ {k:"POS",t:"Close positive with your own case",s:"Lift yours.",d:{swing:5,base:5,press:5,cash:-3},out:"Testing puts it as the best-performing spot either campaign has run all cycle, which your media buyer will mention forever."},
+ {k:"DOC",t:"Run a documentary spot about one voter",s:"Slow, quiet, strange for a closer.",d:{swing:7,press:8,base:-2,cash:-3},risk:{p:.3,out:"It is genuinely beautiful and it does not move a single number in a single market. Six days, gone.",d:{swing:-7}},out:"It breaks through precisely because it does not sound like a campaign ad, and it is still being taught in ad classes in 2040."}
+]},
+{ph:4,head:"ELECTION EVE",body:"Midnight rally in the last state. Your voice is gone, the crowd is twelve thousand, and there is one flight left before the polls open.",ch:[
+ {k:"RALLY",t:"Do the rally and sleep on the plane",s:"The last image of the campaign.",d:{base:8,press:4,swing:2},stam:true,out:"The final photograph of your campaign is a full arena at 12:40 in the morning, and it is a good photograph."},
+ {k:"CALLS",t:"Skip it and call volunteers for four hours",s:"No cameras. Real turnout.",d:{base:5,swing:2},r:{MW:.4,SO:.4,WE:.4,NE:.4},out:"Eleven hundred volunteers get a call from the candidate and every single one of them tells at least six people."},
+ {k:"REST",t:"Sleep six hours before Election Day",s:"Nobody will ever know.",d:{swing:3,press:1,base:-2},out:"You wake up sharp and clear-headed for the longest day of your life, which is worth more than any of them will admit."}
+]},
+{ph:4,head:"THE FINAL POLL",body:"Your internals and the public polls disagree by three points in the same direction they disagreed in 2016, 2020 and 2024. Your pollster wants to talk about it. There are four days left.",ch:[
+ {k:"TRUST",t:"Trust the internals and move resources",s:"Your model or theirs.",d:{swing:4,cash:-4},r:{MW:.7,SO:.3},risk:{p:.35,out:"The internals were wrong in the same direction as everyone else’s. You spent four days and nine million dollars in the wrong three counties.",d:{swing:-7,cash:-4}},out:"You shift the last four days into the places your own data says are moving, and your own data turns out to be right."},
+ {k:"PUBLIC",t:"Follow the public polls",s:"The wisdom of the crowd, roughly.",d:{swing:2},out:"You do the obvious thing in the obvious places. It is fine. Everything about it is fine."},
+ {k:"NEITHER",t:"Ignore both and go where the crowds are biggest",s:"An entire theory of politics, and a bad one.",d:{base:7,press:3,swing:-3},out:"The rallies are enormous. Rally size has correctly predicted a presidential election approximately zero times."}
+]}
+];
+
+/* ================= STATE ================= */
+var S={},QUEUE=[];
+function newGame(){
+  S={name:"",party:null,home:"",homeReg:"MW",bg:null,issue:null,perk:null,flaw:null,lane:"ESTAB",
+     base:52,swing:46,cash:40,press:50,phi:9,
+     reg:{MW:0,SO:0,WE:0,NE:0},
+     integ:0,prep:1,mo:0,del:0,endorse:0,turn:0,ei:0,ci:0,
+     log:[],ads:{},lastOut:"",cast:{},wire:"",
+     field:[],oppField:[],oppNom:null,mate:null,runnerUp:null,
+     nominee:false,contested:false,env:0,pollerr:{},surprise:false};
+}
+newGame();
+
+/* ================= TOKENS ================= */
+function activeRivals(){return S.field.filter(function(c){return c.active;});}
+function leader(){
+  if(S.nominee&&S.runnerUp)return S.runnerUp;
+  var a=activeRivals();
+  if(!a.length)return S.field[0]||{n:"THE FIELD"};
+  return a.slice().sort(function(x,y){return (y.del+y.str*4)-(x.del+x.str*4);})[0];
+}
+function second(){
+  var a=activeRivals().slice().sort(function(x,y){return (y.del+y.str*4)-(x.del+x.str*4);});
+  return a[1]||a[0]||{n:"THE FIELD"};
+}
+function rollCast(){
+  var p=S.party?S.party.id:"REP", o=(p==="REP"?"DEM":"REP");
+  var pod=rnd(PODS[p].concat(PODS.NEU));
+  var opod=rnd(PODS[o]);
+  var anch=rnd(ANCHORS[p].concat(ANCHORS.NEU));
+  var cel=rnd(CELEBS[p].concat(CELEBS.NEU));
+  var don=rnd(DONORS[p]);
+  var cap=function(t){return t.charAt(0).toUpperCase()+t.slice(1);};
+  S.cast={POD:pod[0],PODSHOW:pod[1],PODNOTE:pod[2],OPPPOD:opod[0],
+          ANCH:anch[0],NET:anch[1],CELEB:cel[0],CELEBNOTE:cap(cel[1]),
+          DONOR:don[0],DONORNOTE:cap(don[1])};
+}
+function tpl(s){
+  if(!s)return s;
+  var map={
+    ME:S.name,PARTY:S.party?S.party.name:"",HOME:S.home?stName(S.home).toUpperCase():"",
+    ISSUE:S.issue?S.issue.n:"",R1:leader().n,R2:second().n,
+    NOM:S.oppNom?S.oppNom.n:"THE OTHER SIDE",VP:S.mate?S.mate.n:"YOUR RUNNING MATE"
+  };
+  for(var k in S.cast)map[k]=S.cast[k];
+  return s.replace(/\{([A-Z0-9]+)\}/g,function(m,k){return map[k]!=null?map[k]:m;});
+}
+
+/* ================= SETUP ================= */
+$("#go-setup").addEventListener("click",function(){
+  show("s-setup");
+  buildSetup();
+});
+function buildSetup(){
+  var sel=$("#homest");
+  sel.innerHTML='<option value="">Select a state</option>'+
+    US.map(function(s){return '<option value="'+s[0]+'">'+s[1]+'</option>';}).join("");
+  sel.addEventListener("change",function(){S.home=sel.value;S.homeReg=stReg(sel.value);});
+
+  var ph=$("#partyopts");ph.innerHTML="";
+  ["REP","DEM"].forEach(function(pid){
+    var p=PARTIES[pid];
+    var b=document.createElement("button");
+    b.className="opt partybtn";b.type="button";b.setAttribute("data-p",pid);b.setAttribute("aria-pressed","false");
+    b.innerHTML='<span class="t">'+p.name+'<br>PRIMARY</span><span class="s">'+p.blurb+'</span>';
+    b.addEventListener("click",function(){
+      S.party=p;rollField(pid);
+      Array.prototype.forEach.call(ph.children,function(c){c.setAttribute("aria-pressed","false");});
+      b.setAttribute("aria-pressed","true");
+      drawFieldPreview();
+    });
+    ph.appendChild(b);
+  });
+  pickList("#bgopts",BACKGROUNDS,"bg");
+  pickList("#issueopts",ISSUES,"issue");
+  pickList("#perkopts",PERKS,"perk");
+  pickList("#flawopts",FLAWS,"flaw");
+}
+function pickList(sel,list,key){
+  var host=$(sel);host.innerHTML="";
+  list.forEach(function(o){
+    var b=document.createElement("button");
+    b.className="opt";b.type="button";b.setAttribute("aria-pressed","false");
+    b.innerHTML='<span class="t">'+o.n+'</span><span class="s">'+o.d+'</span>'+(o.k?'<span class="k">'+o.k+'</span>':"");
+    b.addEventListener("click",function(){
+      S[key]=o;
+      Array.prototype.forEach.call(host.children,function(c){c.setAttribute("aria-pressed","false");});
+      b.setAttribute("aria-pressed","true");
+    });
+    host.appendChild(b);
+  });
+}
+function rollField(pid){
+  var other=(pid==="REP"?"DEM":"REP");
+  S.field=shuffle(POOL[pid]).slice(0,6).map(function(c){
+    return {n:c.n,d:c.d,q:c.q,str:c.str+noise(2.2),lane:c.lane,home:c.home,r:c.r,
+            del:0,mo:0,active:true,endorse:0,share:0};
+  });
+  S.oppField=shuffle(POOL[other]).slice(0,6).map(function(c){
+    return {n:c.n,d:c.d,q:c.q,str:c.str+noise(2.6),lane:c.lane,home:c.home,r:c.r,del:0,active:true};
+  });
+}
+function drawFieldPreview(){
+  var h=$("#fieldpreview");
+  if(!S.party){h.innerHTML="";return;}
+  var cls=S.party.id.toLowerCase();
+  h.innerHTML='<p class="eyebrow" style="margin-top:14px">THE FIELD YOU WILL FACE</p>'+
+   S.field.slice().sort(function(a,b){return b.str-a.str;}).map(function(c){
+    return '<div class="cand '+cls+'"><span class="ini">'+initials(c.n)+'</span>'+
+      '<span><span class="nm">'+c.n+'</span><span class="ds">'+c.d+'</span></span>'+
+      '<span class="pct">'+Math.round(c.str)+'<small>PCT</small></span></div>';
+   }).join("")+
+   '<p class="sub" style="text-align:left;letter-spacing:.06em">'+S.party.pri+'</p>';
+}
+
+$("#go-play").addEventListener("click",function(){
+  var n=$("#cand").value.trim();
+  if(!n){$("#cand").focus();$("#cand").placeholder="Enter a name to file";return;}
+  if(!S.home){alert("Pick a home state. Everyone has to be from somewhere.");return;}
+  if(!S.party){alert("Pick a party. There are two.");return;}
+  if(!S.bg||!S.issue||!S.perk||!S.flaw){alert("Finish the candidate: background, issue, strength and weakness.");return;}
+  S.name=n.toUpperCase();
+  S.lane=S.bg.lane;
+  var p=S.party;
+  S.base=p.base;S.swing=p.swing;S.cash=p.cash;S.press=p.press;S.phi=13;
+  applyEff(S.bg.eff);
+  if(S.bg.r)for(var k in S.bg.r)addReg(k,S.bg.r[k]);
+  for(var q in S.issue.r)addReg(q,S.issue.r[q]);
+  addReg(S.homeReg,.8);
+  if(S.perk.id==="MONEY")S.cash+=6;
+  if(S.perk.id==="MACHINE")S.phi+=3;
+  if(S.flaw.id==="CARPET")S.cash+=10;
+  if(S.flaw.id==="COLD")S.swing-=4;
+  if(S.flaw.id==="FILE")S.surprise=true;
+  S.env=noise(1.5);
+  STATES.forEach(function(st){S.pollerr[st.ab]=noise(1.15);});
+  buildQueue();
+  rollCast();
+  wireNews("PRIMARY SEASON OPENS · "+S.field.length+" MAJOR CANDIDATES FILED IN THE "+S.party.name+" RACE");
+  show("s-play");
+  $("#chy").className="chyron "+S.party.id.toLowerCase();
+  drawGauges();
+  turn();
+});
+function applyEff(e){
+  if(!e)return;
+  ["base","swing","press","cash"].forEach(function(k){if(e[k]!=null)S[k]=clamp(S[k]+e[k],0,k==="cash"?120:100);});
+  if(e.phi!=null)S.phi+=e.phi;
+}
+
+/* ================= QUEUE ================= */
+function pickEvents(ph,n){
+  var pool=EVENTS.filter(function(e){return e.ph===ph&&(!e.pty||e.pty===S.party.id);});
+  return shuffle(pool).slice(0,n);
+}
+function buildQueue(){
+  QUEUE={0:pickEvents(0,7),1:pickEvents(1,2),2:pickEvents(2,4),3:pickEvents(3,2),4:pickEvents(4,2)};
+  if(S.surprise){
+    var oct=EVENTS.filter(function(e){return e.ph===4&&/OCTOBER SURPRISE/.test(e.head);})[0];
+    if(oct)QUEUE[4]=[oct].concat(QUEUE[4].filter(function(e){return e!==oct;})).slice(0,2);
+  }
+  QUEUE.idx={0:0,1:0,2:0,3:0,4:0};
+}
+
+/* ================= CHROME ================= */
+function show(id){
+  ["s-title","s-setup","s-play","s-night"].forEach(function(x){$("#"+x).classList.add("hidden");});
+  $("#"+id).classList.remove("hidden");
+  window.scrollTo(0,0);
+}
+function wireNews(t){S.wire=t;$("#wire").innerHTML='<b>WIRE</b> &nbsp;'+tpl(t);}
+function setChyron(step){
+  $("#c-slug").innerHTML=step.s;
+  $("#c-date").textContent=step.d+", 2028";
+  $("#c-days").textContent=step.o;
+}
+var GDEF=[["base","BASE",100],["swing","SWING",100],["press","PRESS",100],["cash","WAR CHEST",120]];
+function drawGauges(flash){
+  var h=$("#gauges");h.innerHTML="";
+  var defs=GDEF.slice();
+  if(!S.nominee)defs.unshift(["phi","PRIMARY %",45]);
+  defs.forEach(function(g){
+    var key=g[0],max=g[2],v=S[key];
+    var d=document.createElement("div");
+    d.className="g"+(key==="cash"?" money":"")+(key==="phi"?" deleg":"");
+    var fl=flash&&flash[key]?'<span class="delta '+(flash[key]>0?"up":"down")+'">'+(flash[key]>0?"+":"")+Math.round(flash[key])+"</span>":"";
+    d.innerHTML='<span class="lab">'+g[1]+'</span>'+
+      '<span class="track"><span class="fill" style="width:'+clamp(v/max*100,0,100)+'%"></span></span>'+
+      '<span class="val">'+(key==="cash"?"$"+Math.round(v)+"M":Math.round(v)+(key==="phi"?"%":""))+fl+'</span>';
+    h.appendChild(d);
+  });
+  var pull=document.createElement("div");
+  pull.className="g pull";
+  pull.innerHTML='<span class="lab">MAP PULL</span><span class="pullbars">'+
+    ["MW","SO","WE","NE"].map(function(k){
+      var n=clamp(Math.round((S.reg[k]||0)*1.4),0,5);
+      return '<b>'+k+'</b>'+(new Array(n+1).join("▮")||"·");
+    }).join(" ")+'</span><span class="val"></span>';
+  h.appendChild(pull);
+}
+function drift(){
+  S.base += (S.party.base-S.base)*.10;
+  S.swing += (47-S.swing)*.10;
+  S.press += (50-S.press)*.20;
+  S.cash = clamp(S.cash-1.6+(S.perk.id==="MONEY"?4:0),0,120);
+  if(S.perk.id==="VIRAL")S.press=clamp(S.press+2,0,100);
+  if(!S.nominee){
+    var live=S.field.filter(function(c){return c.active;});
+    var avg=live.length?live.reduce(function(a,c){return a+c.str;},0)/live.length:20;
+    var top=live.length?live.reduce(function(a,c){return Math.max(a,c.str);},0):22;
+    S.phi=clamp(S.phi+((avg*.45+top*.55)-S.phi)*.05+S.endorse*.08,1,60);
+    S.mo*=.70;
+  }
+}
+
+/* ================= TURN LOOP ================= */
+function turn(){
+  if(S.turn>=STEPS.length)return night();
+  var step=STEPS[S.turn];
+  setChyron(step);
+  window.scrollTo(0,0);
+  if(step.k==="ct")return contestScreen(step);
+  if(step.k==="nom")return nominationScreen(step);
+  if(step.k==="mate")return mateScreen(step);
+  if(step.k==="ads")return adScreen(step);
+  return eventScreen(step);
+}
+function receipt(){return S.lastOut?'<p class="receipt">'+S.lastOut+'</p>':"";}
+
+function eventScreen(step){
+  rollCast();
+  var list=QUEUE[step.ph], idx=QUEUE.idx[step.ph];
+  var ev=list[idx%list.length];
+  QUEUE.idx[step.ph]=idx+1;
+  var opp=S.nominee?tpl("vs. {NOM}"):("field of "+(activeRivals().length+1));
+  var st=$("#stage");
+  st.innerHTML=receipt()+
+    '<p class="eyebrow">'+step.s.replace("<br>"," ")+' · '+opp+'</p>'+
+    '<h2 class="head">'+tpl(ev.head)+'</h2>'+
+    '<p class="body">'+tpl(ev.body)+'</p>';
+  ev.ch.forEach(function(c){
+    var b=document.createElement("button");
+    b.className="choice";b.type="button";
+    b.innerHTML='<span class="k">'+c.k+'</span><span class="t">'+tpl(c.t)+'</span><span class="s">'+tpl(c.s)+'</span>';
+    b.addEventListener("click",function(){resolve(step,ev,c);});
+    st.appendChild(b);
+  });
+}
+function resolve(step,ev,c){
+  var mult=(c.tag&&S.issue&&c.tag===S.issue.id)?1.35:1;
+  if(S.perk.id==="RETAIL"&&/RALLY|GATE|DRIVE|MIDNIGHT|HOMETOWN|CALLS/.test(c.k))mult*=1.3;
+  var d=Object.assign({},c.d||{});
+  var r=Object.assign({},c.r||{});
+  var phi=c.phi||0;
+  var outText=tpl(c.out), backfired=false;
+  if(c.risk){
+    var p=c.risk.p;
+    p -= (S.prep||0)*.04;
+    p -= (S.press-50)*.002;
+    if(S.flaw.id==="GAFFE")p+=.10;
+    if(S.flaw.id==="FILE"&&/OCTOBER SURPRISE/.test(ev.head))p+=.15;
+    if(S.perk.id==="DEBATE"&&step.ph===3)p*=.5;
+    if(S.perk.id==="VIRAL"&&/POD|VIRAL|CLIP|POST/.test(c.k+ev.head))p-=.06;
+    if(Math.random()<clamp(p,.03,.85)){
+      backfired=true;outText=tpl(c.risk.out);
+      d=Object.assign({},c.risk.d||{});
+      r=Object.assign({},c.risk.r||{});
+      phi=c.risk.phi||0;
+      var soft=(S.perk.id==="TEFLON")?.6:1;
+      for(var kk in d)d[kk]*=soft;
+      phi*=soft;
+      if(S.flaw.id==="THIN"&&d.press!=null)d.press-=4;
+    }
+  }
+  var flash={};
+  ["base","swing","press","cash"].forEach(function(k){
+    if(d[k]!=null){var v=d[k]*(d[k]>0?mult:1);S[k]=clamp(S[k]+v,0,k==="cash"?120:100);flash[k]=v;}
+  });
+  for(var rk in r){
+    addReg((rk==="HOMEREG")?S.homeReg:rk, r[rk]*mult);
+  }
+  if(phi){S.phi=clamp(S.phi+phi*mult,1,60);flash.phi=phi*mult;}
+  if(c.integ)S.integ+=c.integ;
+  if(c.prep!=null)S.prep=c.prep;
+  if(c.stam&&S.flaw.id==="AGE"){S.press=clamp(S.press-5,0,100);S.mo-=1;}
+  drift();
+  S.log.push({w:step.d,head:tpl(ev.head),pick:tpl(c.t),out:outText,d:flash,bad:backfired});
+  S.lastOut='<b>'+(backfired?"IT BACKFIRES. ":"")+'</b>'+outText;
+  S.turn++;
+  drawGauges(flash);
+  turn();
+}
+
+/* ================= PRIMARY CONTESTS ================= */
+function scoreOf(c,ct){
+  var s=c.str+c.mo+(c.endorse||0);
+  if(ct.reg==="ALL"){s+=((c.r.MW+c.r.SO+c.r.WE+c.r.NE)/4)*2.2;}
+  else s+=(c.r[ct.reg]||0)*2.2;
+  if(ct.st&&c.home===ct.st)s+=9;
+  else if(!ct.st&&stReg(c.home)===ct.reg)s+=3.5;
+  return Math.max(.6,s+noise(2.4));
+}
+function myScore(ct){
+  var s=S.phi+S.mo+S.endorse;
+  if(ct.reg==="ALL")s+=((S.reg.MW+S.reg.SO+S.reg.WE+S.reg.NE)/4)*2.2;
+  else s+=(S.reg[ct.reg]||0)*2.2;
+  s+=(S.cash-40)*.05+(S.press-50)*.06+(S.base-52)*.05;
+  if(S.flaw.id!=="CARPET"){
+    if(ct.st&&ct.st===S.home)s+=9;
+    else if(!ct.st&&ct.reg===S.homeReg)s+=3.5;
+  }
+  if(S.perk.id==="MACHINE")s*=1.08;
+  return Math.max(.6,s+noise(2.4));
+}
+function contestScreen(step){
+  var ct=CONTESTS[step.ci];
+  var st=$("#stage");
+  st.innerHTML=receipt()+
+    '<p class="eyebrow">'+ct.d+', 2028 · '+ct.del+' DELEGATES</p>'+
+    '<h2 class="head">'+ct.n+'</h2>'+
+    '<p class="body">'+ct.note+'</p>'+
+    delegateBox()+
+    '<button class="btn" id="runct">Watch the returns</button>';
+  $("#runct").addEventListener("click",function(){runContest(step,ct);});
+}
+function runContest(step,ct){
+  var ents=[{me:true,n:S.name,sc:myScore(ct),ref:null}];
+  activeRivals().forEach(function(c){ents.push({me:false,n:c.n,sc:scoreOf(c,ct),ref:c});});
+  var tot=ents.reduce(function(a,e){return a+e.sc;},0);
+  ents.forEach(function(e){e.share=e.sc/tot;});
+  ents.sort(function(a,b){return b.share-a.share;});
+  /* viability threshold, then proportional. the GOP skims extra for the winner. */
+  var thr=.11, q=ents.filter(function(e){return e.share>=thr;});
+  if(q.length<2)q=ents.slice(0,2);
+  var qt=q.reduce(function(a,e){return a+e.share;},0);
+  var skim=(S.party.id==="REP")?.10:.05;
+  var f0=q[0].share/qt, w0=f0+skim*(1-f0), rest=(1-w0)/Math.max(1e-6,1-f0);
+  q.forEach(function(e,i){
+    e.del=Math.round(ct.del*(i===0?w0:(e.share/qt)*rest));
+  });
+  var sum=q.reduce(function(a,e){return a+e.del;},0);
+  if(sum!==ct.del&&q.length)q[0].del+=ct.del-sum;
+  ents.forEach(function(e){if(e.del==null)e.del=0;});
+  ents.forEach(function(e){
+    if(e.me)S.del+=e.del; else e.ref.del+=e.del;
+  });
+  /* momentum */
+  var win=ents[0];
+  if(win.me){S.mo+=3.6;S.phi=clamp(S.phi+3.5,1,60);S.press=clamp(S.press+3,0,100);S.cash=clamp(S.cash+8,0,120);}
+  else {win.ref.mo+=3.2;win.ref.str=Math.min(win.ref.str+.8,30);}
+  ents.forEach(function(e){
+    if(e===win)return;
+    if(e.me){S.mo-=1.1;S.phi=clamp(S.phi-1.1,1,60);}
+    else {e.ref.mo-=1.1;e.ref.str-=.5;}
+  });
+  if(S.flaw.id==="AGE")S.mo-=.4;
+  runOppContest(ct);
+  var drops=cullField(step.ci);
+  drift();
+  S.log.push({w:ct.d,head:ct.n,pick:(win.me?"YOU WIN":win.n+" wins")+" · "+
+    (ents.filter(function(e){return e.me;})[0].del)+" delegates to you",
+    out:"",d:{}});
+  showResults(step,ct,ents,drops,win);
+}
+function cullField(ci){
+  var caps={0:6,1:5,2:5,3:4,4:2,5:2,6:1,7:1};
+  var cap=caps[ci]!=null?caps[ci]:1;
+  var live=activeRivals().slice().sort(function(a,b){return (b.del+b.str*3+b.mo)-(a.del+a.str*3+a.mo);});
+  var drops=[];
+  while(live.length>cap){
+    var out=live.pop();
+    out.active=false;
+    var chance=.24+(out.lane===S.lane?.34:0)+(S.press-50)*.006+(S.integ>0?.08:0)+(S.del>out.del?.08:0);
+    if(Math.random()<clamp(chance,.05,.85)){
+      out.endorsedMe=true;
+      S.endorse+=2.4;S.phi=clamp(S.phi+2.6,1,60);S.base=clamp(S.base+3,0,100);S.cash=clamp(S.cash+4,0,120);
+    } else {
+      var lead=live[0];
+      if(lead){lead.endorse=(lead.endorse||0)+2.4;lead.str+=1.2;}
+      out.endorsedMe=false;
+    }
+    drops.push(out);
+  }
+  return drops;
+}
+function runOppContest(ct){
+  var live=S.oppField.filter(function(c){return c.active;});
+  var sc=live.map(function(c){return {c:c,s:scoreOf(c,ct)};});
+  var t=sc.reduce(function(a,x){return a+x.s;},0);
+  sc.sort(function(a,b){return b.s-a.s;});
+  sc.forEach(function(x){x.c.del+=Math.round(ct.del*(x.s/t));});
+  sc[0].c.mo+=2.2;sc[0].c.str+=1;
+  var caps=[6,5,5,4,3,2,2,1];
+  var idx=CONTESTS.indexOf(ct);
+  var cap=caps[idx]!=null?caps[idx]:1;
+  var ranked=S.oppField.filter(function(c){return c.active;})
+    .sort(function(a,b){return (b.del+b.str*3)-(a.del+a.str*3);});
+  while(ranked.length>cap){ranked.pop().active=false;}
+  var other=(S.party.id==="REP"?"DEM":"REP");
+  var lead=ranked[0];
+  var lines=[
+    lead.n+" WINS THE "+PARTIES[other].short+" SIDE OF "+ct.n.replace("THE ","")+" · "+Math.round(lead.del)+" DELEGATES BANKED",
+    PARTIES[other].short+" RACE: "+lead.n+" OPENS A LEAD · TWO RIVALS SAY THEY ARE STAYING IN “THROUGH THE SUMMER”",
+    "ACROSS THE AISLE: "+lead.n+" NOW FAVORED BY THE MODELS · "+(ranked[1]?ranked[1].n+" TRAILS":"FIELD COLLAPSING")
+  ];
+  wireNews(rnd(lines));
+}
+function delegateBox(){
+  var rivals=S.field.slice().sort(function(a,b){return b.del-a.del;});
+  var awarded=S.del+S.field.reduce(function(a,c){return a+c.del;},0);
+  var w=function(n){return (n/DELTOTAL*100);};
+  var bar='<span class="me" style="width:'+w(S.del)+'%"></span>';
+  ["r1","r2","r3"].forEach(function(cl,i){if(rivals[i])bar+='<span class="'+cl+'" style="width:'+w(rivals[i].del)+'%"></span>';});
+  var leg='<i style="background:var(--mark)"></i>'+S.name+" "+S.del+"&nbsp;&nbsp;"+
+    rivals.slice(0,3).map(function(c,i){
+      return '<i style="background:'+["#5d6f63","#8b9a8f","#b3bfb5"][i]+'"></i>'+c.n+" "+c.del;
+    }).join("&nbsp;&nbsp;");
+  return '<div class="delbox"><div class="h"><span>DELEGATE COUNT</span><span>'+awarded+' OF '+DELTOTAL+' AWARDED · '+DELMAJ+' TO WIN</span></div>'+
+    '<div class="delbar">'+bar+'</div><div class="dellegend">'+leg+'</div></div>';
+}
+function showResults(step,ct,ents,drops,win){
+  var st=$("#stage");
+  var rows=ents.map(function(e,i){
+    return '<div class="resrow'+(i===0?" win":"")+(e.me?" mine":"")+'">'+
+      '<span class="pl">'+(i+1)+'</span>'+
+      '<span class="who">'+(e.me?S.name:e.n)+'</span>'+
+      '<span class="sh">'+(e.share*100).toFixed(1)+'%</span>'+
+      '<span class="dl">'+e.del+'</span></div>';
+  }).join("");
+  var me=ents.filter(function(e){return e.me;})[0];
+  var place=ents.indexOf(me)+1;
+  var lede;
+  if(place===1)lede="THE DESK CALLS IT FOR "+S.name+". You win "+ct.n.toLowerCase().replace("the ","")+" outright, and for the next four days you are the story.";
+  else if(place===2)lede="You finish second behind "+win.n+". Every write-up uses the phrase “stronger than expected,” which is the polite way of saying you did not win.";
+  else if(place===3)lede="Third. Survivable, barely, and only if the money holds.";
+  else lede="You finish "+place+"th. Two of your state directors update their résumés tonight.";
+  var dropHtml=drops.length?('<p class="eyebrow" style="margin-top:16px">THE FIELD NARROWS</p>'+drops.map(function(c){
+      return '<div class="cand out '+S.party.id.toLowerCase()+'"><span class="ini">'+initials(c.n)+'</span>'+
+        '<span><span class="nm">'+c.n+' DROPS OUT'+(c.endorsedMe?'<span class="badge">ENDORSES YOU</span>':'<span class="badge bad">ENDORSES '+initials(leader().n)+'</span>')+'</span>'+
+        '<span class="ds">“'+c.q+'”</span></span><span class="pct">'+c.del+'<small>DEL</small></span></div>';
+    }).join("")):"";
+  st.innerHTML='<p class="eyebrow">'+ct.d+', 2028 · RESULTS</p><h2 class="head">'+ct.n+'</h2>'+
+    '<p class="body">'+lede+'</p>'+
+    '<div class="delbox">'+rows+'</div>'+
+    delegateBox()+dropHtml+
+    '<button class="btn" id="ctnext">Next</button>';
+  S.lastOut="<b></b>"+lede;
+  drawGauges();
+  $("#ctnext").addEventListener("click",function(){S.turn++;turn();});
+  window.scrollTo(0,0);
+}
+
+/* ================= NOMINATION ================= */
+function nominationScreen(step){
+  var rivals=S.field.slice().sort(function(a,b){return b.del-a.del;});
+  var top=rivals[0];
+  S.runnerUp=top;
+  var st=$("#stage");
+  if(S.del>=DELMAJ)return clinch(step,"A majority on the first ballot. It is over and everybody in the party knows it.");
+  if(S.del>=top.del*.82){
+    /* contested convention */
+    st.innerHTML=receipt()+'<p class="eyebrow">JUNE 9, 2028 · NO MAJORITY</p>'+
+      '<h2 class="head">A CONTESTED CONVENTION</h2>'+
+      '<p class="body">You finished with '+S.del+' delegates. '+top.n+' finished with '+top.del+
+      '. Nobody has '+DELMAJ+'. For the first time in most people’s lifetimes the nomination will actually be decided in the hall, by 4,700 people who each want something'+
+      (S.del>top.del?", and you walk in with the plurality."
+        :", and you walk in behind. A plurality is not a claim, but it is the closest thing available.")+'</p>'+
+      delegateBox();
+    var edge=(S.del>top.del?6:-4);
+    var opts=[
+      {k:"WHIP",t:"Whip the unpledged delegates yourself",s:"Four hundred phone calls in nine days.",b:(S.press-50)*.35+S.integ*3+8+edge},
+      {k:"BUY",t:"Spend everything on the floor operation",s:"Hospitality suites, charter flights, promises.",b:(S.cash-30)*.55-S.integ*2+edge},
+      {k:"DEAL",t:"Offer "+top.n+" the ticket",s:"Second place on your ticket, or first on theirs.",b:22-S.press*.12+edge,deal:true}
+    ];
+    opts.forEach(function(o){
+      var b=document.createElement("button");b.className="choice";b.type="button";
+      b.innerHTML='<span class="k">'+o.k+'</span><span class="t">'+o.t+'</span><span class="s">'+o.s+'</span>';
+      b.addEventListener("click",function(){
+        var roll=o.b+noise(9);
+        if(roll>16){
+          S.contested=true;
+          if(o.deal){S.forcedMate=top;S.integ-=1;}
+          clinch(step,"It takes "+(o.deal?"a deal with "+top.n+" and ":"")+"four ballots and a night nobody in that hall will ever describe the same way twice, but the nomination is yours.");
+        } else {
+          S.lostTo=top;
+          endPrimary(false,top);
+        }
+      });
+      st.appendChild(b);
+    });
+    return;
+  }
+  S.lostTo=top;
+  endPrimary(false,top);
+}
+function clinch(step,line){
+  S.nominee=true;
+  var other=(S.party.id==="REP"?"DEM":"REP");
+  var live=S.oppField.filter(function(c){return c.active;})
+    .sort(function(a,b){return (b.del+b.str*3)-(a.del+a.str*3);});
+  S.oppNom=live[0]||S.oppField[0];
+  S.base=clamp(S.base+7,0,100);S.press=clamp(S.press+5,0,100);S.cash=clamp(S.cash+26,0,120);
+  S.env += (17-S.oppNom.str)*.13*S.party.tilt;
+  wireNews("GENERAL ELECTION SET · "+S.name+" ("+S.party.short+") vs. "+S.oppNom.n+" ("+PARTIES[other].short+")");
+  var st=$("#stage");
+  st.innerHTML='<p class="eyebrow">JUNE 9, 2028 · PRESUMPTIVE NOMINEE</p>'+
+    '<h2 class="head">'+S.name+' IS THE '+S.party.name+' NOMINEE</h2>'+
+    '<p class="body">'+line+'</p>'+
+    delegateBox()+
+    '<p class="eyebrow">AND ACROSS THE AISLE</p>'+
+    '<div class="cand '+other.toLowerCase()+'"><span class="ini">'+initials(S.oppNom.n)+'</span>'+
+      '<span><span class="nm">'+S.oppNom.n+'<span class="badge hot">'+PARTIES[other].short+' NOMINEE</span></span>'+
+      '<span class="ds">'+S.oppNom.d+'</span></span>'+
+      '<span class="pct">'+Math.round(S.oppNom.str)+'<small>STR</small></span></div>'+
+    '<p class="quotebox">“'+S.oppNom.q+'”<cite>'+S.oppNom.n+', accepting the nomination</cite></p>'+
+    '<button class="btn" id="nomnext">On to the general</button>';
+  S.lastOut="<b></b>You are the nominee. "+S.oppNom.n+" is the opponent. Everything you did to win the primary is now on tape.";
+  drawGauges();
+  $("#nomnext").addEventListener("click",function(){S.turn++;turn();});
+  window.scrollTo(0,0);
+}
+
+/* ================= RUNNING MATE ================= */
+function mateScreen(step){
+  var st=$("#stage");
+  var opts=shuffle(MATES[S.party.id]).slice(0,3);
+  if(S.forcedMate)opts=[{n:S.forcedMate.n,st:S.forcedMate.home,d:"The deal you made in the hall. "+S.forcedMate.d,
+    eff:{base:9,cash:8,press:2,swing:-1},r:S.forcedMate.r,unity:true}].concat(opts.slice(0,2));
+  else if(S.runnerUp&&Math.random()<.75)opts=[{n:S.runnerUp.n,st:S.runnerUp.home,
+    d:"The unity ticket. They fought you for six months and their voters have not entirely come home. "+S.runnerUp.d,
+    eff:{base:8,cash:9,press:3,swing:-2},r:S.runnerUp.r,unity:true}].concat(opts.slice(0,2));
+  st.innerHTML=receipt()+'<p class="eyebrow">JULY 18, 2028 · THE TICKET</p>'+
+    '<h2 class="head">PICK A RUNNING MATE</h2>'+
+    '<p class="body">Three names survived the vetting. The announcement is Thursday and it is the only decision left on this list that you cannot undo.</p>';
+  opts.forEach(function(m){
+    var b=document.createElement("button");b.className="choice";b.type="button";
+    var eff=[];
+    ["base","swing","press"].forEach(function(k){if(m.eff[k])eff.push((m.eff[k]>0?"+":"")+m.eff[k]+" "+k);});
+    if(m.eff.cash)eff.push((m.eff.cash>0?"+$":"-$")+Math.abs(m.eff.cash)+"M");
+    eff.push(stName(m.st).toUpperCase());
+    b.innerHTML='<span class="k">'+eff.join("  ·  ").toUpperCase()+'</span><span class="t">'+m.n+
+      (m.unity?'<span class="badge">UNITY TICKET</span>':'')+'</span><span class="s">'+m.d+'</span>';
+    b.addEventListener("click",function(){
+      S.mate=m;var flash={};
+      ["base","swing","press","cash"].forEach(function(k){if(m.eff[k]!=null){S[k]=clamp(S[k]+m.eff[k],0,k==="cash"?120:100);flash[k]=m.eff[k];}});
+      if(m.r)for(var k2 in m.r)addReg(k2,m.r[k2]*.8);
+      addReg(stReg(m.st),.9);
+      drift();
+      S.log.push({w:step.d,head:"THE TICKET",pick:m.n+" of "+stName(m.st),out:"",d:flash});
+      S.lastOut="<b></b>The ticket is set. "+m.n+" of "+stName(m.st)+" takes the stage Thursday to a hall that mostly stands up.";
+      S.turn++;drawGauges(flash);turn();
+    });
+    st.appendChild(b);
+  });
+}
+
+/* ================= AD BUY ================= */
+function baseMargin(s){
+  var R = s.lean + S.env;
+  var mine = (S.party.tilt===1 ? R : -R);
+  var adf=(S.flaw.id==="COLD")?.26:.4;
+  return mine
+    + (S.base-(S.party.base+1))*.06
+    + (S.swing-50)*.20
+    + (S.press-51)*.04
+    + ((S.reg[s.reg]||0)-2.6)*.70
+    + (S.ads[s.ab]||0)*adf
+    + (s.ab===S.home?2.4:0)
+    + (S.mate&&S.mate.st===s.ab?1.6:0);
+}
+function poll(s){return baseMargin(s)+(S.pollerr[s.ab]||0);}
+function fmt(n){return (n>=0?"+":"")+n.toFixed(1);}
+function adScreen(step){
+  var isFinal=step.s==="CLOSING";
+  var budget=Math.floor(S.cash*(isFinal?.9:.55)/5);
+  var spent=0;
+  var st=$("#stage");
+  st.innerHTML=receipt()+'<p class="eyebrow">MEDIA BUY '+(isFinal?"TWO · THE CLOSER":"ONE · THE FALL AIR")+'</p>'+
+   '<h2 class="head">'+(isFinal?"THE FINAL BUY":"BOOK THE FALL AIR")+'</h2>'+
+   '<p class="body">Each unit is five million dollars of broadcast, cable, streaming and connected TV in one state. Six units is saturation. Anything past that is buying the same person the same ad nine times. The number beside each state is your own internal polling, which has been wrong before.</p>'+
+   '<div id="buys"></div><button class="btn" id="adgo"></button>';
+  var host=$("#buys");
+  STATES.forEach(function(s){
+    var row=document.createElement("div");row.className="buy";
+    row.innerHTML='<span class="ab">'+s.ab+'</span>'+
+      '<span><span class="nm">'+s.name+' · '+s.ev+' EV · <b data-t="'+s.ab+'">–</b></span><br><span class="pips" data-p="'+s.ab+'"></span></span>'+
+      '<span class="step"><button type="button" data-m="'+s.ab+'">–</button><span class="n" data-n="'+s.ab+'">$0M</span><button type="button" data-a="'+s.ab+'">+</button></span>';
+    host.appendChild(row);
+  });
+  function refresh(){
+    STATES.forEach(function(s){
+      var n=(S.ads[s.ab]||0);
+      host.querySelector('[data-n="'+s.ab+'"]').textContent="$"+(n*5)+"M";
+      host.querySelector('[data-p="'+s.ab+'"]').textContent=new Array(n+1).join("▮")||"·";
+      var t=host.querySelector('[data-t="'+s.ab+'"]');
+      var pm=poll(s);
+      t.textContent=fmt(pm);
+      t.style.color=pm>0?"var(--gain)":"var(--mark)";
+    });
+    $("#adgo").textContent="Place the buy · $"+((budget-spent)*5)+"M left";
+  }
+  var added={};
+  host.addEventListener("click",function(e){
+    var a=e.target.getAttribute&&e.target.getAttribute("data-a");
+    var m=e.target.getAttribute&&e.target.getAttribute("data-m");
+    if(a&&spent<budget&&(S.ads[a]||0)<6){S.ads[a]=(S.ads[a]||0)+1;added[a]=(added[a]||0)+1;spent++;refresh();}
+    if(m&&(added[m]||0)>0){S.ads[m]--;added[m]--;spent--;refresh();}
+  });
+  refresh();
+  $("#adgo").addEventListener("click",function(){
+    S.cash=clamp(S.cash-spent*5,0,120);
+    drift();
+    var where=STATES.filter(function(s){return S.ads[s.ab];}).map(function(s){return s.ab;}).join(", ");
+    S.log.push({w:step.d,head:"MEDIA BUY",pick:"$"+(spent*5)+"M booked",out:"",d:{cash:-spent*5}});
+    S.lastOut="<b></b>"+(spent?("The buy is placed. Your spots start running in "+where+"."):"You bought nothing, which your media consultant describes, in an email he copies four people on, as “a choice.”");
+    S.turn++;drawGauges({cash:-spent*5});turn();
+  });
+}
+
+/* ================= PAPER TRAIL ================= */
+function openTrail(){
+  var o=$("#trail");
+  var rows=S.log.map(function(l){
+    var deltas=Object.keys(l.d||{}).map(function(k){
+      var v=Math.round(l.d[k]);if(!v)return"";
+      return k.toUpperCase()+" "+(v>0?"+":"")+v;
+    }).filter(Boolean).join("  ");
+    return '<div class="trailrow"><span class="w">'+l.w+'</span><span class="c"><b>'+l.head+'</b>'+
+      (l.bad?"⚠ ":"")+l.pick+'<br><i>'+deltas+'</i></span></div>';
+  }).join("")||'<div class="trailrow"><span class="c">Nothing printed yet.</span></div>';
+  var hdr=S.name+(S.party?" · "+S.party.short:"");
+  o.innerHTML='<div class="paper"><h2>PAPER TRAIL · '+hdr+'</h2>'+rows+
+    '<div style="padding:12px"><button class="btn alt" id="closetrail">Back to the campaign</button></div></div>';
+  o.classList.remove("hidden");
+  $("#closetrail").addEventListener("click",function(){o.classList.add("hidden");});
+}
+$("#c-trail").addEventListener("click",openTrail);
+
+/* ================= LOSING THE PRIMARY ================= */
+function endPrimary(won,top){
+  document.body.classList.add("desk");
+  show("s-night");
+  var pct=Math.round(S.del/DELTOTAL*100);
+  var score=Math.max(0,Math.round(40+S.del*.11+S.integ*6+(S.press-50)*.8+S.phi*1.6));
+  var grade=score>=190?"B":score>=150?"C+":score>=115?"C":score>=80?"D":"F";
+  var vpOffer=(S.del>DELTOTAL*.22&&S.integ>=0&&Math.random()<.6);
+  var other=(S.party.id==="REP"?"DEM":"REP");
+  var oppLead=S.oppField.filter(function(c){return c.active;})
+    .sort(function(a,b){return (b.del+b.str*3)-(a.del+a.str*3);})[0]||S.oppField[0];
+  $("#board").innerHTML=
+   '<p class="eyebrow" style="color:#8fa8bd">JUNE 9, 2028 · CONCESSION</p>'+
+   '<h1 class="verdict">'+S.name+'<br>SUSPENDS</h1>'+
+   '<p class="quote">'+(vpOffer
+     ? "You lost the nomination and you are on the shortlist for the ticket, which is the political equivalent of being told you have a great personality."
+     : "You lost the nomination and there is no version of the next four years in which anyone asks you about it kindly.")+'</p>'+
+   '<div class="statline"><span>DELEGATES WON</span><b>'+S.del+' ('+pct+'%)</b></div>'+
+   '<div class="statline"><span>NOMINEE</span><b>'+top.n+'</b></div>'+
+   '<div class="statline"><span>THEIR OPPONENT IN NOVEMBER</span><b>'+oppLead.n+'</b></div>'+
+   '<div class="statline"><span>FINAL PRIMARY STANDING</span><b>'+Math.round(S.phi)+'%</b></div>'+
+   '<div class="statline"><span>CASH LEFT</span><b>$'+Math.round(S.cash)+'M</b></div>'+
+   '<div class="statline"><span>INTEGRITY</span><b>'+(S.integ>2?"INTACT":S.integ<-2?"SPENT":"MIXED")+'</b></div>'+
+   '<div class="statline"><span>VP SHORTLIST</span><b>'+(vpOffer?"YES":"NO")+'</b></div>'+
+   '<div class="gradebox"><span class="gr">'+grade+'</span><span class="gt">PRIMARY SCORE '+score+
+     '<br>You never got to the general. Most people who run for this never do.</span></div>'+
+   '<p class="quote">“'+top.q+'”<br><span style="font-family:var(--mono);font-size:11px;color:#8fa8bd">'+top.n+
+     ', on the night you conceded</span></p>'+
+   '<div class="btnrow"><button class="btn ghost" id="trail2">Paper trail</button><button class="btn" id="again">Run again</button></div>';
+  bindEnd();
+  window.scrollTo(0,0);
+}
+function bindEnd(){
+  var a=$("#again");if(a)a.addEventListener("click",function(){
+    document.body.classList.remove("desk");newGame();$("#cand").value="";show("s-title");
+  });
+  var t=$("#trail2");if(t)t.addEventListener("click",openTrail);
+}
+
+/* ================= ELECTION NIGHT ================= */
+function margins(){
+  return STATES.map(function(s){return {s:s,m:baseMargin(s)+noise(1.9)};});
+}
+function night(){
+  document.body.classList.add("desk");
+  show("s-night");
+  var res=margins();
+  var other=(S.party.id==="REP"?"DEM":"REP");
+  var safeYou=S.party.safe, safeThem=PARTIES[other].safe;
+  $("#board").innerHTML=
+   '<p class="eyebrow" style="color:#8fa8bd">NOVEMBER 7, 2028 · DECISION DESK</p>'+
+   '<div class="tallybar">'+
+     '<div class="side you"><div class="pn">'+S.name+'<br>'+S.party.short+'</div><div class="ev" id="evA">'+safeYou+'</div></div>'+
+     '<div class="needle">270<br>TO WIN</div>'+
+     '<div class="side them"><div class="pn">'+S.oppNom.n+'<br>'+PARTIES[other].short+'</div><div class="ev" id="evB">'+safeThem+'</div></div>'+
+   '</div>'+
+   '<div class="evbar"><span class="a" id="barA" style="width:'+(safeYou/538*100)+'%"></span><span class="b" id="barB" style="width:'+(safeThem/538*100)+'%"></span></div>'+
+   '<div class="callout" id="callout">POLLS CLOSING. SAFE STATES CALLED.</div>'+
+   '<div id="statelist"></div>';
+  var list=$("#statelist");
+  res.forEach(function(r){
+    var d=document.createElement("div");d.className="stater pending";d.id="st-"+r.s.ab;
+    d.innerHTML='<span class="sab">'+r.s.ab+'</span>'+
+      '<span class="mtrack"><span class="m" style="width:0%;left:50%"></span><span class="lbl">TOO EARLY</span></span>'+
+      '<span class="sev">'+r.s.ev+' EV</span>';
+    list.appendChild(d);
+  });
+  var i=0,evA=safeYou,evB=safeThem;
+  var order=res.slice().sort(function(a,b){return Math.abs(b.m)-Math.abs(a.m);});
+  var myTag=S.name.split(" ")[0], opTag=S.oppNom.n.split(" ").pop();
+  function step(){
+    if(i>=order.length)return setTimeout(function(){finalScreen(evA,evB,res);},RM?0:1100);
+    var r=order[i], row=$("#st-"+r.s.ab);
+    row.classList.remove("pending");
+    var win=r.m>0;
+    if(win)evA+=r.s.ev;else evB+=r.s.ev;
+    var w=clamp(Math.abs(r.m)*5.5,6,50);
+    var fill=row.querySelector(".m");
+    fill.className="m "+(win?"win":"lose");
+    fill.style.width=w+"%";
+    fill.style.left=win?"50%":(50-w)+"%";
+    row.querySelector(".lbl").textContent=(win?myTag:opTag)+" +"+Math.abs(r.m).toFixed(1);
+    $("#evA").textContent=evA;$("#evB").textContent=evB;
+    $("#barA").style.width=(evA/538*100)+"%";$("#barB").style.width=(evB/538*100)+"%";
+    $("#callout").textContent=(Math.abs(r.m)<1.2?"TOO CLOSE TO CALL IN "+r.s.name+" · RECOUNT RANGE":"THE DESK CALLS "+r.s.name);
+    i++;
+    setTimeout(step,RM?0:1150);
+  }
+  setTimeout(step,RM?0:1200);
+}
+
+/* ================= FINAL ================= */
+function finalScreen(evA,evB,res){
+  var won=evA>=270;
+  var avg=res.reduce(function(a,r){return a+r.m;},0)/res.length;
+  var pv=(avg*.55)+(S.base-(S.party.base+1))*.03+(S.swing-50)*.05;
+  var score=Math.max(0,Math.round(150+(evA-269)*1.5+pv*9+S.integ*7+S.cash*.35+(S.press-50)*.9+S.del*.03+(won?110:0)));
+  var grade=score>=400?"A+":score>=360?"A":score>=320?"B+":score>=278?"B":score>=232?"C+":score>=186?"C":score>=136?"D":"F";
+  var gtxt=won
+    ? (S.integ>=3?"Won the country and kept your record clean. They will teach this campaign in seminars you are not invited to."
+              :"Won it. The methods will be litigated in eleven books, four of them by people who worked for you.")
+    : (Math.abs(evA-270)<20?"Lost inside the margin. Two decisions in this file were worth twenty electoral votes."
+              :"Lost, and not narrowly. The coalition never assembled and everyone could see it by Labor Day.");
+  var closest=res.slice().sort(function(a,b){return Math.abs(a.m)-Math.abs(b.m);})[0];
+  var miss=res.map(function(r){return {s:r.s,d:r.m-poll(r.s)};})
+    .sort(function(a,b){return Math.abs(b.d)-Math.abs(a.d);})[0];
+  var endorsers=S.field.filter(function(c){return c.endorsedMe;}).map(function(c){return c.n;});
+  var quote=won
+    ? "“They said the map was closed. The map was never closed.”"
+    : "“We left it on the field in "+closest.s.name.replace(/\b\w+/g,function(w){return w[0]+w.slice(1).toLowerCase();})+", and we knew it by nine o’clock.”";
+  var other=(S.party.id==="REP"?"DEM":"REP");
+  $("#board").innerHTML=
+   '<p class="eyebrow" style="color:#8fa8bd">FINAL · NOVEMBER 8, 2028, 2:14 A.M.</p>'+
+   '<h1 class="verdict" style="color:'+(won?"var(--phos)":"#fff")+'">'+
+     (won?"PRESIDENT-ELECT<br>"+S.name:S.name+"<br>CONCEDES")+'</h1>'+
+   '<div class="statline"><span>ELECTORAL VOTES</span><b>'+evA+' – '+evB+'</b></div>'+
+   '<div class="statline"><span>OPPONENT</span><b>'+S.oppNom.n+' ('+PARTIES[other].short+')</b></div>'+
+   '<div class="statline"><span>RUNNING MATE</span><b>'+(S.mate?S.mate.n:"—")+'</b></div>'+
+   '<div class="statline"><span>POPULAR VOTE MARGIN</span><b>'+(pv>=0?"+":"")+pv.toFixed(1)+'%</b></div>'+
+   '<div class="statline"><span>CLOSEST STATE</span><b>'+closest.s.ab+' '+fmt(closest.m)+'</b></div>'+
+   '<div class="statline"><span>BIGGEST POLLING MISS</span><b>'+miss.s.ab+' '+fmt(miss.d)+'</b></div>'+
+   '<div class="statline"><span>PRIMARY DELEGATES</span><b>'+S.del+(S.contested?" (contested)":"")+'</b></div>'+
+   '<div class="statline"><span>RIVALS WHO ENDORSED YOU</span><b>'+(endorsers.length?endorsers.join(", "):"NONE")+'</b></div>'+
+   '<div class="statline"><span>CASH ON HAND</span><b>$'+Math.round(S.cash)+'M</b></div>'+
+   '<div class="statline"><span>INTEGRITY</span><b>'+(S.integ>2?"INTACT":S.integ<-2?"SPENT":"MIXED")+'</b></div>'+
+   '<div class="gradebox"><span class="gr">'+grade+'</span><span class="gt">SCORE '+score+'<br>'+gtxt+'</span></div>'+
+   '<p class="quote">'+quote+'<br><span style="font-family:var(--mono);font-size:11px;color:#8fa8bd">'+
+     (won?S.name:S.oppNom.n)+', election night</span></p>'+
+   '<div class="btnrow"><button class="btn ghost" id="copy">Copy result</button><button class="btn" id="again">Run again</button></div>'+
+   '<div style="margin-top:10px"><button class="btn ghost" id="trail2">Read the paper trail</button></div>';
+  bindEnd();
+  $("#copy").addEventListener("click",function(){
+    var t="THE 270 · "+S.name+" ("+S.party.short+")\n"+
+      "Beat "+S.field.length+" in the primary · "+S.del+" delegates\n"+
+      evA+"–"+evB+" over "+S.oppNom.n+" · "+(won?"WON":"LOST")+"\n"+
+      "PV "+(pv>=0?"+":"")+pv.toFixed(1)+"% · Grade "+grade+" · Score "+score+"\n"+
+      "Closest state "+closest.s.ab+" "+fmt(closest.m);
+    if(navigator.clipboard)navigator.clipboard.writeText(t);
+    $("#copy").textContent="Copied";
+  });
+  window.scrollTo(0,0);
+}
+})();
+</script>
+</body>
+</html>
