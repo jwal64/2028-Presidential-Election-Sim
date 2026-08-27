@@ -129,6 +129,27 @@ h1,h2,h3{font-family:var(--disp);font-weight:600;letter-spacing:.01em;margin:0}
 .ballot .row:last-child{border-bottom:0}
 .box{width:15px;height:15px;border:1.5px solid var(--ink);flex:0 0 auto;position:relative}
 .box.on::after{content:"\2715";position:absolute;inset:-6px 0 0 1px;font-family:var(--disp);font-size:19px;color:var(--mark)}
+.seedrow{display:flex;align-items:center;gap:8px;max-width:340px;margin:10px auto 10px}
+.seedrow label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--ink2)}
+.seedrow input{flex:1;padding:7px 9px;font-family:var(--mono);font-size:14px;letter-spacing:.18em;
+  text-align:center;text-transform:uppercase;border:1px solid var(--rule);background:#fff}
+.seedrow button{font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:8px 10px;
+  border:1px solid var(--rule);background:var(--bar);color:var(--ink2)}
+.btn.ghost.dark{background:transparent;border:1px solid var(--rule);color:var(--ink2);font-size:15px;margin-top:2px}
+.boardrow{display:grid;grid-template-columns:26px 1fr auto auto;gap:9px;align-items:center;
+  padding:8px 12px;border-bottom:1px dashed var(--rule);font-size:13px}
+.boardrow:nth-child(even){background:var(--bar)}
+.boardrow .rk{font-family:var(--disp);font-size:16px;font-weight:600;color:var(--ink2)}
+.boardrow .who{font-family:var(--disp);font-size:16px;font-weight:500;text-transform:uppercase;line-height:1.1}
+.boardrow .who small{display:block;font-family:var(--mono);font-size:9.5px;color:var(--ink2);
+  letter-spacing:.05em;text-transform:none;font-weight:400}
+.boardrow .gd{font-family:var(--disp);font-size:20px;font-weight:700;color:var(--mark)}
+.boardrow .sc{font-family:var(--mono);font-size:12px;text-align:right;min-width:44px}
+.postbox{background:#12293f;border:1px solid #24435f;padding:12px;margin:14px 0}
+.postbox label{font-family:var(--mono);font-size:10px;letter-spacing:.13em;color:#8fa8bd;display:block;margin-bottom:6px}
+.postbox input{width:100%;padding:10px;border:1px solid #24435f;background:#0a1524;color:#fff;
+  font-family:var(--disp);font-size:19px;letter-spacing:.02em}
+.postbox .note{font-family:var(--mono);font-size:9.5px;color:#5b7692;line-height:1.6;margin-top:8px}
 .disclaim{font-family:var(--mono);font-size:9.5px;line-height:1.6;color:var(--ink2);
   border:1px dashed var(--rule);padding:9px 10px;margin:20px auto 0;max-width:400px;text-align:left}
 
@@ -271,6 +292,12 @@ input[type=text]:focus,select:focus{outline:2px solid var(--mark);outline-offset
       <div class="row"><span class="box"></span> GET TO 270</div>
     </div>
     <button class="btn" id="go-setup">Start the campaign</button>
+    <div class="seedrow">
+      <label for="seedin">SEED</label>
+      <input type="text" id="seedin" maxlength="8" autocomplete="off" spellcheck="false">
+      <button type="button" id="seednew">NEW</button>
+    </div>
+    <button class="btn ghost dark" id="go-board">Leaderboard</button>
     <div class="disclaim"><b>PARODY.</b> This is a work of political satire. Real public figures appear as
       exaggerated characters. Every event, quote, poll, scandal and result in this game is invented
       and did not happen. Nothing here is reporting, prediction, or a claim of fact about any real person.</div>
@@ -367,6 +394,26 @@ input[type=text]:focus,select:focus{outline:2px solid var(--mark);outline-offset
 "use strict";
 var $=function(s){return document.querySelector(s);};
 var RM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+/* every roll in the game comes through here, so a seed reproduces a run
+   exactly as long as you make the same choices. */
+var SEED=0, rand=null;
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;
+  var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;
+  return ((t^t>>>14)>>>0)/4294967296;};}
+function setSeed(v){SEED=v>>>0||1;rand=mulberry32(SEED);}
+function seedText(v){return (v>>>0).toString(36).toUpperCase().slice(-6).padStart(6,"0");}
+function parseSeed(t){
+  t=String(t||"").trim().toUpperCase().replace(/[^0-9A-Z]/g,"");
+  if(!t)return 0;
+  var n=parseInt(t,36);
+  return isFinite(n)?(n>>>0):0;
+}
+function freshSeed(){
+  var q=parseSeed((location.search.match(/[?&]seed=([^&]+)/)||[])[1]);
+  if(q)return q;
+  return (Math.floor(Math.random()*4294967295)>>>0)||1;
+}
+setSeed(freshSeed());
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 /* regional pull has diminishing returns: the tenth trip to Michigan is not
    worth what the first one was. */
@@ -375,9 +422,9 @@ function addReg(k,v){
   if(v>0)v=v/(1+S.reg[k]/5);
   S.reg[k]=Math.max(-2,S.reg[k]+v);
 }
-function noise(m){return (Math.random()+Math.random()+Math.random()-1.5)*m;}
-function rnd(a){return a[Math.floor(Math.random()*a.length)];}
-function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function noise(m){return (rand()+rand()+rand()-1.5)*m;}
+function rnd(a){return a[Math.floor(rand()*a.length)];}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(rand()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 function initials(n){var p=n.replace(/[^A-Za-z .'-]/g,"").split(/\s+/).filter(Boolean);
   if(p.length===1)return p[0].slice(0,2).toUpperCase();
   return (p[0][0]+p[p.length-1][0]).toUpperCase();}
@@ -416,6 +463,22 @@ var STATES=[
  {ab:"NV",name:"NEVADA",ev:6,reg:"WE",lean:1.6},
  {ab:"NH",name:"NEW HAMPSHIRE",ev:4,reg:"NE",lean:-4.3}
 ];
+/* ten competitive Senate races on top of a 45-45 hold. 51 is the majority.
+   lean is stated the same way as the presidential map: a Republican
+   advantage relative to the national result. */
+var SENATE=[
+ {ab:"PA",name:"PENNSYLVANIA",reg:"MW",lean:0.2},
+ {ab:"MI",name:"MICHIGAN",reg:"MW",lean:-0.1},
+ {ab:"OH",name:"OHIO",reg:"MW",lean:9.5},
+ {ab:"NV",name:"NEVADA",reg:"WE",lean:1.6},
+ {ab:"AZ",name:"ARIZONA",reg:"WE",lean:4.0},
+ {ab:"NM",name:"NEW MEXICO",reg:"WE",lean:-7.5},
+ {ab:"MT",name:"MONTANA",reg:"WE",lean:18.5},
+ {ab:"FL",name:"FLORIDA",reg:"SO",lean:11.5},
+ {ab:"TX",name:"TEXAS",reg:"SO",lean:12.5},
+ {ab:"ME",name:"MAINE",reg:"NE",lean:-8.5}
+];
+var SEN_HOLD=45;
 /* 538 total. 120 EV on the board, 418 off it. */
 var PARTIES={
  REP:{id:"REP",name:"REPUBLICAN",short:"GOP",blurb:"Exurbs, small towns, men who own at least one boat trailer.",
@@ -684,11 +747,44 @@ var STEPS=[
  {k:"ev",ph:2,d:"SEP 15",o:53,s:"GENERAL"},
  {k:"ev",ph:2,d:"SEP 26",o:42,s:"GENERAL"},
  {k:"ev",ph:2,d:"OCT 1",o:37,s:"GENERAL"},
- {k:"ev",ph:3,d:"OCT 8",o:30,s:"DEBATE"},
- {k:"ev",ph:3,d:"OCT 15",o:23,s:"DEBATE"},
+ {k:"ev",ph:3,d:"OCT 5",o:33,s:"DEBATE<br>PREP"},
+ {k:"deb",dn:1,d:"OCT 9",o:29,s:"DEBATE<br>ONE"},
+ {k:"deb",dn:2,d:"OCT 15",o:23,s:"DEBATE<br>TWO"},
  {k:"ads",d:"OCT 18",o:20,s:"CLOSING"},
  {k:"ev",ph:4,d:"OCT 24",o:14,s:"CLOSING"},
  {k:"ev",ph:4,d:"NOV 2",o:5,s:"CLOSING"}
+];
+
+/* ================= THE FILE =================
+   every corner you cut raises the heat. above 25 it can surface at any
+   point in the general, not only in October. all of it is fictional and
+   all of it belongs to your character. */
+var SCANDALS=[
+ {head:"THE CONSULTANT TALKS",body:"A consultant you fired in March has spent two hours with {ANCH} of {NET} describing how decisions actually got made inside your campaign. Three of the five things they say are true.",ch:[
+  {k:"CONFIRM",t:"Confirm the true parts and correct the rest",s:"Specific, boring, effective.",d:{press:6,swing:3,base:-3},heat:-22,integ:2,out:"You go through it item by item on the record. Two outlets run corrections within a day and the story has nowhere left to go."},
+  {k:"SMEAR",t:"Put out what you have on the consultant",s:"They have a file too. So do you.",d:{base:5,press:-9,swing:-4},heat:14,integ:-2,out:"The consultant is discredited and the story becomes about a campaign that destroys people who leave it, which is a longer story."},
+  {k:"SILENT",t:"No comment, and starve it",s:"Four days, maybe.",d:{press:-4,swing:-2},heat:6,out:"It runs for four days. Then a second former staffer calls the same reporter, having watched how the first one was treated."}
+ ]},
+ {head:"THE PAPER TRAIL SURFACES",body:"Somebody kept the emails. A reporter is reading three of them back to your communications director over the phone right now and asking for a response by five o’clock.",ch:[
+  {k:"RELEASE",t:"Release all of them yourself, unredacted",s:"Take the worst day now.",d:{press:9,swing:4,base:-5},heat:-28,integ:3,out:"One brutal news cycle, then nothing. Nobody can run a drip campaign against a document dump."},
+  {k:"LAWYER",t:"Send lawyers and dispute the provenance",s:"Buys a week. Costs the week after.",d:{base:4,press:-8,cash:-5},heat:12,integ:-1,out:"You get an injunction and a headline containing the words “fought to keep secret,” which is the headline they wanted."},
+  {k:"CONTEXT",t:"Release the surrounding emails only",s:"Context is a real defense and a great dodge.",d:{press:2,swing:2},heat:-6,out:"It works on the people already inclined to believe you and on nobody else, which turns out to be about half the country."}
+ ]},
+ {head:"THE DONOR PROBLEM",body:"One of your bundlers is under federal investigation for something unrelated to you, and has been photographed with you eleven times. The photographs are being emailed to newsrooms tonight.",ch:[
+  {k:"RETURN",t:"Return every dollar and say so first",s:"Expensive and clean.",d:{cash:-14,press:8,swing:4},heat:-24,integ:3,out:"You are out real money and the story dies in a day, and your finance director spends a week explaining what that day cost."},
+  {k:"KEEP",t:"Keep the money and note they are not charged",s:"Technically correct.",d:{base:2,press:-7,swing:-4},heat:10,integ:-2,out:"They are charged six days later. Every outlet reruns your statement above the indictment."},
+  {k:"PART",t:"Return the recent money, keep the rest",s:"Split the difference and hope nobody counts.",d:{cash:-6,press:1},heat:-4,out:"Somebody counts. It is a smaller story than it could have been and a larger one than it had to be."}
+ ]},
+ {head:"THE OLD TAPE",body:"Nine minutes of you at a private event in 2014, recorded without your knowledge, in which you say something you have spent this entire campaign implying you do not believe.",ch:[
+  {k:"OWN",t:"Air the whole nine minutes yourself and explain the change",s:"People change. Nobody believes it. Sometimes it works anyway.",d:{press:8,swing:5,base:-6},heat:-26,integ:2,out:"You put the whole thing out with a five-minute video about what changed and why. It is the best-received thing you have done in months, and it costs you a chunk of your own side."},
+  {k:"FIGHT",t:"Attack the recording and whoever made it",s:"Consent is a real issue and a terrible message.",d:{base:8,press:-9,swing:-5},heat:12,integ:-1,out:"Your base is furious on your behalf. Every network runs the nine minutes in full while explaining your objection to them being run."},
+  {k:"MOVE",t:"Answer once, briefly, and never again",s:"Discipline as a defense.",d:{swing:1,press:-2},heat:-8,out:"You give it one sentence and then genuinely never mention it again, and the press corps gets bored roughly two days later than you hoped."}
+ ]},
+ {head:"THE STAFFER AND THE STORY",body:"A young staffer has been telling the same story about your campaign at parties for a year. Tonight somebody at one of those parties was a reporter.",ch:[
+  {k:"FIX",t:"Announce an outside review before it runs",s:"The fix is the news, not the problem.",d:{press:5,swing:3,cash:-3,base:-2},heat:-20,integ:2,out:"The story runs with your review in the second paragraph, which is where stories go to become manageable."},
+  {k:"DENY",t:"Deny it flatly",s:"If it is false this is right. If it is not, it is fatal.",d:{base:6,press:-6},heat:16,integ:-2,out:"You deny it flatly. Two more people go on the record within the week and now you have denied it flatly."},
+  {k:"QUIET",t:"Settle it quietly tonight",s:"Money and an agreement.",d:{cash:-8,press:-3},heat:8,integ:-2,out:"It goes away. The existence of the agreement does not, and it is the second story in October."}
+ ]}
 ];
 
 /* ================= EVENTS =================
@@ -880,25 +976,46 @@ var EVENTS=[
  {k:"SPLIT",t:"Two days prep, two days in a battleground",s:"Half ready, twice seen.",d:{swing:2,base:3,cash:-2},prep:1,r:{MW:.6},out:"You get the rallies, the rest, and a candidate who is roughly seventy percent prepared."},
  {k:"WING",t:"Skip prep and trust your instincts",s:"This has worked for people before.",d:{base:4,cash:2},prep:0,out:"Your staff is furious. You feel loose, which is either the best sign or the first act of a disaster."}
 ]},
-{ph:3,head:"THE MOMENT",body:"Ninety minutes in, {NOM} turns and reads a line from your own record back to you, correctly. The room goes quiet. You have about fifteen seconds.",ch:[
+{ph:3,ex:true,head:"THE MOMENT",body:"Ninety minutes in, {NOM} turns and reads a line from your own record back to you, correctly. The room goes quiet. You have about fifteen seconds.",ch:[
  {k:"OWN",t:"Admit it and say what you learned",s:"Almost nobody does this.",d:{press:10,swing:7,base:-3},integ:2,out:"Every panel afterward opens with your answer. Two of them use the word “disarming” and one of them uses the word “presidential.”"},
  {k:"COUNTER",t:"Hit back with their record",s:"Standard. Loud.",d:{base:7,swing:-2,press:-2},out:"Your side cheers. Undecided voters watch two adults yell about the past and go make a sandwich."},
  {k:"JOKE",t:"Make a joke and move on",s:"Depends entirely on the joke.",d:{press:5,swing:4},risk:{p:.4,out:"It lands wrong. On split screen you are a person laughing at your own record while the other half of the frame does not laugh.",d:{press:-13,swing:-8}},out:"The room laughs, the moment dissolves, and the attack never gets a second life."}
 ]},
-{ph:3,head:"THE FACT CHECK",body:"A number you used in the first hour is wrong. Your team knows. The moderator does not, yet. There are thirty minutes left.",ch:[
+{ph:3,ex:true,head:"THE FACT CHECK",body:"A number you used in the first hour is wrong. Your team knows. The moderator does not, yet. There are thirty minutes left.",ch:[
  {k:"FIX",t:"Correct yourself on air",s:"Nobody does this either.",d:{press:11,swing:4,base:-2},integ:3,out:"You correct it in one sentence and the entire post-debate coverage is about the fact that you did it."},
  {k:"HOLD",t:"Say nothing and hope",s:"A coin flip with a paper trail.",d:{swing:1},risk:{p:.55,out:"Three outlets have it by midnight. The correction cycle eats what was otherwise a very good night for you.",d:{press:-11,swing:-5}},out:"Nobody catches it before the news cycle turns. This time."},
  {k:"DOUBLE",t:"Repeat it, with more confidence",s:"Bold. Traceable.",d:{base:5,press:-9,swing:-3},integ:-2,out:"It survives the night and becomes the lead paragraph of four separate fact checks by 7 a.m."}
 ]},
-{ph:3,head:"THE SPLIT SCREEN",body:"You are on camera for the full two hours whether you are speaking or not. {NOM} is currently describing your record in terms you would describe as creative.",ch:[
+{ph:3,ex:true,head:"THE SPLIT SCREEN",body:"You are on camera for the full two hours whether you are speaking or not. {NOM} is currently describing your record in terms you would describe as creative.",ch:[
  {k:"STONE",t:"Absolutely nothing. Face of granite.",s:"Boring is a strategy on split screen.",d:{swing:4,press:3},out:"You give the edit nothing. The clip compilations the next day are entirely of the other guy."},
  {k:"REACT",t:"Let them see what you think of it",s:"Human. Visible. Loopable.",d:{base:7,press:-3,swing:-3},risk:{p:.35,out:"One eye-roll, four seconds, ninety million views, and a week of coverage about your temperament.",d:{press:-10,swing:-5}},out:"Your supporters get the reaction shot they wanted and it plays as conviction rather than contempt, narrowly."},
  {k:"NOTE",t:"Write notes and look up occasionally",s:"The safest thing anyone has ever done on a stage.",d:{swing:2,press:1,base:-1},out:"Nothing happens, which is what you paid four days of prep for."}
 ]},
-{ph:3,head:"THE CLOSING STATEMENT",body:"Two minutes, straight to camera, no interruptions. The last unmediated thing 60 million people will ever hear from you.",ch:[
+{ph:3,ex:true,last:true,head:"THE CLOSING STATEMENT",body:"Two minutes, straight to camera, no interruptions. The last unmediated thing 60 million people will ever hear from you.",ch:[
  {k:"WARN",t:"Make it about the risk of the other side",s:"Fear moves turnout. It always has.",d:{base:9,swing:-4},out:"Your voters get out of bed on Election Day. So, it turns out, do some of theirs."},
  {k:"HOPE",t:"Make it about the country in four years",s:"Aspirational, risky, memorable.",d:{swing:7,press:6,base:-1},out:"It is the most-quoted two minutes of the night and not one word of it is about your opponent."},
  {k:"PLAN",t:"Make it about one concrete promise",s:"A thing they can hold you to.",tag:"COST",d:{swing:6,base:3,press:2},out:"Voters repeat it back to pollsters the next day almost verbatim, which is the entire test and it is rarely passed."}
+]},
+,
+{ph:3,ex:true,head:"THE OPENING BLOCK",body:"Two minutes on the economy to start. {NOM} has gone first and spent ninety seconds of it describing your record instead of theirs.",ch:[
+ {k:"NUMBERS",t:"Answer the question they refused to answer",s:"Substance as contrast.",tag:"COST",d:{swing:6,press:4},out:"You use your full two minutes on the actual question. Every fact-check thread that night starts with the words “only one candidate.”"},
+ {k:"MIRROR",t:"Spend your two minutes on their record",s:"Escalate to parity.",d:{base:7,swing:-3,press:-2},out:"The first ten minutes of a presidential debate are two people reading opposition research at each other, and the audience learns that immediately."},
+ {k:"REFRAME",t:"Say what the question is actually about and answer that",s:"Risky in the first block.",d:{press:6,swing:5,base:-1},risk:{p:.35,out:"It reads as a dodge because in the first two minutes of a debate everything reads as a dodge. The moderator asks it again, pointedly.",d:{press:-8,swing:-5}},out:"You move the terrain of the whole night in ninety seconds and {NOM} spends the next hour arguing on it."}
+]},
+{ph:3,ex:true,head:"THE INTERRUPTION",body:"{NOM} talks over your answer for the third time in twenty minutes. Your microphone is live. The moderator has stopped trying.",ch:[
+ {k:"HOLD",t:"Keep going, calmly, until they stop",s:"Boring, and it works on tape.",d:{swing:5,press:4,base:-1},out:"You finish the sentence. On the replay it is very clear who was speaking and who was shouting, and that is the whole clip."},
+ {k:"BITE",t:"Stop and let them have the floor, then land one line",s:"Give them the rope.",d:{press:6,swing:4},risk:{p:.35,out:"You stop, they keep going for forty seconds, and by the time you get your line out the moment has passed and you look like you lost the exchange.",d:{press:-9,swing:-5}},out:"They run on for forty seconds. Your one sentence afterwards is the most replayed six words of the night."},
+ {k:"YELL",t:"Talk over them, louder",s:"Your side will love it.",d:{base:9,swing:-6,press:-4},out:"Two people yelling. Your supporters clip your half, theirs clip theirs, and the undecideds turn it off."}
+]},
+{ph:3,ex:true,head:"THE QUESTION ABOUT YOU",body:"The moderator asks the one thing your prep team spent a full day on and never found a good answer to. There is no version of this that is comfortable.",ch:[
+ {k:"PLAIN",t:"Give the plain answer, whatever it costs",s:"They will believe you. That is the risk.",d:{press:9,swing:5,base:-6},integ:2,heat:-14,out:"You just say it. It is the only unrehearsed thirty seconds of the entire debate and every network leads with it."},
+ {k:"PIVOT",t:"Acknowledge it in one line and pivot to {ISSUE}",s:"The professional answer.",d:{swing:2,press:1},out:"It is fine. It is completely fine. It is also exactly what everyone expected and nobody writes about it."},
+ {k:"TURN",t:"Turn it into a question about them",s:"Deflection, executed well.",d:{base:6,press:-4,swing:-2},heat:6,risk:{p:.4,out:"The moderator says “I asked you” and repeats the question verbatim. The second refusal is the story.",d:{press:-11,swing:-6}},out:"You get out of it and put them on the back foot, and about a third of the audience notices what happened."}
+]},
+{ph:3,ex:true,head:"THE ONE-LINER",body:"Your team wrote a line for exactly this moment eleven days ago. The moment has arrived. It is a good line and it is going to sound like a written line.",ch:[
+ {k:"USE",t:"Use it",s:"Prepared, and everyone will know.",d:{press:7,base:5,swing:2},risk:{p:.3,out:"It lands like what it is. The split screen catches you waiting for the applause that does not come.",d:{press:-10,swing:-5}},out:"It is the line of the night. It is on every front page by morning and nobody cares that it was written."},
+ {k:"DROP",t:"Drop it and say the true thing instead",s:"Unwritten and unprotected.",d:{press:5,swing:6,base:-2},out:"What comes out is less quotable and more convincing, and the focus-group dials go somewhere your team has never seen them go."},
+ {k:"HOLD",t:"Hold it for the closing",s:"Discipline, or cowardice.",d:{swing:2},out:"You save it. The moment for it does not come back, and you say it eleven days later at a rally to four thousand people instead of sixty million."}
 ]},
 
 /* ---------------- CLOSING ---------------- */
@@ -964,10 +1081,10 @@ function newGame(){
   S={name:"",party:null,home:"",homeReg:"MW",bg:null,issue:null,perk:null,flaw:null,lane:"ESTAB",
      base:52,swing:46,cash:40,press:50,phi:9,
      reg:{MW:0,SO:0,WE:0,NE:0},
-     lanes:["ESTAB"],integ:0,prep:1,mo:0,del:0,endorse:0,turn:0,ei:0,ci:0,
+     lanes:["ESTAB"],integ:0,heat:0,busts:0,usedEx:[],deb:null,prep:1,mo:0,del:0,endorse:0,turn:0,ei:0,ci:0,
      log:[],ads:{},lastOut:"",cast:{},wire:"",
      field:[],oppField:[],oppNom:null,mate:null,runnerUp:null,
-     nominee:false,contested:false,env:0,pollerr:{},surprise:false};
+     nominee:false,contested:false,env:0,pollerr:{},sencand:{},surprise:false};
 }
 newGame();
 
@@ -1013,7 +1130,18 @@ function tpl(s){
 }
 
 /* ================= SETUP ================= */
+function newSeed(){setSeed((Math.floor(Math.random()*4294967295)>>>0)||1);showSeed();}
+function showSeed(){var i=$("#seedin");if(i)i.value=seedText(SEED);}
+showSeed();
+$("#seedin").addEventListener("change",function(){
+  var v=parseSeed($("#seedin").value);
+  if(v)setSeed(v);
+  showSeed();
+});
+$("#seednew").addEventListener("click",newSeed);
 $("#go-setup").addEventListener("click",function(){
+  var v=parseSeed($("#seedin").value);
+  if(v)setSeed(v);
   show("s-setup");
   buildSetup();
 });
@@ -1097,9 +1225,10 @@ $("#go-play").addEventListener("click",function(){
   if(S.perk.id==="MACHINE")S.phi+=3;
   if(S.flaw.id==="CARPET")S.cash+=10;
   if(S.flaw.id==="COLD")S.swing-=4;
-  if(S.flaw.id==="FILE")S.surprise=true;
+  if(S.flaw.id==="FILE"){S.surprise=true;S.heat=28;}
   S.env=noise(1.5);
   STATES.forEach(function(st){S.pollerr[st.ab]=noise(1.15);});
+  SENATE.forEach(function(r){S.sencand[r.ab]=noise(2.6);});
   buildQueue();
   rollCast();
   wireNews("PRIMARY SEASON OPENS · "+S.field.length+" MAJOR CANDIDATES FILED IN THE "+S.party.name+" RACE");
@@ -1116,11 +1245,11 @@ function applyEff(e){
 
 /* ================= QUEUE ================= */
 function pickEvents(ph,n){
-  var pool=EVENTS.filter(function(e){return e.ph===ph&&(!e.pty||e.pty===S.party.id);});
+  var pool=EVENTS.filter(function(e){return e.ph===ph&&!e.ex&&(!e.pty||e.pty===S.party.id);});
   return shuffle(pool).slice(0,n);
 }
 function buildQueue(){
-  QUEUE={0:pickEvents(0,7),1:pickEvents(1,2),2:pickEvents(2,4),3:pickEvents(3,2),4:pickEvents(4,2)};
+  QUEUE={0:pickEvents(0,7),1:pickEvents(1,2),2:pickEvents(2,4),3:pickEvents(3,1),4:pickEvents(4,2)};
   if(S.surprise){
     var oct=EVENTS.filter(function(e){return e.ph===4&&/OCTOBER SURPRISE/.test(e.head);})[0];
     if(oct)QUEUE[4]=[oct].concat(QUEUE[4].filter(function(e){return e!==oct;})).slice(0,2);
@@ -1132,6 +1261,8 @@ function buildQueue(){
 function show(id){
   ["s-title","s-setup","s-play","s-night"].forEach(function(x){$("#"+x).classList.add("hidden");});
   $("#"+id).classList.remove("hidden");
+  if(id!=="s-night")$("#board").innerHTML="";
+  if(id==="s-title"){$("#stage").innerHTML="";$("#wire").innerHTML="";$("#gauges").innerHTML="";}
   window.scrollTo(0,0);
 }
 function wireNews(t){S.wire=t;$("#wire").innerHTML='<b>WIRE</b> &nbsp;'+tpl(t);}
@@ -1170,6 +1301,7 @@ function drawGauges(flash){
   var h=$("#gauges");h.innerHTML="";
   var defs=GDEF.slice();
   if(!S.nominee)defs.unshift(["phi","PRIMARY %",45]);
+  if(S.heat>0)defs.push(["heat","THE FILE",100]);
   defs.forEach(function(g){
     var key=g[0],max=g[2],v=S[key];
     var d=document.createElement("div");
@@ -1177,7 +1309,8 @@ function drawGauges(flash){
     var fl=flash&&flash[key]?'<span class="delta '+(flash[key]>0?"up":"down")+'">'+(flash[key]>0?"+":"")+Math.round(flash[key])+"</span>":"";
     d.innerHTML='<span class="lab">'+g[1]+'</span>'+
       '<span class="track"><span class="fill" style="width:'+clamp(v/max*100,0,100)+'%"></span></span>'+
-      '<span class="val">'+(key==="cash"?"$"+Math.round(v)+"M":Math.round(v)+(key==="phi"?"%":""))+fl+'</span>';
+      '<span class="val">'+(key==="cash"?"$"+Math.round(v)+"M":Math.round(v)+(key==="phi"?"%":key==="heat"?"\u00B0":""))+fl+'</span>';
+    if(key==="heat")d.querySelector(".fill").style.background="var(--mark)";
     h.appendChild(d);
   });
   var pull=document.createElement("div");
@@ -1215,6 +1348,7 @@ function turn(){
   if(step.k==="nom")return nominationScreen(step);
   if(step.k==="mate")return mateScreen(step);
   if(step.k==="ads")return adScreen(step);
+  if(step.k==="deb")return debateOpen(step);
   return eventScreen(step);
 }
 function receipt(){return S.lastOut?'<p class="receipt">'+S.lastOut+'</p>':"";}
@@ -1253,7 +1387,7 @@ function resolve(step,ev,c){
     if(S.flaw.id==="FILE"&&/OCTOBER SURPRISE/.test(ev.head))p+=.15;
     if(S.perk.id==="DEBATE"&&step.ph===3)p*=.5;
     if(S.perk.id==="VIRAL"&&/POD|VIRAL|CLIP|POST/.test(c.k+ev.head))p-=.06;
-    if(Math.random()<clamp(p,.03,.85)){
+    if(rand()<clamp(p,.03,.85)){
       backfired=true;outText=tpl(c.risk.out);
       d=Object.assign({},c.risk.d||{});
       r=Object.assign({},c.risk.r||{});
@@ -1273,6 +1407,7 @@ function resolve(step,ev,c){
   }
   if(phi){S.phi=clamp(S.phi+phi*mult,1,60);flash.phi=phi*mult;}
   if(c.integ)S.integ+=c.integ;
+  addHeat((c.heat!=null?c.heat:(c.integ?-c.integ*5:0))+(backfired?4:0));
   if(c.prep!=null)S.prep=c.prep;
   if(c.stam&&S.flaw.id==="AGE"){S.press=clamp(S.press-5,0,100);S.mo-=1;}
   drift();
@@ -1280,7 +1415,50 @@ function resolve(step,ev,c){
   S.lastOut='<b>'+(backfired?"IT BACKFIRES. ":"")+'</b>'+outText;
   S.turn++;
   drawGauges(flash);
-  turn();
+  if(!rollScandal())turn();
+}
+
+/* ================= THE FILE ================= */
+function addHeat(v){
+  if(!v)return;
+  if(v>0&&S.perk.id==="TEFLON")v*=.6;
+  S.heat=clamp(S.heat+v,0,100);
+}
+function rollScandal(){
+  if(!S.nominee||S.busts>=2||S.heat<26)return false;
+  if(S.turn>=STEPS.length-1)return false;
+  var p=clamp((S.heat-25)/300,0,.20);
+  if(S.busts)p*=.5;
+  if(rand()>=p)return false;
+  S.busts++;
+  rollCast();
+  var sc=rnd(SCANDALS);
+  var st=$("#stage");
+  st.innerHTML=receipt()+
+    '<p class="eyebrow" style="color:var(--mark)">THE FILE OPENS · '+Math.round(S.heat)+' DEGREES</p>'+
+    '<h2 class="head">'+tpl(sc.head)+'</h2>'+
+    '<p class="body">'+tpl(sc.body)+'</p>';
+  sc.ch.forEach(function(c){
+    var b=document.createElement("button");
+    b.className="choice";b.type="button";
+    b.innerHTML='<span class="k">'+c.k+'</span><span class="t">'+tpl(c.t)+'</span><span class="s">'+tpl(c.s)+'</span>';
+    b.addEventListener("click",function(){
+      var flash={};
+      ["base","swing","press","cash"].forEach(function(k){
+        if(c.d[k]!=null){S[k]=clamp(S[k]+c.d[k],0,k==="cash"?120:100);flash[k]=c.d[k];}
+      });
+      if(c.integ)S.integ+=c.integ;
+      addHeat(c.heat||0);
+      drift();
+      S.log.push({w:"THE FILE",head:tpl(sc.head),pick:tpl(c.t),out:tpl(c.out),d:flash,bad:true});
+      S.lastOut="<b>THE FILE. </b>"+tpl(c.out);
+      drawGauges(flash);
+      turn();
+    });
+    st.appendChild(b);
+  });
+  window.scrollTo(0,0);
+  return true;
 }
 
 /* ================= PRIMARY CONTESTS ================= */
@@ -1363,7 +1541,7 @@ function cullField(ci){
     var out=live.pop();
     out.active=false;
     var chance=.24+((S.lanes||[S.lane]).indexOf(out.lane)>=0?.34:0)+(S.press-50)*.006+(S.integ>0?.08:0)+(S.del>out.del?.08:0);
-    if(Math.random()<clamp(chance,.05,.85)){
+    if(rand()<clamp(chance,.05,.85)){
       out.endorsedMe=true;
       S.endorse+=2.4;S.phi=clamp(S.phi+2.6,1,60);S.base=clamp(S.base+3,0,100);S.cash=clamp(S.cash+4,0,120);
     } else {
@@ -1519,7 +1697,7 @@ function mateScreen(step){
   var opts=shuffle(MATES[S.party.id].filter(function(m){return m.n!==dupe;})).slice(0,3);
   if(S.forcedMate)opts=[{n:S.forcedMate.n,st:S.forcedMate.home,d:"The deal you made in the hall. "+S.forcedMate.d,
     eff:{base:9,cash:8,press:2,swing:-1},r:S.forcedMate.r,unity:true}].concat(opts.slice(0,2));
-  else if(S.runnerUp&&Math.random()<.75)opts=[{n:S.runnerUp.n,st:S.runnerUp.home,
+  else if(S.runnerUp&&rand()<.75)opts=[{n:S.runnerUp.n,st:S.runnerUp.home,
     d:"The unity ticket. They fought you for six months and their voters have not entirely come home. "+S.runnerUp.d,
     eff:{base:8,cash:9,press:3,swing:-2},r:S.runnerUp.r,unity:true}].concat(opts.slice(0,2));
   st.innerHTML=receipt()+'<p class="eyebrow">JULY 18, 2028 · THE TICKET</p>'+
@@ -1547,19 +1725,144 @@ function mateScreen(step){
   });
 }
 
+/* ================= DEBATE NIGHT =================
+   two nights, three exchanges each, scored live. every exchange you land
+   is worth something in the spin room afterwards. */
+function exchangePool(){
+  return EVENTS.filter(function(e){return e.ex&&(!e.pty||e.pty===S.party.id);});
+}
+function debateOpen(step){
+  var pool=exchangePool(), used=S.usedEx||[];
+  var body=shuffle(pool.filter(function(e){return !e.last&&used.indexOf(e.head)<0;})).slice(0,2);
+  var close=shuffle(pool.filter(function(e){return e.last&&used.indexOf(e.head)<0;}))[0]
+         || shuffle(pool.filter(function(e){return used.indexOf(e.head)<0;}))[0]
+         || rnd(pool);
+  S.deb={n:step.dn,list:body.concat([close]),i:0,landed:0,step:step};
+  S.usedEx=used.concat(S.deb.list.map(function(e){return e.head;}));
+  rollCast();
+  var st=$("#stage");
+  st.innerHTML=receipt()+
+    '<p class="eyebrow">'+step.d+', 2028 · LIVE, 90 MINUTES, NO COMMERCIALS</p>'+
+    '<h2 class="head">'+(step.dn===1?"THE FIRST DEBATE":"THE SECOND DEBATE")+'</h2>'+
+    '<p class="body">'+(step.dn===1
+      ? "Sixty-eight million people. Two podiums eleven feet apart. You have four days of prep, one throat lozenge, and three exchanges in this thing that anybody will remember."
+      : "The rematch. "+tpl("{NOM}")+" has watched the tape of the first one more times than you have, and their team has spent two weeks building for exactly the thing you did well.")+'</p>'+
+    '<p class="receipt"><b>PREP LEVEL '+(S.prep||0)+'.</b> Every exchange has a way to lose it. Prep and press coverage make the bad outcome less likely; a gaffe-prone candidate makes it more so.</p>'+
+    '<button class="btn" id="debgo">Take the stage</button>';
+  $("#debgo").addEventListener("click",exchangeScreen);
+}
+function scorecard(){
+  var d=S.deb, marks="";
+  for(var i=0;i<d.list.length;i++){
+    marks += (i<d.i) ? (d.marks[i]?"●":"○") : "·";
+    marks += " ";
+  }
+  return '<p class="eyebrow">EXCHANGE '+(d.i+1)+' OF '+d.list.length+
+    ' · SCORECARD <span style="color:var(--mark);letter-spacing:.25em">'+marks+'</span></p>';
+}
+function exchangeScreen(){
+  var d=S.deb;
+  if(!d.marks)d.marks=[];
+  if(d.i>=d.list.length)return spinRoom();
+  var ev=d.list[d.i];
+  var st=$("#stage");
+  st.innerHTML=(d.i?'<p class="receipt">'+d.lastOut+'</p>':"")+
+    scorecard()+
+    '<h2 class="head">'+tpl(ev.head)+'</h2>'+
+    '<p class="body">'+tpl(ev.body)+'</p>';
+  ev.ch.forEach(function(c){
+    var b=document.createElement("button");
+    b.className="choice";b.type="button";
+    b.innerHTML='<span class="k">'+c.k+'</span><span class="t">'+tpl(c.t)+'</span><span class="s">'+tpl(c.s)+'</span>';
+    b.addEventListener("click",function(){resolveExchange(ev,c);});
+    st.appendChild(b);
+  });
+  window.scrollTo(0,0);
+}
+function resolveExchange(ev,c){
+  var d=S.deb;
+  var mult=(c.tag&&S.issue&&c.tag===S.issue.id)?1.35:1;
+  var dd=Object.assign({},c.d||{}), out=tpl(c.out), bad=false;
+  if(c.risk){
+    var p=c.risk.p-(S.prep||0)*.05-(S.press-50)*.002;
+    if(S.flaw.id==="GAFFE")p+=.10;
+    if(S.perk.id==="DEBATE")p*=.5;
+    if(rand()<clamp(p,.03,.85)){
+      bad=true;out=tpl(c.risk.out);dd=Object.assign({},c.risk.d||{});
+      var soft=(S.perk.id==="TEFLON")?.6:1;
+      for(var k in dd)dd[k]*=soft;
+      if(S.flaw.id==="THIN"&&dd.press!=null)dd.press-=4;
+    }
+  }
+  /* six exchanges across two nights where there used to be two decisions,
+     so each one is worth a fraction of a normal event. */
+  var EX=.45, flash={};
+  ["base","swing","press","cash"].forEach(function(k){
+    if(dd[k]!=null){var v=dd[k]*(dd[k]>0?mult:1)*EX;S[k]=clamp(S[k]+v,0,k==="cash"?120:100);flash[k]=v;}
+  });
+  if(c.integ)S.integ+=c.integ;
+  addHeat((c.heat!=null?c.heat:0)+(bad?4:0));
+  d.marks[d.i]=!bad;
+  if(!bad)d.landed++;
+  d.lastOut='<b>'+(bad?"YOU LOSE THE EXCHANGE. ":"")+'</b>'+out;
+  S.log.push({w:"DEBATE "+d.n,head:tpl(ev.head),pick:tpl(c.t),out:out,d:flash,bad:bad});
+  d.i++;
+  drawGauges(flash);
+  exchangeScreen();
+}
+function spinRoom(){
+  var d=S.deb, n=d.landed, tot=d.list.length;
+  var edge=(n-1.5)*1.8;
+  var flash={};
+  [["swing",edge],["press",edge*.9],["base",edge*.5]].forEach(function(x){
+    S[x[0]]=clamp(S[x[0]]+x[1],0,100);flash[x[0]]=x[1];
+  });
+  if(n>=tot)addHeat(-6);
+  drift();
+  var verdict = n>=3 ? "Every panel calls it for you, including the one that never does."
+    : n===2 ? "Two networks score it for you, one calls it a draw, and the instant polls are close enough to argue about for a week."
+    : n===1 ? "The consensus is that "+tpl("{NOM}")+" had the better night, and that you had one moment worth clipping."
+    : "There is no charitable read. Your own surrogates go on air and talk about the format.";
+  var st=$("#stage");
+  st.innerHTML='<p class="receipt">'+d.lastOut+'</p>'+
+    '<p class="eyebrow">THE SPIN ROOM · DEBATE '+(d.n===1?"ONE":"TWO")+'</p>'+
+    '<h2 class="head">'+n+' OF '+tot+' EXCHANGES LANDED</h2>'+
+    '<p class="body">'+verdict+'</p>'+
+    '<button class="btn" id="spingo">Leave the hall</button>';
+  S.lastOut="<b></b>You took "+n+" of "+tot+" exchanges. "+verdict;
+  S.log.push({w:"DEBATE "+d.n,head:"THE SPIN ROOM",pick:n+" of "+tot+" exchanges landed",out:verdict,d:flash});
+  drawGauges(flash);
+  $("#spingo").addEventListener("click",function(){
+    S.deb=null;S.turn++;
+    if(!rollScandal())turn();
+  });
+  window.scrollTo(0,0);
+}
+
 /* ================= AD BUY ================= */
+/* everything your campaign contributes to a margin, separate from the
+   state's own lean. the Senate races run on a fraction of it. */
+function campaignPull(reg,ab){
+  var adf=(S.flaw.id==="COLD")?.26:.4;
+  return (S.base-(S.party.base+1))*.06
+    + (S.swing-50)*.20
+    + (S.press-51)*.04
+    + ((S.reg[reg]||0)-2.6)*.70
+    + (S.ads[ab]||0)*adf
+    + (ab===S.home?2.4:0)
+    + (S.mate&&S.mate.st===ab?1.6:0);
+}
 function baseMargin(s){
   var R = s.lean + S.env;
   var mine = (S.party.tilt===1 ? R : -R);
-  var adf=(S.flaw.id==="COLD")?.26:.4;
   return mine - 1.2   /* the other side is also running a good campaign */
-    + (S.base-(S.party.base+1))*.06
-    + (S.swing-50)*.20
-    + (S.press-51)*.04
-    + ((S.reg[s.reg]||0)-2.6)*.70
-    + (S.ads[s.ab]||0)*adf
-    + (s.ab===S.home?2.4:0)
-    + (S.mate&&S.mate.st===s.ab?1.6:0);
+    + campaignPull(s.reg,s.ab);
+}
+/* Senate races get a fraction of your coattails and a candidate of their own. */
+function senateMargin(r){
+  var R = r.lean + S.env;
+  var mine = (S.party.tilt===1 ? R : -R);
+  return mine - 1.0 + campaignPull(r.reg,r.ab)*.55 + (S.sencand[r.ab]||0);
 }
 function poll(s){return baseMargin(s)+(S.pollerr[s.ab]||0);}
 function fmt(n){return (n>=0?"+":"")+n.toFixed(1);}
@@ -1612,6 +1915,56 @@ function adScreen(step){
   });
 }
 
+/* ================= LEADERBOARD =================
+   a single static page has no server, so the board lives in this browser's
+   localStorage. it survives reloads on this device and does not travel. */
+var BKEY="the270.board.v1";
+function boardRead(){
+  try{var v=JSON.parse(localStorage.getItem(BKEY));return Array.isArray(v)?v:[];}
+  catch(e){return [];}
+}
+function boardWrite(list){
+  try{localStorage.setItem(BKEY,JSON.stringify(list.slice(0,100)));return true;}
+  catch(e){return false;}
+}
+function boardPost(entry){
+  var list=boardRead();
+  list.push(entry);
+  list.sort(function(a,b){return b.score-a.score;});
+  return boardWrite(list);
+}
+function esc(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function openBoard(){
+  var o=$("#trail"), list=boardRead();
+  var rows=list.slice(0,25).map(function(e,i){
+    var when=new Date(e.ts||0);
+    var sub=(e.stage==="primary"
+        ? "Lost the primary · "+(e.del||0)+" delegates"
+        : (e.won?"Won ":"Lost ")+(e.ev|0)+"–"+(e.evo|0)+(e.sen?" · Senate "+e.sen:""))+
+      " · "+(e.party||"")+" · seed "+(e.seed||"—");
+    return '<div class="boardrow"><span class="rk">'+(i+1)+'</span>'+
+      '<span class="who">'+esc(e.n)+'<small>'+esc(sub)+' · '+
+        (isFinite(when.getTime())?when.toLocaleDateString():"")+'</small></span>'+
+      '<span class="gd">'+esc(e.grade)+'</span>'+
+      '<span class="sc">'+(e.score|0)+'</span></div>';
+  }).join("")||'<div class="boardrow"><span class="who">NOBODY HAS FILED YET<small>Finish a campaign and post your result.</small></span></div>';
+  o.innerHTML='<div class="paper"><h2>LEADERBOARD · THE 270</h2>'+rows+
+    '<div style="padding:12px">'+
+      '<p class="sub" style="text-align:left;margin:0 0 10px">SAVED IN THIS BROWSER ONLY. CLEARING SITE DATA CLEARS THE BOARD.</p>'+
+      '<div class="btnrow" style="margin-top:0">'+
+        '<button class="btn ghost dark" id="boardclear">Clear board</button>'+
+        '<button class="btn alt" id="boardclose">Back</button>'+
+      '</div></div></div>';
+  o.classList.remove("hidden");
+  $("#boardclose").addEventListener("click",function(){o.classList.add("hidden");});
+  $("#boardclear").addEventListener("click",function(){
+    if(!list.length)return;
+    boardWrite([]);openBoard();
+  });
+}
+$("#go-board").addEventListener("click",openBoard);
+
 /* ================= PAPER TRAIL ================= */
 function openTrail(){
   var o=$("#trail");
@@ -1654,7 +2007,7 @@ function endPrimary(won,top){
   var pct=Math.round(S.del/DELTOTAL*100);
   var score=Math.max(0,Math.round(40+S.del*.11+S.integ*6+(S.press-50)*.8+S.phi*1.6));
   var grade=score>=190?"B":score>=150?"C+":score>=115?"C":score>=80?"D":"F";
-  var vpOffer=(S.del>DELTOTAL*.22&&S.integ>=0&&Math.random()<.6);
+  var vpOffer=(S.del>DELTOTAL*.22&&S.integ>=0&&rand()<.6);
   var other=(S.party.id==="REP"?"DEM":"REP");
   var oppLead=S.oppField.filter(function(c){return c.active;})
     .sort(function(a,b){return (b.del+b.str*3)-(a.del+a.str*3);})[0]||S.oppField[0];
@@ -1675,13 +2028,31 @@ function endPrimary(won,top){
      '<br>You never got to the general. Most people who run for this never do.</span></div>'+
    '<p class="quote">“'+top.q+'”<br><span style="font-family:var(--mono);font-size:11px;color:#8fa8bd">'+top.n+
      ', on the night you conceded</span></p>'+
+   '<div class="statline"><span>SEED</span><b>'+seedText(SEED)+'</b></div>'+
+   '<div class="postbox">'+
+     '<label for="handle">POST THIS RESULT TO THE LEADERBOARD</label>'+
+     '<input type="text" id="handle" maxlength="22" autocomplete="off" value="'+esc(S.name)+'">'+
+     '<div class="btnrow" style="margin-top:9px">'+
+       '<button class="btn ghost" id="viewboard">See the board</button>'+
+       '<button class="btn" id="post">Post result</button>'+
+     '</div>'+
+     '<p class="note">Saved in this browser only. There is no server behind this page.</p>'+
+   '</div>'+
    '<div class="btnrow"><button class="btn ghost" id="trail2">Paper trail</button><button class="btn" id="again">Run again</button></div>';
   bindEnd();
+  $("#post").addEventListener("click",function(){
+    var nm=($("#handle").value||"").trim().slice(0,22)||S.name;
+    var ok=boardPost({n:nm,party:S.party.short,score:score,grade:grade,ev:0,evo:0,won:false,
+      stage:"primary",del:S.del,sen:"",house:0,seed:seedText(SEED),ts:Date.now()});
+    $("#post").textContent=ok?"Posted":"Storage blocked";
+    $("#post").disabled=true;
+  });
+  $("#viewboard").addEventListener("click",openBoard);
   window.scrollTo(0,0);
 }
 function bindEnd(){
   var a=$("#again");if(a)a.addEventListener("click",function(){
-    document.body.classList.remove("desk");newGame();$("#cand").value="";show("s-title");
+    document.body.classList.remove("desk");newGame();newSeed();$("#cand").value="";show("s-title");
   });
   var t=$("#trail2");if(t)t.addEventListener("click",openTrail);
 }
@@ -1705,7 +2076,8 @@ function night(){
    '</div>'+
    '<div class="evbar"><span class="a" id="barA" style="width:'+(safeYou/538*100)+'%"></span><span class="b" id="barB" style="width:'+(safeThem/538*100)+'%"></span></div>'+
    '<div class="callout" id="callout">POLLS CLOSING. SAFE STATES CALLED.</div>'+
-   '<div id="statelist"></div>';
+   '<div id="statelist"></div>'+
+   '<div id="downballot"></div>';
   var list=$("#statelist");
   res.forEach(function(r){
     var d=document.createElement("div");d.className="stater pending";d.id="st-"+r.s.ab;
@@ -1718,7 +2090,9 @@ function night(){
   var order=res.slice().sort(function(a,b){return Math.abs(b.m)-Math.abs(a.m);});
   var myTag=S.name.split(" ")[0], opTag=S.oppNom.n.split(" ").pop();
   function step(){
-    if(i>=order.length)return setTimeout(function(){finalScreen(evA,evB,res);},RM?0:1100);
+    if(i>=order.length)return setTimeout(function(){
+      downBallot(evA,evB,res);
+    },RM?0:900);
     var r=order[i], row=$("#st-"+r.s.ab);
     row.classList.remove("pending");
     var win=r.m>0;
@@ -1738,13 +2112,58 @@ function night(){
   setTimeout(step,RM?0:1200);
 }
 
+/* ================= DOWN BALLOT ================= */
+function downBallot(evA,evB,res){
+  var races=SENATE.map(function(r){return {r:r,m:senateMargin(r)+noise(1.7)};});
+  var mine=SEN_HOLD+races.filter(function(x){return x.m>0;}).length;
+  var theirs=100-mine;
+  var avg=res.reduce(function(a,x){return a+x.m;},0)/res.length;
+  var pv=(avg*.55)+(S.base-(S.party.base+1))*.03+(S.swing-50)*.05;
+  var house=clamp(Math.round(218+pv*4.8+campaignPull("MW","")*.9),178,258);
+  S.sen={mine:mine,theirs:theirs,races:races,house:house};
+  var other=(S.party.id==="REP"?"DEM":"REP");
+  $("#callout").textContent="DOWN BALLOT · THE DESK MOVES TO THE SENATE";
+  var h=$("#downballot");
+  h.innerHTML='<div style="margin-top:22px;border-top:2px solid var(--phos);padding-top:12px">'+
+    '<p class="eyebrow" style="color:#8fa8bd">THE SENATE · 51 FOR CONTROL · 45 SEATS HELD ON EACH SIDE BEFORE TONIGHT</p>'+
+    '<div class="tallybar" style="margin-bottom:14px">'+
+      '<div class="side you"><div class="pn">'+S.party.short+'</div><div class="ev" style="font-size:38px">'+mine+'</div></div>'+
+      '<div class="needle">51<br>FOR CONTROL</div>'+
+      '<div class="side them"><div class="pn">'+PARTIES[other].short+'</div><div class="ev" style="font-size:38px">'+theirs+'</div></div>'+
+    '</div>'+
+    races.slice().sort(function(a,b){return Math.abs(a.m)-Math.abs(b.m);}).map(function(x){
+      var w=x.m>0, wd=clamp(Math.abs(x.m)*4,6,50);
+      return '<div class="stater"><span class="sab">'+x.r.ab+'</span>'+
+        '<span class="mtrack"><span class="m '+(w?"win":"lose")+'" style="width:'+wd+'%;left:'+(w?"50%":(50-wd)+"%")+'"></span>'+
+        '<span class="lbl">'+(w?S.party.short:PARTIES[other].short)+' +'+Math.abs(x.m).toFixed(1)+'</span></span>'+
+        '<span class="sev">SEN</span></div>';
+    }).join("")+
+    '<div class="statline" style="margin-top:14px"><span>THE HOUSE · 218 FOR CONTROL</span><b>'+
+      house+' – '+(435-house)+'</b></div>'+
+    '<div style="margin-top:14px"><button class="btn" id="tofinal">The morning after</button></div>'+
+  '</div>';
+  $("#tofinal").addEventListener("click",function(){finalScreen(evA,evB,res);});
+  $("#downballot").scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});
+}
+
 /* ================= FINAL ================= */
 function finalScreen(evA,evB,res){
   var won=evA>=270;
   var avg=res.reduce(function(a,r){return a+r.m;},0)/res.length;
   var pv=(avg*.55)+(S.base-(S.party.base+1))*.03+(S.swing-50)*.05;
-  var score=Math.max(0,Math.round(150+(evA-269)*1.5+pv*9+S.integ*7+S.cash*.35+(S.press-50)*.9+S.del*.03+(won?110:0)));
+  var sen=(S.sen||{mine:50,theirs:50,house:218});
+  var senate=sen.mine>=51, house=sen.house>=218;
+  var trifecta=won&&senate&&house;
+  var score=Math.max(0,Math.round(150+(evA-269)*1.5+pv*9+S.integ*7+S.cash*.35+(S.press-50)*.9+S.del*.03
+    +(won?110:0)+(senate?26:0)+(house?18:0)+(trifecta?30:0)-Math.round(S.heat*.35)));
   var grade=score>=400?"A+":score>=360?"A":score>=320?"B+":score>=278?"B":score>=232?"C+":score>=186?"C":score>=136?"D":"F";
+  var govern = won
+    ? (trifecta?"You arrive with the Senate and the House. Nobody gets this. Whatever you do with the first two years is entirely on you."
+      : senate?"You have the Senate and not the House. Your judges get through and your budget does not."
+      : house?"You have the House and not the Senate. You can pass things and you cannot confirm anybody."
+      : "You won the presidency and nothing else. Every appointment is a negotiation and every negotiation is a hostage situation.")
+    : (senate||house?"You lost, but the party held ground down ballot, which is the sentence your allies will keep repeating."
+      : "You lost, and the ticket dragged the whole party down with it. That part will be remembered longer.");
   var gtxt=won
     ? (S.integ>=3?"Won the country and kept your record clean. They will teach this campaign in seminars you are not invited to."
               :"Won it. The methods will be litigated in eleven books, four of them by people who worked for you.")
@@ -1770,20 +2189,47 @@ function finalScreen(evA,evB,res){
    '<div class="statline"><span>BIGGEST POLLING MISS</span><b>'+miss.s.ab+' '+fmt(miss.d)+'</b></div>'+
    '<div class="statline"><span>PRIMARY DELEGATES</span><b>'+S.del+(S.contested?" (contested)":"")+'</b></div>'+
    '<div class="statline"><span>RIVALS WHO ENDORSED YOU</span><b>'+(endorsers.length?endorsers.join(", "):"NONE")+'</b></div>'+
+   '<div class="statline"><span>THE SENATE</span><b>'+sen.mine+' – '+sen.theirs+(senate?" · HELD":" · LOST")+'</b></div>'+
+   '<div class="statline"><span>THE HOUSE</span><b>'+sen.house+' – '+(435-sen.house)+(house?" · HELD":" · LOST")+'</b></div>'+
    '<div class="statline"><span>CASH ON HAND</span><b>$'+Math.round(S.cash)+'M</b></div>'+
    '<div class="statline"><span>INTEGRITY</span><b>'+(S.integ>2?"INTACT":S.integ<-2?"SPENT":"MIXED")+'</b></div>'+
-   '<div class="gradebox"><span class="gr">'+grade+'</span><span class="gt">SCORE '+score+'<br>'+gtxt+'</span></div>'+
+   '<div class="statline"><span>THE FILE</span><b>'+Math.round(S.heat)+'°'+(S.busts?" · SURFACED "+S.busts+"×":" · NEVER RAN")+'</b></div>'+
+   '<div class="statline"><span>SEED</span><b>'+seedText(SEED)+'</b></div>'+
+   '<div class="gradebox"><span class="gr">'+grade+'</span><span class="gt">SCORE '+score+'<br>'+gtxt+'<br><br>'+govern+'</span></div>'+
    '<p class="quote">'+quote+'<br><span style="font-family:var(--mono);font-size:11px;color:#8fa8bd">'+
      (won?S.name:S.oppNom.n)+', election night</span></p>'+
+   '<div class="postbox">'+
+     '<label for="handle">POST THIS RESULT TO THE LEADERBOARD</label>'+
+     '<input type="text" id="handle" maxlength="22" autocomplete="off" value="'+esc(S.name)+'">'+
+     '<div class="btnrow" style="margin-top:9px">'+
+       '<button class="btn ghost" id="viewboard">See the board</button>'+
+       '<button class="btn" id="post">Post result</button>'+
+     '</div>'+
+     '<p class="note">Saved in this browser only. There is no server behind this page, so the board does not travel between devices or people.</p>'+
+   '</div>'+
    '<div class="btnrow"><button class="btn ghost" id="copy">Copy result</button><button class="btn" id="again">Run again</button></div>'+
-   '<div style="margin-top:10px"><button class="btn ghost" id="trail2">Read the paper trail</button></div>';
+   '<div class="btnrow" style="margin-top:8px"><button class="btn ghost" id="replay">Replay this seed</button><button class="btn ghost" id="trail2">Paper trail</button></div>';
   bindEnd();
+  $("#post").addEventListener("click",function(){
+    var nm=($("#handle").value||"").trim().slice(0,22)||S.name;
+    var ok=boardPost({n:nm,party:S.party.short,score:score,grade:grade,ev:evA,evo:evB,stage:"general",
+      won:won,sen:sen.mine+"–"+sen.theirs,house:sen.house,del:S.del,seed:seedText(SEED),ts:Date.now()});
+    $("#post").textContent=ok?"Posted":"Storage blocked";
+    $("#post").disabled=true;
+  });
+  $("#viewboard").addEventListener("click",openBoard);
+  $("#replay").addEventListener("click",function(){
+    var keep=SEED;
+    document.body.classList.remove("desk");newGame();setSeed(keep);showSeed();
+    $("#cand").value="";show("s-title");
+  });
   $("#copy").addEventListener("click",function(){
-    var t="THE 270 · "+S.name+" ("+S.party.short+")\n"+
-      "Beat "+S.field.length+" in the primary · "+S.del+" delegates\n"+
-      evA+"–"+evB+" over "+S.oppNom.n+" · "+(won?"WON":"LOST")+"\n"+
-      "PV "+(pv>=0?"+":"")+pv.toFixed(1)+"% · Grade "+grade+" · Score "+score+"\n"+
-      "Closest state "+closest.s.ab+" "+fmt(closest.m);
+    var t="THE 270 · "+S.name+" ("+S.party.short+") · seed "+seedText(SEED)+"\n"+
+      (won?"PRESIDENT-ELECT":"CONCEDED")+" · "+evA+"–"+evB+" vs "+S.oppNom.n+"\n"+
+      "Primary: "+S.del+" delegates out of a field of "+(S.field.length+1)+"\n"+
+      "Senate "+sen.mine+"–"+sen.theirs+" · House "+sen.house+"–"+(435-sen.house)+"\n"+
+      "PV "+(pv>=0?"+":"")+pv.toFixed(1)+"% · closest state "+closest.s.ab+" "+fmt(closest.m)+"\n"+
+      "Grade "+grade+" · Score "+score;
     if(navigator.clipboard)navigator.clipboard.writeText(t);
     $("#copy").textContent="Copied";
   });

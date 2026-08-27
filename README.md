@@ -41,14 +41,36 @@ walks into it.
 safe Democratic votes behind them. Two media buys, an internal poll with a house
 error you don't find out about until election night, and a live decision desk.
 
+**Debate nights as scenes.** Four days of prep, then two debates of three
+exchanges each, scored live. Every exchange has a way to lose it; prep and press
+coverage make that less likely and a gaffe-prone candidate makes it more so. The
+spin room pays out on how many you landed.
+
+**The file.** A persistent oppo heat gauge that rises with every corner you cut
+and falls when you take the hard, honest option. Above 26 degrees it can surface
+at any point in the general — not just in October — and it costs you points at
+the end whether it ever ran or not.
+
+**Down ballot.** Ten competitive Senate races on top of a 45-45 hold, running on
+a fraction of your coattails plus a candidate of their own, and a House number
+driven by the popular vote. Winning the White House with 49 Senate seats gets
+you a governing verdict that says so.
+
+**Seeds and a leaderboard.** Every roll in the game runs through a seeded PRNG,
+so a seed reproduces a run exactly as long as you make the same choices. The
+seed is on the title screen, in the URL as `?seed=`, on the result card, and
+behind a "replay this seed" button. Results post to a leaderboard — which lives
+in `localStorage`, because a single static page has no server: it survives
+reloads on that device and does not travel between devices or people.
+
 ## Balance
 
-Tuned against 70 automated playthroughs that pick every choice at random. A
-random campaign loses the primary about half the time and, if it gets through,
-wins the general about half the time — roughly a one-in-four run overall.
-Neither bot buys advertising, which is the single largest lever a real player
-has, so reading the internal polls and concentrating a buy is worth several
-states on its own.
+Tuned against automated playthroughs that pick every choice at random. A random
+campaign loses the primary just over half the time and, if it gets through, wins
+the general a bit more often than not — roughly a three-in-ten run overall. The
+bot never buys advertising, which is the single largest lever a real player has,
+so reading the internal polls and concentrating a buy is worth several states on
+its own.
 
 ## Notes on the satire
 
