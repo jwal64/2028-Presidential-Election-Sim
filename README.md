@@ -123,6 +123,12 @@ including the ones the Constitution has opinions about, and the endings range
 from a clean handoff to an heir, a reckoning, a removal, or worse. Same seeded
 PRNG, same rules of parody, no leaderboard.
 
+Both games also carry an issue deck — abortion, guns, trans athletes,
+immigration, health care, entitlements, policing, AI, and the rest of the
+questions with no safe answer — and the queue reserves slots for them every
+run, so a campaign or a term is never just process: you will be asked where
+you stand, on camera, and the answer follows you.
+
 ## Balance
 
 Tuned against automated playthroughs that pick every choice at random. A random
