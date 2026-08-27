@@ -21,7 +21,8 @@ speech.
 Rubio, DeSantis, Haley, Youngkin, Ramaswamy, Carlson, Cruz, Sanders on one side;
 Newsom, Shapiro, Whitmer, Buttigieg, Ocasio-Cortez, Moore, Beshear, Pritzker,
 Gallego, Crockett on the other). Rubio is on the Republican ballot every single
-run; the remaining slots are drawn at random. The other party runs its own
+run and Newsom is on the Democratic one; the remaining slots are drawn at
+random. The other party runs its own
 primary in the background — you watch it on the wire ticker and find out in June
 who you actually have to beat.
 
@@ -38,27 +39,42 @@ Ocasio-Cortez, anyone on the list. They come off the ballot, their name and home
 state fill themselves in, and you start the primary at their standing instead of
 as an unknown.
 
-**Eighty-eight decisions and a calendar that asks for twenty-six of them.**
-Every run draws a fresh set: eleven in the primary, three at the convention,
-seven in the fall, two in debate prep and three in the closing fortnight. Most
-of them are actual political questions with actual answers — the number in
-weeks, the deportation figure, the top marginal rate, single payer versus the
-public option, tariffs versus the price of a washing machine, the third rail,
-the plank fight, the pledge with four bullet points and a problem in the fourth,
-and whether you will say plainly that you'll accept the result. Every answer
-moves base, swing voters, press, money and the regional map, which is to say
-every answer moves the polls. Choices tagged to your signature issue land 35
-percent harder. The riskier ones can backfire outright.
+**A hundred and eight decisions and a calendar that asks for twenty-six of
+them.** Every run draws a fresh set: eleven in the primary, three at the
+convention, seven in the fall, two in debate prep and three in the closing
+fortnight. Every answer moves base, swing voters, press, money and the regional
+map, which is to say every answer moves the polls. Choices tagged to your
+signature issue land 35 percent harder. The riskier ones can backfire outright.
 
-**Things that happen to you.** Between decisions, the news arrives and you do
-not get a vote. Thirty-seven bulletins — the jobs number, a hot inflation print,
-gas under three dollars, a 900-point drop, hostages on a tarmac, an embassy
-roof, a bad four seconds of tape, a small-dollar surge, a bundler who stops
-calling, a heckler you handle well, forty thousand yard signs printed with the
-wrong year — fire between turns, at most one per two turns and never twice in a
-run. Some hit your own numbers. Some move the national mood, a country-level
-figure that shifts every state at once and now has its own readout on the
-gauges.
+Three of every five slots are real political questions with real answers — the
+number in weeks, the deportation figure, the top marginal rate, single payer
+versus the public option, tariffs versus the price of a washing machine, the
+third rail, the plank fight, the pledge with four bullet points and a problem
+in the fourth, whether you will say plainly that you'll accept the result.
+
+**The other two are the tier where the country is not well,** and they are
+reserved, not left to chance: the push-up challenge, your own campaign chatbot
+committing you to a foreign policy at 3 a.m., the grocery-price buzzer segment,
+a meme coin with your face on it and a $410M market cap, a rival's hologram
+doing nine counties at once from a soundstage in Northern Virginia, a
+600-pound butter sculpture of you that looks like somebody else, an eleven-day
+livestream, a debate rescheduled to 2 a.m. in a podcast studio, a pay-per-view
+debate between two undercard fights, a synthetic endorsement from a president
+dead since 2004, and a $40M whale moving the prediction markets four days out.
+
+**Things that happen to you.** Between decisions the news arrives and you do not
+get a vote. Sixty-four bulletins fire between turns, at most one per two turns
+and never repeating in a run, some gated on the state of your campaign. Half of
+them are the news — the jobs number, a hot inflation print, gas under three
+dollars, a 900-point drop, hostages on a tarmac, an embassy roof. The other half
+is a ceremonial groundhog biting a candidate on live television, your logo
+blimp adrift at 1,100 feet over Toledo with two fighters watching it, a black
+bear stopping the motorcade for forty minutes, a teleprompter loading the other
+party's convention address, your college band's 1994 demo getting a 4.1 from a
+real critic, a milkshake, and four hundred thousand dollars of campaign
+merchandise arriving in February. Some hit your own numbers. Some move the
+national mood, a country-level figure that shifts every state at once and has
+its own readout on the gauges.
 
 **The supporting cast.** Media anchors and networks, the podcast circuit,
 celebrity endorsers, and billionaire donors — cast fresh each turn from
