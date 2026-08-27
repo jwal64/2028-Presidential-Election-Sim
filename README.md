@@ -108,6 +108,27 @@ behind a "replay this seed" button. Results post to a leaderboard — which live
 in `localStorage`, because a single static page has no server: it survives
 reloads on that device and does not travel between devices or people.
 
+## Side game: The Second Term
+
+A button on the title screen starts a different game: play the incumbency
+itself, as the sitting president, from the fall of 2026 to noon on January 20,
+2029. It runs on its own calendar of fixtures — the 2026 midterms simulated on
+your numbers, three U.N. General Assemblies, NATO, the G20, States of the Union,
+shutdown deadlines, Supreme Court decision seasons, the 2028 succession
+question, and the handoff — with five gauges (approval, the base, the economy,
+GOP Congress, rule of law) and a blowback ledger. The ledger starts pre-loaded
+with the record to date, and everything on it can come back around as "the bill
+comes due" events; fiery choices add entries. All options are on the table,
+including the ones the Constitution has opinions about, and the endings range
+from a clean handoff to an heir, a reckoning, a removal, or worse. Same seeded
+PRNG, same rules of parody, no leaderboard.
+
+Both games also carry an issue deck — abortion, guns, trans athletes,
+immigration, health care, entitlements, policing, AI, and the rest of the
+questions with no safe answer — and the queue reserves slots for them every
+run, so a campaign or a term is never just process: you will be asked where
+you stand, on camera, and the answer follows you.
+
 ## Balance
 
 Tuned against automated playthroughs that pick every choice at random. A random
