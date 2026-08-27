@@ -284,6 +284,15 @@ input[type=text]:focus,select:focus{outline:2px solid var(--mark);outline-offset
 .foot{font-family:var(--mono);font-size:9.5px;color:var(--ink2);text-align:center;padding:18px 14px 30px;letter-spacing:.03em;line-height:1.6}
 .desk .foot{color:#5b7692}
 @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+/* ---------- side game · the second term ---------- */
+.chyron.gold{border-bottom-color:var(--phos)}
+.chyron.gold .slug{background:var(--phos);color:var(--desk)}
+.g.law .fill{background:var(--dem)}
+.g.maga .fill{background:var(--rep)}
+.g.blow .fill{background:var(--mark)}
+.ledgerbox{font-family:var(--mono);font-size:10.5px;color:var(--ink2);border:1px dashed var(--rule);
+  padding:8px 10px;margin:0 0 14px;line-height:1.7}
+.ledgerbox b{color:var(--mark);letter-spacing:.08em}
 </style>
 </head>
 <body>
@@ -307,6 +316,7 @@ input[type=text]:focus,select:focus{outline:2px solid var(--mark);outline-offset
       <button type="button" id="seednew">NEW</button>
     </div>
     <button class="btn ghost dark" id="go-board">Leaderboard</button>
+    <button class="btn ghost dark" id="go-trump">Side game: The Second Term</button>
     <div class="disclaim"><b>PARODY.</b> This is a work of political satire. Real public figures appear as
       exaggerated characters. Every event, quote, poll, scandal and result in this game is invented
       and did not happen. Nothing here is reporting, prediction, or a claim of fact about any real person.</div>
@@ -394,6 +404,19 @@ input[type=text]:focus,select:focus{outline:2px solid var(--mark);outline-offset
 <!-- ============ ELECTION NIGHT ============ -->
 <section id="s-night" class="hidden">
   <div class="board" id="board"></div>
+</section>
+
+<!-- ============ SIDE GAME · THE SECOND TERM ============ -->
+<section id="s-trump" class="hidden">
+  <div class="chyron gold" id="t-chy">
+    <span class="slug" id="t-slug">WEST<br>WING</span>
+    <span class="date"><span id="t-date">SEP 8, 2026</span></span>
+    <span class="date" style="flex:0 0 auto"><span class="clock"><span id="t-days">865</span><small>DAYS LEFT</small></span></span>
+    <button class="trailbtn" id="t-trail">DAILY<br>BRIEF</button>
+  </div>
+  <div class="wire" id="t-wire"></div>
+  <div class="gauges" id="t-gauges"></div>
+  <main id="t-stage"></main>
 </section>
 
 <div class="foot" id="foot">
@@ -1790,10 +1813,11 @@ function buildQueue(){
 
 /* ================= CHROME ================= */
 function show(id){
-  ["s-title","s-setup","s-play","s-night"].forEach(function(x){$("#"+x).classList.add("hidden");});
+  ["s-title","s-setup","s-play","s-night","s-trump"].forEach(function(x){$("#"+x).classList.add("hidden");});
   $("#"+id).classList.remove("hidden");
   if(id!=="s-night")$("#board").innerHTML="";
-  if(id==="s-title"){$("#stage").innerHTML="";$("#wire").innerHTML="";$("#gauges").innerHTML="";}
+  if(id==="s-title"){$("#stage").innerHTML="";$("#wire").innerHTML="";$("#gauges").innerHTML="";
+    $("#t-stage").innerHTML="";$("#t-wire").innerHTML="";$("#t-gauges").innerHTML="";}
   window.scrollTo(0,0);
 }
 function wireNews(t){S.wire=t;$("#wire").innerHTML='<b>WIRE</b> &nbsp;'+tpl(t);}
@@ -2837,6 +2861,881 @@ function finalScreen(evA,evB,res){
   });
   window.scrollTo(0,0);
 }
+/* ================================================================
+   SIDE GAME · THE SECOND TERM
+   play the incumbency itself, from the fall of 2026 to noon on
+   january 20, 2029. separate machinery from the campaign: its own
+   state, its own calendar, its own decks. it shares only the seeded
+   RNG stream, so a seed reproduces a term exactly as long as you
+   make the same choices. parody, all of it, same as the front page.
+================================================================ */
+var T=null;
+function tNewGame(){
+  T={appr:42,maga:78,econ:55,gop:62,law:48,
+     blow:30,
+     /* the record so far. every one of these can come back around. */
+     ledger:["EPSTEIN","J6PARDONS","TARIFFS","IRAN","DOGE","GUARD","COURTS"],
+     flags:{heir:null,thirdTerm:false,gambit:false,powellFired:false,impeached:0,removed:false,
+            houseGOP:true,senGOP:true,won28:null,shutdowns:0},
+     house:220,senate:53,turn:0,log:[],lastOut:"",usedRep:[],seenNews:[],lastNews:-9,queue:null,ended:false};
+}
+function tTpl(s){
+  if(!s)return s;
+  var map={VP:"J.D. Vance",HEIR:T.flags.heir||"whoever survives the primary",
+    FEDCHAIR:T.flags.powellFired?"your new Fed chair":"Powell"};
+  return s.replace(/\{([A-Z0-9]+)\}/g,function(m,k){return map[k]!=null?map[k]:m;});
+}
+
+/* ---------------- chrome ---------------- */
+var TGDEF=[["appr","APPROVAL",""],["maga","MAGA BASE","maga"],["econ","ECONOMY","money"],
+           ["gop","GOP CONGRESS",""],["law","RULE OF LAW","law"]];
+function tDrawGauges(flash){
+  var h=$("#t-gauges");h.innerHTML="";
+  var defs=TGDEF.slice();
+  if(T.blow>0)defs.push(["blow","BLOWBACK","blow"]);
+  defs.forEach(function(g){
+    var key=g[0],v=T[key];
+    var d=document.createElement("div");
+    d.className="g"+(g[2]?" "+g[2]:"");
+    var fl="";
+    if(flash&&flash[key]){
+      var fv=flash[key],good=(key==="blow")?fv<0:fv>0;
+      fl='<span class="delta '+(good?"up":"down")+'">'+(fv>0?"+":"")+Math.round(fv)+"</span>";
+    }
+    d.innerHTML='<span class="lab">'+g[1]+'</span>'+
+      '<span class="track"><span class="fill" style="width:'+clamp(v,0,100)+'%"></span></span>'+
+      '<span class="val">'+Math.round(v)+(key==="blow"?"°":"")+fl+'</span>';
+    h.appendChild(d);
+  });
+  var ctl=document.createElement("div");
+  ctl.className="g pull";
+  ctl.innerHTML='<span class="lab">THE HILL</span><span class="pullbars">'+
+    'HOUSE '+(T.flags.houseGOP?"R ":"D ")+Math.max(T.house,435-T.house)+"–"+Math.min(T.house,435-T.house)+
+    ' &nbsp; SENATE '+(T.flags.senGOP?"R ":"D ")+Math.max(T.senate,100-T.senate)+"–"+Math.min(T.senate,100-T.senate)+
+    '</span><span class="val"></span>';
+  h.appendChild(ctl);
+}
+function tWireNews(t){$("#t-wire").innerHTML='<b>WIRE</b> &nbsp;'+t;}
+function tTickWire(){
+  var lines=[
+    "APPROVAL "+Math.round(T.appr)+"% · DISAPPROVAL "+Math.round(93-T.appr)+"% · THE REMAINDER HAVE STOPPED ANSWERING THE PHONE",
+    "MARKETS "+(T.econ>=55?"GRIND HIGHER":T.econ>=42?"CHOP SIDEWAYS":"SELL OFF")+" · TREASURY CALLS THE TEN-YEAR “ORDERLY,” TWICE, UNPROMPTED",
+    "THE BASE IS "+(T.maga>=80?"ELECTRIC":T.maga>=60?"WATCHING":"RESTLESS")+" · THREE PODCASTS DISAGREE ABOUT WHY",
+    "HILL WATCH · "+(T.flags.houseGOP?"THE SPEAKER SAYS THE CONFERENCE IS “UNIFIED,” WHICH IS NEW INFORMATION TO THE CONFERENCE":"THE HOUSE HAS ISSUED MORE SUBPOENAS THAN BILLS THIS MONTH"),
+    "LEGAL WATCH · "+(T.law<35?"FOUR INJUNCTIONS, TWO CIRCUITS, ONE SHRUG":"THE COURTS AND THE BUILDING ARE, FOR NOW, PRETENDING TO GET ALONG"),
+    "BLOWBACK INDEX "+Math.round(T.blow)+"° · THE FILE CABINET IN THE EISENHOWER BUILDING IS "+(T.blow>60?"ON FIRE":T.blow>40?"WARM":"HUMMING")
+  ];
+  if(T.turn>=19)lines.push("2028 WATCH · "+(T.flags.thirdTerm?"THE HATS WITH THE NUMBER ON THEM ARE BACK-ORDERED":T.flags.heir?("{HEIR} LEADS A FIELD THAT KNOWS BETTER THAN TO SAY SO").replace("{HEIR}",(T.flags.heir||"").toUpperCase()):"EVERY REPUBLICAN IN IOWA IS RUNNING ON YOUR NAME AND NONE OF THEM WILL SAY FOR WHAT"));
+  tWireNews(rnd(lines));
+}
+function tSetChyron(step){
+  $("#t-slug").innerHTML=step.s;
+  $("#t-date").textContent=step.d;
+  $("#t-days").textContent=step.o;
+}
+function tDrift(){
+  T.appr += ((41+(T.econ-55)*.25)-T.appr)*.08;
+  T.maga += (75-T.maga)*.10;
+  T.econ  = clamp(T.econ+noise(1.2),0,100);
+  T.gop  += (((T.appr-40)*.3+52)-T.gop)*.07;
+  T.law   = clamp(T.law+.3,0,100);
+  T.blow  = clamp(T.blow-.5,0,100);
+}
+
+/* ---------------- the calendar ----------------
+   k "ev" decision · "mid" midterm night · "e28" election night 2028 ·
+   "end" the handoff. fix pins a dated fixture to its step. o counts
+   down to noon on january 20, 2029. */
+var TSTEPS=[
+ {k:"ev",ph:0,d:"SEP 8, 2026", o:865,s:"WEST<br>WING"},
+ {k:"ev",ph:0,d:"SEP 22, 2026",o:851,s:"U.N.",fix:"UNGA26"},
+ {k:"ev",ph:0,d:"OCT 1, 2026", o:842,s:"SHUTDOWN",fix:"CR26"},
+ {k:"ev",ph:0,d:"OCT 13, 2026",o:830,s:"MIDTERMS"},
+ {k:"ev",ph:0,d:"OCT 27, 2026",o:816,s:"MIDTERMS"},
+ {k:"mid",    d:"NOV 3, 2026", o:809,s:"ELECTION<br>NIGHT"},
+ {k:"ev",ph:1,d:"NOV 18, 2026",o:794,s:"LAME<br>CONGRESS"},
+ {k:"ev",ph:1,d:"JAN 6, 2027", o:745,s:"NEW<br>CONGRESS"},
+ {k:"ev",ph:1,d:"FEB 2, 2027", o:718,s:"SOTU",fix:"SOTU27"},
+ {k:"ev",ph:1,d:"MAR 9, 2027", o:683,s:"WEST<br>WING"},
+ {k:"ev",ph:1,d:"APR 20, 2027",o:641,s:"WEST<br>WING"},
+ {k:"ev",ph:1,d:"JUN 8, 2027", o:592,s:"NATO",fix:"NATO27"},
+ {k:"ev",ph:1,d:"JUN 29, 2027",o:571,s:"SCOTUS",fix:"SCOTUS27"},
+ {k:"ev",ph:1,d:"AUG 10, 2027",o:529,s:"WEST<br>WING"},
+ {k:"ev",ph:1,d:"SEP 21, 2027",o:487,s:"U.N.",fix:"UNGA27"},
+ {k:"ev",ph:1,d:"OCT 1, 2027", o:477,s:"SHUTDOWN",fix:"CR27"},
+ {k:"ev",ph:1,d:"NOV 16, 2027",o:431,s:"G20",fix:"G2027"},
+ {k:"ev",ph:1,d:"DEC 14, 2027",o:403,s:"WEST<br>WING"},
+ {k:"ev",ph:2,d:"JAN 11, 2028",o:375,s:"IOWA",fix:"SUCCESSION"},
+ {k:"ev",ph:2,d:"JAN 18, 2028",o:368,s:"PRIMARY"},
+ {k:"ev",ph:2,d:"FEB 8, 2028", o:347,s:"SOTU",fix:"SOTU28"},
+ {k:"ev",ph:2,d:"MAR 7, 2028", o:319,s:"SUPER<br>TUESDAY",fix:"SUPERT"},
+ {k:"ev",ph:2,d:"MAR 28, 2028",o:298,s:"PRIMARY"},
+ {k:"ev",ph:2,d:"MAY 2, 2028", o:263,s:"WEST<br>WING"},
+ {k:"ev",ph:2,d:"JUN 27, 2028",o:207,s:"SCOTUS",fix:"SCOTUS28"},
+ {k:"ev",ph:3,d:"JUL 18, 2028",o:186,s:"CONVENTION",fix:"CONV28"},
+ {k:"ev",ph:3,d:"AUG 15, 2028",o:158,s:"GENERAL"},
+ {k:"ev",ph:3,d:"SEP 19, 2028",o:123,s:"U.N.",fix:"UNGA28"},
+ {k:"ev",ph:3,d:"OCT 3, 2028", o:109,s:"GENERAL"},
+ {k:"ev",ph:3,d:"OCT 24, 2028",o:88, s:"CLOSING"},
+ {k:"e28",    d:"NOV 7, 2028", o:74, s:"ELECTION<br>NIGHT"},
+ {k:"ev",ph:4,d:"NOV 21, 2028",o:60, s:"LAME<br>DUCK"},
+ {k:"ev",ph:4,d:"DEC 12, 2028",o:39, s:"PARDONS",fix:"PARDONS"},
+ {k:"ev",ph:4,d:"JAN 3, 2029", o:17, s:"LAME<br>DUCK"},
+ {k:"ev",ph:4,d:"JAN 19, 2029",o:1,  s:"FAREWELL",fix:"FAREWELL"},
+ {k:"end",    d:"JAN 20, 2029",o:0,  s:"HANDOFF"}
+];
+
+/* ---------------- queue ---------------- */
+function tSlots(ph){return TSTEPS.filter(function(s){return s.k==="ev"&&s.ph===ph&&!s.fix;}).length;}
+function tPickEvents(ph,n){
+  return shuffle(TEVENTS.filter(function(e){return e.ph===ph&&!e.fix;})).slice(0,n);
+}
+function tBuildQueue(){
+  T.queue={idx:{}};
+  [0,1,2,3,4].forEach(function(ph){T.queue[ph]=tPickEvents(ph,tSlots(ph));T.queue.idx[ph]=0;});
+}
+
+/* ---------------- turn loop ---------------- */
+function tTurn(){
+  if(T.ended)return;
+  if(T.flags.removed)return tEnding(true);
+  if(T.turn>=TSTEPS.length)return tEnding(false);
+  var step=TSTEPS[T.turn];
+  if(step.k==="ev"&&tRollBreaking())return;
+  tSetChyron(step);
+  window.scrollTo(0,0);
+  tTickWire();
+  if(step.k==="mid")return tMidterms(step);
+  if(step.k==="e28")return tGeneral28(step);
+  if(step.k==="end")return tEnding(false);
+  return tEventScreen(step);
+}
+function tReceipt(){return T.lastOut?'<p class="receipt">'+T.lastOut+'</p>':"";}
+function tFindFix(fx){
+  var c=TEVENTS.filter(function(e){return e.fix===fx&&(!e.when||e.when());});
+  return c[0]||null;
+}
+function tEventScreen(step){
+  var ev=null;
+  if(step.fix)ev=tFindFix(step.fix);
+  if(!ev){
+    var list=T.queue[step.ph]||[],i=T.queue.idx[step.ph]||0;
+    if(!list.length){T.turn++;return tTurn();}
+    ev=list[i%list.length];
+    T.queue.idx[step.ph]=i+1;
+  }
+  var st=$("#t-stage");
+  st.innerHTML=tReceipt()+
+    '<p class="eyebrow">'+step.s.replace("<br>"," ")+' · '+step.d+'</p>'+
+    '<h2 class="head">'+tTpl(ev.head)+'</h2>'+
+    '<p class="body">'+tTpl(ev.body)+'</p>';
+  ev.ch.forEach(function(c){
+    var b=document.createElement("button");
+    b.className="choice";b.type="button";
+    b.innerHTML='<span class="k">'+c.k+'</span><span class="t">'+tTpl(c.t)+'</span><span class="s">'+tTpl(c.s)+'</span>';
+    b.addEventListener("click",function(){tResolve(step,ev,c);});
+    st.appendChild(b);
+  });
+}
+/* one applier for choices, risk branches, and bulletins alike */
+function tApply(c,flash){
+  ["appr","maga","econ","gop","law"].forEach(function(k){
+    if(c.d&&c.d[k]!=null){T[k]=clamp(T[k]+c.d[k],0,100);flash[k]=c.d[k];}
+  });
+  if(c.blow){T.blow=clamp(T.blow+c.blow,0,100);flash.blow=(flash.blow||0)+c.blow;}
+  if(c.ledger)(Array.isArray(c.ledger)?c.ledger:[c.ledger]).forEach(function(g){T.ledger.push(g);});
+  if(c.flag)T.flags[c.flag]=true;
+  if(c.unflag)T.flags[c.unflag]=false;
+  if(c.heir)T.flags.heir=c.heir;
+  if(c.imp)T.flags.impeached+=c.imp;
+  if(c.removed)T.flags.removed=true;
+}
+function tResolve(step,ev,c){
+  var pick=c,outText=tTpl(c.out),backfired=false;
+  if(c.risk){
+    var p=c.risk.p;
+    if(T.maga>85)p-=.05;
+    if(T.blow>60)p+=.08;
+    if(rand()<clamp(p,.03,.9)){backfired=true;pick=c.risk;outText=tTpl(c.risk.out);}
+  }
+  var flash={};
+  tApply(pick,flash);
+  if(backfired){T.blow=clamp(T.blow+3,0,100);flash.blow=(flash.blow||0)+3;}
+  tDrift();
+  T.log.push({w:step.d,head:tTpl(ev.head),pick:tTpl(c.t),out:outText,d:flash,bad:backfired});
+  T.lastOut='<b>'+(backfired?"IT BACKFIRES. ":"")+'</b>'+outText;
+  T.turn++;
+  tDrawGauges(flash);
+  if(!tRollRepercussion())tTurn();
+}
+
+/* ---------------- breaking, second-term edition ---------------- */
+function tRollBreaking(){
+  if(T.turn<1||T.turn>=TSTEPS.length)return false;
+  if(T.turn-T.lastNews<2)return false;
+  if(rand()>=.45)return false;
+  var pool=TBREAKING.filter(function(b){
+    if(T.seenNews.indexOf(b.head)>=0)return false;
+    if(b.cond&&!b.cond())return false;
+    return true;
+  });
+  if(!pool.length)return false;
+  var b=rnd(pool);
+  T.seenNews.push(b.head);T.lastNews=T.turn;
+  var flash={};
+  tApply(b,flash);
+  tSetChyron(TSTEPS[T.turn]);
+  var lines=Object.keys(flash).map(function(k){
+    var v=flash[k],good=(k==="blow")?v<0:v>0;
+    return '<span class="'+(good?"up":"down")+'">'+k.toUpperCase()+" "+(v>0?"+":"")+Math.round(v)+'</span>';
+  });
+  if(!lines.length)lines.push('<span class="down">NO MEASURABLE EFFECT ON ANYTHING</span>');
+  var st=$("#t-stage");
+  st.innerHTML=tReceipt()+
+    '<div class="flash"><p class="slug">BREAKING · '+TSTEPS[T.turn].d+'</p>'+
+    '<h3>'+tTpl(b.head)+'</h3><p>'+tTpl(b.body)+'</p>'+
+    '<p class="fx">'+lines.join(" &nbsp; ")+'</p></div>'+
+    '<button class="btn" id="t-newsgo">Back to the Oval</button>';
+  tWireNews(tTpl(b.head));
+  T.log.push({w:TSTEPS[T.turn].d,head:tTpl(b.head),pick:"Nobody asked you.",out:tTpl(b.body),d:flash,news:true});
+  T.lastOut="";
+  tDrawGauges(flash);
+  $("#t-newsgo").addEventListener("click",function(){tTurn();});
+  window.scrollTo(0,0);
+  return true;
+}
+
+/* ---------------- the bill comes due ----------------
+   the ledger holds everything the record already contains and
+   everything you add to it. pressure decides when it surfaces;
+   a tag pushed twice is twice as likely to be the one drawn. */
+function tRollRepercussion(){
+  if(T.turn>=TSTEPS.length-2)return false;
+  var pool=TREP.filter(function(r){
+    if(T.usedRep.indexOf(r.head)>=0)return false;
+    if(T.ledger.indexOf(r.tag)<0)return false;
+    if(r.cond&&!r.cond())return false;
+    return true;
+  });
+  if(!pool.length)return false;
+  var p=clamp((T.blow-15)/180,0,.30);
+  if(rand()>=p)return false;
+  var tags=T.ledger.filter(function(g){return pool.some(function(r){return r.tag===g;});});
+  var tg=rnd(tags);
+  var rp=rnd(pool.filter(function(r){return r.tag===tg;}));
+  T.usedRep.push(rp.head);
+  T.blow=clamp(T.blow-8,0,100);
+  var st=$("#t-stage");
+  st.innerHTML=tReceipt()+
+    '<p class="eyebrow" style="color:var(--mark)">THE BILL COMES DUE · '+tg+'</p>'+
+    '<h2 class="head">'+tTpl(rp.head)+'</h2>'+
+    '<p class="body">'+tTpl(rp.body)+'</p>';
+  rp.ch.forEach(function(c){
+    var b=document.createElement("button");
+    b.className="choice";b.type="button";
+    b.innerHTML='<span class="k">'+c.k+'</span><span class="t">'+tTpl(c.t)+'</span><span class="s">'+tTpl(c.s)+'</span>';
+    b.addEventListener("click",function(){
+      var pick=c,outText=tTpl(c.out),backfired=false;
+      if(c.risk&&rand()<clamp(c.risk.p,.03,.9)){backfired=true;pick=c.risk;outText=tTpl(c.risk.out);}
+      var flash={};
+      tApply(pick,flash);
+      tDrift();
+      T.log.push({w:"THE BILL",head:tTpl(rp.head),pick:tTpl(c.t),out:outText,d:flash,bad:true});
+      T.lastOut="<b>THE BILL COMES DUE. </b>"+(backfired?"<b>IT GETS WORSE. </b>":"")+outText;
+      tDrawGauges(flash);
+      tTurn();
+    });
+    st.appendChild(b);
+  });
+  window.scrollTo(0,0);
+  return true;
+}
+/* ---------------- the fixtures ----------------
+   the parts of the calendar that do not move for anybody. */
+var TEVENTS=[
+{fix:"UNGA26",ph:0,head:"THE GENERAL ASSEMBLY",body:"New York, September. 193 delegations, one escalator, and a 15-minute speaking slot that you have personally never once finished inside of. The teleprompter has a speech about sovereignty. The room has headphones and low expectations.",ch:[
+ {k:"SCRIPT",t:"Deliver the prepared text, all 15 minutes of it",s:"Statesmanlike. Unrecognizable.",d:{appr:4,law:2,maga:-6,gop:2},out:"You stay on the prompter for the first time since Davos. Three allied foreign ministers call it “constructive.” The base calls it low-energy, and one account you follow says the deep state wrote it."},
+ {k:"RIFF",t:"Throw the script by minute two",s:"The escalator did not build itself.",d:{maga:9,appr:-3,gop:-2},blow:6,risk:{p:.35,out:"Fifty-one minutes. You name four countries that are, on review, not in attendance, and offer to buy one of them. The General Assembly laughs, and this time it is definitely at you.",d:{appr:-7,maga:4,law:-3},blow:10},out:"Fifty-one minutes, no notes, two standing ovations from the delegations that need something from you. Cable runs it wall to wall and nobody remembers what the speech was supposed to be about, including you."},
+ {k:"SKIP",t:"Skip it and hold a rally in Youngstown instead",s:"The U.N. does not vote in the midterms.",d:{maga:7,appr:-2,gop:3},ledger:"ALLIES",out:"The Secretary of State reads your remarks to a half-empty hall while you do ninety minutes on trade in a hangar in Ohio. Six ambassadors are photographed meeting without the United States. Again."}
+]},
+{fix:"CR26",ph:0,head:"THE FUNDING RUNS OUT AT MIDNIGHT",body:"October 1st, five weeks before the midterms, and the continuing resolution is hostage to everyone at once. The Freedom Caucus wants cuts, the Democrats want the subsidies back, and the Speaker wants to know what you want, which changes hourly.",ch:[
+ {k:"DEAL",t:"Cut the deal and sign it clean",s:"Boring. Governing. Ugh.",d:{appr:4,econ:3,gop:5,maga:-6},out:"You sign a bill you have not read and call it a total victory, and the strange thing about total victories is that saying it makes it roughly true. The midterm ads about chaos lose their footage."},
+ {k:"SHUT",t:"Let it shut down and hang it on the Democrats",s:"They'll fold. They usually fold.",d:{maga:8,appr:-5,econ:-4},blow:8,flag:"shutdown1",risk:{p:.4,out:"They do not fold. Twenty-nine days, a missed troop paycheck, and airport lines that make the local news in every district you need. The polling on who owns it comes back with your name in bold.",d:{appr:-9,econ:-6,gop:-5},blow:8},out:"Eleven days of noise, then they fold on the subsidies with a fig leaf you graciously hand them. The base loves a fight it wins, and this one photographed well."},
+ {k:"IMPOUND",t:"Sign it, then just not spend the parts you dislike",s:"Impoundment. The lawyers have a memo. Against, mostly.",d:{maga:6,law:-9,gop:-4},blow:10,ledger:"COURTS",out:"OMB quietly freezes $61 billion of things Congress appropriated, and Congress notices, because it is their one actual job. Two lawsuits are filed by Friday. Both name you personally, which you take well."}
+]},
+{fix:"SOTU27",ph:1,when:function(){return T.flags.houseGOP;},head:"THE STATE OF THE UNION",body:"Your Speaker, your gavel, your chamber, ninety minutes of national television. The draft on the prompter says the state of the union is strong. The draft in your head says several other things, some of them about specific senators in the room.",ch:[
+ {k:"VICTORY",t:"A victory lap: the wall, the checks, the deals",s:"Claim everything. Sort the details later.",d:{maga:8,appr:3,gop:3},out:"Forty-one applause breaks, a record you announce from the rostrum in real time. The fact-checks run to fourteen items and are read by fourteen people."},
+ {k:"UNITY",t:"The unity speech nobody expects from you",s:"Confuse them with statesmanship.",d:{appr:7,law:3,gop:4,maga:-7},out:"You praise a Democrat by name, on purpose, once. The clip runs for three days under the word PIVOT, and your base spends the same three days being talked off a ledge by your account."},
+ {k:"ENEMY",t:"Name the enemies from the rostrum, one by one",s:"The list exists. Read it.",d:{maga:10,appr:-6,law:-5,gop:-3},blow:8,out:"You go off-prompter for nine minutes about judges, networks, and one specific late-night host. Half the chamber chants, half sits on its hands, and the Supreme Court justices in row three practice their famous neutral faces."}
+]},
+{fix:"SOTU27",ph:1,when:function(){return !T.flags.houseGOP;},head:"THE STATE OF THE UNION, BEHIND ENEMY LINES",body:"A Democratic Speaker sits behind your left shoulder for ninety minutes with the facial expression of someone reviewing your receipts, which, since the subpoenas started, is not a metaphor. The chamber applauds in halves.",ch:[
+ {k:"OLIVE",t:"Offer them an infrastructure deal on live TV",s:"Make the Speaker say no to bridges.",d:{appr:6,gop:3,econ:2,maga:-5},out:"You put a trillion-dollar number on the prompter and dare them to refuse it. They can't clap and can't not, and the overnight write-up is the least hostile you have had since the House fell."},
+ {k:"DEFY",t:"Tell the new House to subpoena this speech",s:"Ninety minutes of counterpunch.",d:{maga:11,appr:-5,law:-4},blow:8,out:"You wave the subpoenas — actual paper, actual props — and the chamber comes apart. Three members are escorted out, none of them yours, which you note from the rostrum."},
+ {k:"SHORT",t:"Speak for twenty minutes and leave",s:"Deny them the footage.",d:{appr:2,law:2,maga:-3},out:"The shortest State of the Union of the modern era. The panel shows spend two hours discussing what you are planning, and are unsettled to conclude: nothing, he just left."}
+]},
+{fix:"NATO27",ph:1,head:"THE NATO SUMMIT",body:"The Hague again, and the communiqué is pre-written except for the one sentence that matters. The allies hit their five percent, mostly, and would like to hear the words “Article Five” from you, in order, without qualifiers. The Kremlin would also like to hear whatever you say.",ch:[
+ {k:"COMMIT",t:"Say the words, clean, and take the win on the spending",s:"You made them pay. Now bank it.",d:{appr:5,law:3,gop:4,econ:2,maga:-4},out:"“Ironclad.” One word, and every capital in Europe exhales at once. You spend the press conference correctly noting that the five percent was your doing, because it was."},
+ {k:"INVOICE",t:"Read out the delinquent countries like a landlord",s:"Names. Numbers. Interest.",d:{maga:8,appr:-3},blow:6,ledger:"ALLIES",risk:{p:.3,out:"Spain walks out of the dinner. The clip of the empty chair does more damage in Madrid than in Washington, but the phrase “the alliance is the hostage” makes it into four languages by morning.",d:{appr:-5,law:-3},blow:8},out:"You produce an actual invoice, laminated, for the cameras. It is deranged and it works: two stragglers announce new spending before your plane is wheels-up."},
+ {k:"BILATERAL",t:"Skip the plenary for a one-on-one with Putin",s:"The deal is the thing. It's always the thing.",d:{maga:5,appr:-4,law:-4,gop:-5},blow:10,ledger:"ALLIES",out:"Two hours, no notetakers, again. You emerge announcing a framework nobody can describe, and the allies hold a meeting about you in a room you are not in, which you find genuinely hurtful."}
+]},
+{fix:"SCOTUS27",ph:1,head:"DECISION SEASON",body:"The last week of June, and the Court hands down the big one: the emergency-powers tariff case, six years of executive muscle memory on the line. The opinion is 6–3, partially for you, partially very much not, and 140 pages nobody in the building has finished.",ch:[
+ {k:"COMPLY",t:"Comply, loudly, and call it a win",s:"Half a loaf, declared a bakery.",d:{appr:4,law:6,econ:3,maga:-4},out:"Treasury unwinds the struck-down tranche and you announce that the Court has “totally approved” the rest, which is generous but not false. The markets like the certainty more than they liked the tariffs."},
+ {k:"BLAST",t:"Attack the justices by name, including yours",s:"Ingratitude is the theme.",d:{maga:8,law:-8,appr:-3},blow:8,ledger:"COURTS",out:"Three posts, two nicknames, one reference to “so-called justices I gave everything to.” The Chief Justice issues a statement defending the judiciary, which is rare, and reads it aloud, which is rarer."},
+ {k:"WORKAROUND",t:"Reimpose the same tariffs under a different statute by Friday",s:"They struck the vehicle, not the destination.",d:{maga:6,econ:-3,law:-7},blow:10,ledger:"TARIFFS",out:"Commerce finds a Cold War statute nobody has used since Nixon and the tariffs are back before the opinion is a week old. The plaintiffs refile the same lawsuit with the date changed, and everyone settles in for another two years."}
+]},
+{fix:"UNGA27",ph:1,head:"THE GENERAL ASSEMBLY, YEAR TWO",body:"Back on the escalator. This year the corridor talk is the prize: the ceasefires you brokered, half of them still holding, and a Nobel committee in Oslo that you have mentioned, publicly, forty-one times since March.",ch:[
+ {k:"PEACE",t:"Convene a summit of every conflict you've touched",s:"The Peacemaker-in-Chief production.",d:{appr:6,law:2,gop:2},risk:{p:.3,out:"Two of the delegations you seat next to each other are actively shelling each other during the family photo, a fact the wire services confirm before dessert. The word “stagecraft” appears in every write-up.",d:{appr:-5,maga:2},blow:6},out:"Eight foreign ministers, one stage, your name on the backdrop in a font visible from New Jersey. It is shameless and half of it is real, which is a better ratio than most summits manage."},
+ {k:"PRIZE",t:"Ask for the Nobel from the rostrum, out loud",s:"Everyone is thinking it. Allegedly.",d:{maga:6,appr:-4},out:"“They gave it to Obama for nothing. For nothing! I ended seven wars.” The number is disputed, the applause is real, and Oslo declines to comment with what observers describe as visible fatigue."},
+ {k:"WALK",t:"Walk out during a rival leader's speech",s:"The camera follows you. It always follows you.",d:{maga:7,appr:-3},blow:5,ledger:"ALLIES",out:"You leave mid-sentence, trailed by nine staffers and every lens in the building. The speech you walked out of is forgotten by Thursday. The walkout is not."}
+]},
+{fix:"CR27",ph:1,head:"MIDNIGHT AGAIN",body:"October 1st, annually, forever. This one is meaner: the debt limit rides shotgun, the ratings agencies are circling, and someone in your building has floated the word “default” as leverage, on the record, possibly you.",ch:[
+ {k:"CLEAN",t:"Take the clean deal and bank the calm",s:"The markets send a thank-you note.",d:{econ:5,appr:3,gop:4,maga:-6},out:"Signed with nine hours to spare. The Dow throws a small parade and the Freedom Caucus threatens to vacate a Speaker for the third time this cycle, which at this point is a seasonal event, like gourds."},
+ {k:"BRINK",t:"Ride it to the last hour for maximum concessions",s:"Nerve is a policy.",d:{maga:6,gop:-3},blow:6,risk:{p:.45,out:"The X-date math was wrong by four days. A Treasury auction wobbles, a rating gets cut, and your own donors call the Speaker before they call you, which is the detail that stings.",d:{econ:-9,appr:-6,gop:-4},blow:10},out:"You get the border money and the recissions package in exchange for nothing but adrenaline. The other side's caucus meeting afterward leaks within the hour, and it is a symphony."},
+ {k:"DEFAULT",t:"Say the quiet part: maybe default is good, actually",s:"Burn the credit card to spite the bank.",d:{maga:4,econ:-8,law:-5,appr:-5},blow:12,out:"You muse on camera that the debt is “mostly fake anyway” and markets in three time zones react before the briefing ends. Treasury issues a clarification that clarifies you did say it."}
+]},
+{fix:"G2027",ph:1,head:"THE G20",body:"A summit hall abroad, a year after you hosted the last one at your own golf resort, an arrangement everyone has agreed to stop bringing up. The agenda is trade, AI, and a family photo in which your placement is, as always, under negotiation.",ch:[
+ {k:"TRUCE",t:"Sign the tariff truce with Beijing",s:"Declare victory. Specifics to follow. Never.",d:{econ:7,appr:4,maga:-4},out:"Soybeans, chips, a number with eleven zeros, and a handshake that runs nine seconds for the cameras. Whether it holds is next year's problem, and next year you may be someone else's problem."},
+ {k:"ESCALATE",t:"Announce new tariffs from the summit floor",s:"Do it there. In front of everyone.",d:{maga:8,econ:-6},blow:8,ledger:"TARIFFS",out:"You post the new rates during the closing session, from the closing session. Three delegations learn about it from their phones while sitting next to you, which is, you note, efficient."},
+ {k:"SKIP",t:"Send the VP and go to the ribbon-cutting instead",s:"The ballroom won't open itself.",d:{maga:4,appr:-3},ledger:"ALLIES",out:"J.D. Vance works the summit while you cut the ribbon on the new White House ballroom, gold as advertised. Both events make the front page. Only one has chandeliers you personally selected."}
+]},
+{fix:"SUCCESSION",ph:2,head:"THE SUCCESSION QUESTION",body:"Iowa is in six days and every Republican in it is running on your name. Vance has been to the state eleven times and to dinner at Mar-a-Lago four. A super PAC nobody will claim has printed hats that say a number higher than two. Everyone is waiting for one post.",ch:[
+ {k:"ANOINT",t:"Endorse Vance and end the primary tonight",s:"The heir. The machine falls in line.",d:{gop:8,appr:2,maga:3},heir:"J.D. Vance",out:"One post, 40 words, done. The field folds inside a month and spends the spring auditioning for the ticket. The movement has an heir, and the heir has a donor problem you have graciously left him."},
+ {k:"COY",t:"Endorse nobody. Make them all come kiss the ring",s:"Leverage until the convention.",d:{maga:5,gop:-5},blow:4,out:"The primary becomes a year-long loyalty pageant conducted entirely through your feed. Great television. The eventual nominee will start the general in July, broke and bruised, and that is a July problem."},
+ {k:"THIRD",t:"“A lot of people are saying I should run again. We're looking at it.”",s:"All options on the table. All of them.",d:{maga:14,appr:-6,law:-10,gop:-8},blow:14,ledger:"THIRDTERM",flag:"thirdTerm",out:"You say it at a rally in Council Bluffs with the hat on. The crowd chants a number. Three constitutional scholars faint in unison on live television, the RNC goes quiet for 36 hours, and the merch sells out by morning."}
+]},
+{fix:"SOTU28",ph:2,head:"THE LAST STATE OF THE UNION",body:"By tradition this is the legacy speech: the soft-focus one about journeys and torches. The draft has a torch in it. You have never once handed anyone a torch, and the primary is happening in the audience, in real time, in the seating chart.",ch:[
+ {k:"LEGACY",t:"Give the legacy speech, torch and all",s:"Let them cry. It polls.",d:{appr:6,gop:3,law:2,maga:-4},out:"You do the whole thing, grief and grandchildren and one genuinely graceful minute about the office itself. The room stands twice for things that aren't applause lines. You'll deny liking it."},
+ {k:"AGENDA",t:"Announce a massive final-year agenda instead",s:"Lame duck is a media invention.",d:{maga:7,econ:2,gop:-3},blow:5,out:"Sixty new initiatives, a moon base, and a national high-speed rail map drawn, visibly, in marker. Congress will pass four of them. The base hears the only message that matters: he is not done."},
+ {k:"KINGMAKE",t:"Use the rostrum to bless and curse primary candidates by name",s:"A State of the Union as an endorsement show.",d:{maga:8,appr:-4,law:-3,gop:-4},blow:6,out:"Unprecedented, improper, irresistible television. The candidate you praise cries. The one you nickname from the rostrum drops out within the week and un-drops two days later, which you also caused."}
+]},
+{fix:"SUPERT",ph:2,head:"SUPER TUESDAY",body:"Fourteen Republican primaries tonight, all of them about you, none of them featuring you, a situation you have been asked repeatedly not to fix. Across the aisle the Democrats are having an actual contest, which the networks keep cutting to, which is the real problem.",ch:[
+ {k:"SLATE",t:"Post your full slate at 6 a.m. and take credit by 9 p.m.",s:"Own the whole board.",d:{maga:7,gop:4},out:"Your endorsees run the table minus two, and the two get statements questioning whether their counts were legitimate, out of habit. The party is yours to hand off, if you ever hand it off."},
+ {k:"MEDDLE",t:"Spend the day posting about the Democratic primary instead",s:"Pick their nominee for them.",d:{maga:5,appr:-2},blow:5,risk:{p:.35,out:"Your chosen chaos candidate surges, then wins the nomination outright by June, then polls six points better against your side than the one you sabotaged. The sorcerer reviews his apprentice work.",d:{appr:-4,gop:-4},blow:6},out:"You praise the Democrat you'd most like to run against as “the only one over there with talent,” and their own base does your work for you. An in-kind contribution, the lawyers note, to nobody in particular."},
+ {k:"COUNT",t:"Demand cameras in the count rooms of your own party's primary",s:"Trust, but subpoena.",d:{maga:6,law:-6,gop:-5},blow:8,out:"You allege irregularities in a primary your candidates are winning, which even your allies find avant-garde. The RNC issues a statement of full support that reads like a hostage letter."}
+]},
+{fix:"SCOTUS28",ph:2,when:function(){return T.flags.thirdTerm;},head:"TRUMP v. THE TWENTY-SECOND",body:"It is the only case in America. Ballot officials in nine states kept your name off, your lawyers invented four theories on the flight over, and the Court that you built now has to say, out loud, whether “elected” means what everyone was afraid it means.",ch:[
+ {k:"STAND",t:"Stand down before the ruling and anoint Vance from the courthouse steps",s:"Exit on your own terms. Sort of.",d:{appr:4,law:8,gop:6,maga:-8},unflag:"thirdTerm",heir:"J.D. Vance",out:"You withdraw the case, claim you were never really running, and endorse Vance in the same forty-minute statement. The republic exhales. The hat vendors pivot to VANCE 48 by the weekend, because the number tracks the presidency."},
+ {k:"DEFY",t:"Let them rule, and dare them",s:"They're your justices. Remind them.",d:{maga:6,law:-9},blow:10,risk:{p:.85,out:"8–1. Even yours. The opinion is eleven pages and the last line is “The Constitution admits of no exceptions for the exceptional.” Your name comes off nine ballots in a week, and the scramble for an heir begins four months before the convention.",d:{maga:-4,law:-8,gop:-6,appr:-3},blow:8,unflag:"thirdTerm",flag:"gambit"},out:"The Court punts on standing, 5–4, in a footnote. It is not a yes. It does not need to be. Your name stays on the ballot, the law professors stay on television, and the rule-of-law gauge on every dashboard in this country quietly gives up.",flag:"gambit"},
+ {k:"WRITEIN",t:"Comply — and bless a national write-in campaign you do not control",s:"Wink at it. Winking is legal.",d:{maga:8,law:-6,gop:-6,appr:-4},blow:10,unflag:"thirdTerm",flag:"gambit",out:"You accept the amendment “under protest” while a movement you fund but do not technically run teaches eleven million people to spell your name in a box. It will not win. It will make the actual nominee's math a nightmare, and everyone knows whose nightmare it was."}
+]},
+{fix:"SCOTUS28",ph:2,when:function(){return !T.flags.thirdTerm;},head:"DECISION SEASON, FINAL EDITION",body:"June of an election year, and the Court drops the deportation-powers case at 10 a.m. on a Thursday: the wartime statute, the flights, the due-process question that has been in the system since 2025. Whatever they say lands directly on the campaign.",ch:[
+ {k:"ACCEPT",t:"Accept the limits and reroute through the ports of entry",s:"Process the losses like a government.",d:{appr:5,law:7,maga:-7},out:"DHS stands up the compliant version inside a month, which suggests the compliant version was always available. The numbers dip, the lawsuits thin out, and the base notices exactly the part you hoped they wouldn't."},
+ {k:"SLOWWALK",t:"Comply at the speed of continental drift",s:"Yes, absolutely, eventually.",d:{maga:5,law:-7},blow:8,ledger:"COURTS",out:"The flights continue under a “review framework” that reviews nothing. A district judge uses the word “contempt” in a footnote, then in a heading, then in an order."},
+ {k:"CAMPAIGN",t:"Run against the ruling itself for the final five months",s:"Make the Court the ballot question.",d:{maga:8,appr:-3,law:-5,gop:-2},blow:6,out:"“Nine lawyers versus your family's safety” debuts at the Phoenix rally and every candidate you've endorsed has it in their stump by Sunday. The Chief Justice's year-end report will have a paragraph about this, unsigned, unmistakable."}
+]},
+{fix:"CONV28",ph:3,when:function(){return T.flags.thirdTerm;},head:"THE CORONATION",body:"Houston. The convention has one name on its lips and a legal team in the basement. The delegates nominate you by acclamation for a third term while four networks run a disclaimer under the feed, live, for four days. There is no roll call. There is a laser show.",ch:[
+ {k:"ACCEPT",t:"Accept, for two hours and eleven minutes",s:"The longest acceptance speech ever given. Again.",d:{maga:10,appr:-4,law:-4},blow:6,out:"You break your own record from 2016, 2020, and 2024, which you announce mid-speech. The balloon drop is timed for the finish and has to be re-armed twice."},
+ {k:"HUMBLE",t:"Accept humbly, briefly, constitutionally-adjacent",s:"Reassure the suburbs. Forty minutes, tops.",d:{appr:4,gop:4,maga:-3},out:"“If the people want it, who is the Constitution to say no?” is somehow the moderate version of the speech, delivered in under an hour with only two nicknames. The suburbs are not reassured, but they are impressed by the discipline."},
+ {k:"FAMILY",t:"Bring the whole family on stage and tease the dynasty",s:"After the third term, the bench.",d:{maga:7,appr:-5,law:-3},blow:6,out:"Five children, eleven grandchildren, and one chyron reading THE HOUSE OF TRUMP that a producer will later swear was a technical error. The dynasty is now text, not subtext."}
+]},
+{fix:"CONV28",ph:3,when:function(){return !T.flags.thirdTerm&&!!T.flags.heir;},head:"THE HANDOFF SHOW",body:"Houston. It is {HEIR}'s convention, technically, a word doing incredible work. Your speaking slot is Thursday, before the nominee, and the negotiation over your runtime has taken longer than the platform.",ch:[
+ {k:"BLESS",t:"Deliver the clean torch-pass and get off stage",s:"Thirty minutes. The nominee's night.",d:{gop:6,appr:4,maga:2},out:"You do thirty-one minutes, praise {HEIR} by name nine times, and leave the stage to them. The roll call is a formality, the bounce is real, and the movement watches its founder do the hardest trick in politics: exiting."},
+ {k:"ECLIPSE",t:"Speak for two hours and let the nominee follow you",s:"Nobody follows you. That's the point.",d:{maga:8,gop:-5,appr:-3},blow:5,out:"Your speech runs long, the nominee's starts at 11:40 p.m. Eastern, and Friday's coverage is a photo of you with a caption about them. The ticket's first act is airing a grievance, privately, through four separate leaks."},
+ {k:"TICKET",t:"Muscle your own pick onto the ticket as VP",s:"The nominee gets a running mate. Yours.",d:{maga:5,gop:-4,law:-2},blow:6,out:"{HEIR} announces a running mate they met twice, both times at your club. The delegates ratify it, the strategists call it “the regent model,” and you do not dispute the term."}
+]},
+{fix:"CONV28",ph:3,when:function(){return !T.flags.thirdTerm&&!T.flags.heir;},head:"THE OPEN CONVENTION",body:"Houston, and for the first time since 1976 nobody has the delegates. You kept the primary open all spring for leverage, and here is the invoice: four candidates, three ballots so far, one man in a skybox whom every camera checks every ninety seconds.",ch:[
+ {k:"VANCE",t:"Descend and hand it to Vance on the fourth ballot",s:"The heir, eventually. Dramatically.",d:{gop:5,maga:4,appr:2},heir:"J.D. Vance",out:"You walk the floor once — once — and the fourth ballot is unanimous-ish. Vance accepts a nomination that everyone understands was delivered, not won, and the general election starts tomorrow, six weeks late and broke."},
+ {k:"DARKHORSE",t:"Anoint the loyalist nobody saw coming",s:"Reward faith. Alarm consultants.",d:{maga:6,gop:-6,appr:-3},blow:5,heir:"the loyalist",out:"A name from your second Cabinet, best known for defending you on television in complete sentences. The floor obeys, the donors blanch, and the opposition's ad-makers order champagne."},
+ {k:"CHAOS",t:"Let them fight it out for nine ballots",s:"Great television. Terrible math.",d:{maga:3,gop:-8,appr:-4},blow:6,heir:"the survivor",out:"Nine ballots, two floor fights, one walk-out, and a nominee who emerges owing everyone and owning nothing. The convention gets the best ratings of the summer. The nominee gets the worst launch since Humphrey."}
+]},
+{fix:"UNGA28",ph:3,head:"THE GENERAL ASSEMBLY, FAREWELL TOUR",body:"Your last U.N. week, unless it isn't. The delegations that spent three years learning to manage you now face the harder problem of your successor, and every bilateral this week is really the same question: does the next one honor the deals?",ch:[
+ {k:"GUARANTEE",t:"Personally guarantee every deal survives you",s:"The word of the brand.",d:{appr:4,econ:3,law:2,maga:-2},out:"You tell the room the agreements are “bigger than any one man, even me,” a sentence your speechwriter frames. Three currencies steady. The deals will mostly hold, and the mostly is not your problem after January."},
+ {k:"LEVERAGE",t:"Hint everything's void unless your side wins in November",s:"The whole world is a swing state.",d:{maga:6,appr:-4,law:-5},blow:8,ledger:"ALLIES",out:"“If the wrong people win, those deals are gone, and these countries know it.” Openly inviting the planet to root for your ticket is a campaign-finance question with no enforcement mechanism, which you note, from the rostrum."},
+ {k:"SHOW",t:"Skip the diplomacy, do the greatest-hits speech",s:"The escalator, the prize, the wars you ended.",d:{maga:7,appr:-2},out:"A forty-minute retrospective, delivered to a hall that — and no one is more surprised than the hall — is full. Delegates who have cursed you in cables line up for photos. Nobody has ever been sure whether they hate the show or the fact that they'll miss it."}
+]},
+{fix:"PARDONS",ph:4,head:"THE PARDON WINDOW",body:"December of a final year, when the office turns into a clemency drive-through. The list on your desk has four tiers: the allies, the family, the famous, and — in a folder the counsel's office labeled with genuine dread — you.",ch:[
+ {k:"BLANKET",t:"Pardon everyone. Allies, aides, family. Everyone.",s:"Preemptive, comprehensive, unreviewable.",d:{maga:6,law:-12,appr:-7},blow:-10,ledger:"COURTS",out:"Ninety-one names in one proclamation, including several who insist they committed no crimes, a position now permanently protected. The blowback ledger gets shorter and the law books get a new chapter with your name on it."},
+ {k:"SELF",t:"The self-pardon. Do it. Settle the question forever.",s:"Nobody knows if it works. One way to find out.",d:{maga:5,law:-14,appr:-8},blow:-8,ledger:"COURTS",flag:"selfPardon",risk:{p:.4,out:"The memo leaks before the proclamation is signed, which means the debate happens while your hand is literally on the pen. Two of your own appointees signal from the bench, via speeches, that it will not survive review. You sign anyway.",d:{law:-6,appr:-4,gop:-4},blow:6},out:"One sentence, notarized, historic. Half the legal academy says it is void, half says it is unthinkable, and all of it agrees the question is now headed to the one Court you've been feeding for eight years."},
+ {k:"MODEST",t:"A modest list: sentences, not scandals",s:"Clemency as it was drawn up.",d:{appr:5,law:6,maga:-5},out:"Three hundred commutations, none of whom you have met, most of whom deserve it. It is the most conventional thing you have done with the office, and the coverage is so warm you briefly consider a second list."}
+]},
+{fix:"FAREWELL",ph:4,head:"THE FAREWELL ADDRESS",body:"Washington set the precedent, Eisenhower set the bar, and your speechwriters have prepared a text in that tradition, on the assumption — brave, given the room — that you will read it. Nine minutes, prime time, the last scheduled word.",ch:[
+ {k:"GRACE",t:"Read it. The whole thing. Graciously.",s:"Leave them stunned one last time.",d:{appr:8,law:4,gop:3,maga:-4},out:"You warn against division, thank the troops, and wish your successor well by name, and the fact-checkers find nothing to do, which unsettles them. It is nine minutes of the president everyone was told you could never be, timed precisely for the history books."},
+ {k:"SCORE",t:"Settle every score in reverse chronological order",s:"The enemies list, director's cut.",d:{maga:9,appr:-6,law:-3},blow:5,out:"Forty minutes, unscripted, alphabetical at times. Two networks cut away and one brings in a live fact-checking desk, on a split screen, during a farewell address, which is itself historic."},
+ {k:"TEASE",t:"Announce the media empire and tease what's next",s:"Not a goodbye. A season finale.",d:{maga:8,econ:2,appr:-3},out:"“This isn't the end. This is the biggest launch in the history of television, maybe of anything.” The farewell address ends with a QR code, and 2032 is trending before the anthem plays."}
+]}
+];
+
+/* ---------------- the west wing, at large ----------------
+   ph0 the midterm fall · ph1 the governing year */
+TEVENTS=TEVENTS.concat([
+{ph:0,head:"THE CLOSING ARGUMENT",body:"Three weeks of rallies left before the midterms and the consultants have sent over a memo, in bullet points, begging you to close on the economy. The checks, the gas prices, the plant openings. The memo does not mention retribution. You have annotated the memo.",ch:[
+ {k:"ECONOMY",t:"Close on the checks and the paychecks",s:"The memo, as written. For once.",d:{appr:5,econ:2,gop:5,maga:-4},out:"Ninety minutes on tariff dividends and grocery prices, with only one four-minute detour about a judge. The candidates on stage with you can use every clip, which has not been true since spring."},
+ {k:"ENEMIES",t:"Close on the enemies within",s:"The base doesn't march for GDP.",d:{maga:9,appr:-5,gop:-3},blow:6,out:"The rally is electric and the coverage is radioactive, a trade you have made a hundred times and won maybe sixty. Swing-district candidates start scheduling around your visits, in the other direction."},
+ {k:"BALLOT",t:"Make it about you: “I'm on the ballot. Me.”",s:"Turn the midterm into a referendum. On purpose.",d:{maga:8,appr:-3,gop:2},blow:4,out:"“A vote for them is a vote for me, and I'm watching every precinct.” Turnout will spike on both sides now, and which side spikes harder is what November 3rd is for."}
+]},
+{ph:0,head:"ANOTHER CITY ON THE LIST",body:"The Pentagon has the Chicago deployment package on your desk, the third city this year and the first one that filed its lawsuit before the announcement. The governor of Illinois is already on television calling it an occupation, which is, your team notes, excellent footage for somebody.",ch:[
+ {k:"SEND",t:"Send the Guard. Cameras at the armory.",s:"Law and order is the brand.",d:{maga:8,appr:-4,law:-7},blow:8,ledger:"GUARD",risk:{p:.35,out:"Week two, a viral arrest goes wrong on a bystander's phone, and the footage plays on a loop under the word OCCUPATION. The lawsuit gets a sympathetic panel and your own Pentagon counsel starts using the word “exposure.”",d:{appr:-7,law:-6,maga:3},blow:10},out:"Humvees on Michigan Avenue by Friday. Crime stats will be argued about for a year, but the images say order, and the base has wanted Chicago since the first term."},
+ {k:"DEAL",t:"Offer the governor a joint operation instead",s:"Make them co-sign it or refuse it.",d:{appr:4,law:2,gop:2,maga:-4},out:"Federal agents under a negotiated framework, state cops in front at the cameras. Less footage, fewer lawsuits, and the governor has to share a podium with your DHS secretary, visibly metabolizing it."},
+ {k:"HOLD",t:"Hold off until after the midterms",s:"Optics now, boots later.",d:{appr:2,maga:-5},out:"You post that Chicago is “lucky, for now,” which keeps the threat alive without the liability. The base grumbles. The suburban districts you need do not, which was the entire calculation."}
+]},
+{ph:0,head:"THE PHARMA TARIFF",body:"The trade shop has the next tranche ready: 200 percent on imported pharmaceuticals unless the companies onshore by spring. The last tranche put washing machines in every attack ad in the Midwest, and this one touches insulin, which even your own pollster flags with a red circle.",ch:[
+ {k:"FIRE",t:"Announce it at a rally, effective immediately",s:"Maximum leverage, maximum noise.",d:{maga:7,econ:-4},blow:8,ledger:"TARIFFS",risk:{p:.4,out:"Three drugmakers announce shortages “out of an abundance of caution,” which is corporate for leverage, and the cable packages write themselves: your tariff, grandma's prescription. The red circle was right.",d:{appr:-8,econ:-5},blow:8},out:"Two manufacturers announce Ohio plants within a month, groundbreaking ceremonies timed, at your suggestion, for late October. Whether the plants ever fully open is a problem for a calendar year you may not be reading about."},
+ {k:"CARVE",t:"Announce it with a carve-out for generics and insulin",s:"The tariff, minus the attack ad.",d:{appr:3,econ:-1,maga:3,gop:2},ledger:"TARIFFS",out:"The headline number stays scary enough to force the meetings, and the carve-out kills the sob story before it films. Your trade adviser calls it going soft. Your pollster sends the trade adviser a fruit basket."},
+ {k:"SHELVE",t:"Shelve it and bank the calm before November",s:"The market has had a year.",d:{econ:4,appr:2,maga:-5},out:"You tell the trade shop “after the midterms,” a phrase now doing enormous structural work throughout the building. The Dow drifts up. The base wonders, in posts you definitely read, whether the tariff man has gone quiet."}
+]},
+{ph:0,head:"THE QUOTA",body:"The deportation numbers are on the desk, and they are short of the promise by an amount the secretary describes as “a rounding issue” and the spreadsheet describes as forty percent. Stephen wants raids in three sanctuary cities before November. DHS wants the word “raids” retired. Everyone wants a decision.",ch:[
+ {k:"SURGE",t:"Order the surge. Every city. Before the midterms.",s:"Hit the number the promise made.",d:{maga:9,appr:-6,law:-6},blow:10,ledger:"GUARD",risk:{p:.35,out:"A workplace raid sweeps up three citizens, one of them a veteran, all of them on camera. The number goes up and so does the footage, and the footage always wins the week.",d:{appr:-8,law:-5,maga:3},blow:10},out:"The number gets hit and announced from a podium with a chart. The chart appears in your ads and, cropped differently, in theirs, which is the tariff-checks playbook all over again: everyone fights, base wins."},
+ {k:"TARGET",t:"Retool around criminal records only, and say so",s:"Smaller number, cleaner story.",d:{appr:5,law:4,maga:-6},out:"The removals drop but every case has a rap sheet the podium can read aloud. The activist wing calls it surrender. The swing districts call it, per the crosstabs, “finally reasonable,” a phrase you would never put on a hat."},
+ {k:"BLAME",t:"Keep the policy, blame the judges for the shortfall",s:"The number is fine. The narrative needs a villain.",d:{maga:6,law:-4},blow:5,ledger:"COURTS",out:"“We'd be at a million if not for radical judges,” which has the advantage of being unfalsifiable and the disadvantage of pre-writing the contempt motion when your lawyers next appear before those judges, which is Tuesday."}
+]},
+{ph:0,head:"THE CANDIDATE PROBLEM",body:"Your endorsed Senate candidate in a must-hold state has a problem, and the problem has receipts, and the receipts are running Thursday. The state party chair calls asking one question: does the endorsement survive the story?",ch:[
+ {k:"RIDE",t:"Double down. Rally in his state Friday.",s:"Loyalty is the currency. Spend it.",d:{maga:5,gop:-2},blow:5,risk:{p:.45,out:"A second story drops while you're mid-rally, worse than the first, and now your Friday footage is the B-roll for their Sunday ad. The seat moves from lean-R to toss-up and the party quietly reroutes money around your guy.",d:{appr:-5,gop:-5},blow:6},out:"The Friday rally drowns the Thursday story, which is the oldest play in your book and still legal. The base decides the receipts are fake. The receipts are not fake, but November does not check."},
+ {k:"CUT",t:"Un-endorse by lunchtime. You barely knew him.",s:"He was always weak. You said so. You'll have said so.",d:{appr:2,gop:3,maga:-3},out:"The un-endorsement post refers to him as “a candidate I never fully endorsed,” above the archived post fully endorsing him. The replacement write-in effort is chaos, but it is chaos wearing your hat, which polls better than the receipts."},
+ {k:"SWAP",t:"Muscle the party into swapping the nominee late",s:"There is a procedure. There is now.",d:{gop:2,law:-4,maga:2},blow:5,out:"Lawyers locate a vacancy provision drafted for candidate death and apply it to candidate embarrassment. It holds up, barely, and the new nominee starts with your endorsement and six weeks. The state party chair develops a twitch."}
+]},
+{ph:0,head:"THE BALLROOM REVEAL",body:"The White House ballroom is finished — 90,000 gold-leafed square feet where the East Wing used to be — and the question is whether a ribbon-cutting the week before the midterms reads as triumph or as a $300 million chandelier bill during a grocery-price election.",ch:[
+ {k:"GALA",t:"Full gala. Cameras. Chandeliers. Sinatra impersonator.",s:"Build it and flaunt it.",d:{maga:6,appr:-4},blow:4,out:"It is, objectively, the most gold anyone has ever seen in one room, including the donors who paid for it and are seated by donation size. The coverage splits precisely along the only line that matters: people who were invited, and voters."},
+ {k:"TROOPS",t:"Open it with a dinner for Gold Star families",s:"Make the gold mean something.",d:{appr:5,maga:2,gop:2},out:"The chandeliers photograph over veterans and their families, and the attack ads about the ballroom quietly die in editing bays across the country. Even the hostile write-ups concede it was, unexpectedly, moving."},
+ {k:"DELAY",t:"Postpone the reveal to December",s:"The chandelier can wait for the returns.",d:{appr:2,maga:-2},out:"The ballroom sits finished and dark for six weeks, which costs nothing except a leaked photo of you standing in it alone at night, which becomes, to your genuine irritation, the most humanizing image of your entire second term."}
+]},
+{ph:1,head:"THE FED WILL NOT CUT",body:"{FEDCHAIR} held rates again and used the word “tariff-driven” in the statement, which you have asked him not to do. Mortgage rates are the number your people see. The lawyers have re-sent you the memo about “for cause.” You have re-sent them a poll.",ch:[
+ {k:"FIRE",t:"Fire him. Today. Announce the replacement from the Roosevelt Room.",s:"Nobody is above the org chart.",d:{maga:8,law:-14,gop:-6},blow:14,ledger:"FED",flag:"powellFired",risk:{p:.5,out:"The ten-year does something no one in the building can explain and the Dow gives back four months in six hours. Your nominee's confirmation hearing is now a hostage video.",d:{econ:-14,appr:-8,maga:5,law:-14},blow:16},out:"He goes, your man goes in, and the cut arrives in March. The markets wobble, recover, and decide to worry about it later. Four hundred economists sign a letter. Zero of them vote in your primary."},
+ {k:"POST",t:"Post about him until the market does your job",s:"“Too Late” is already trending.",d:{maga:4,appr:-1},blow:4,ledger:"FED",out:"Nine posts before noon. The Fed does not move. The dollar does, slightly, in a direction Treasury asks you to stop causing."},
+ {k:"WAIT",t:"Let him serve it out and take credit for whatever happens",s:"His term ends anyway. The economy is yours either way.",d:{law:4,econ:2,gop:3,maga:-4},out:"You tell a rally he is “a very average golfer, which tells you everything” and otherwise leave it. The cut comes in June. You claim it that afternoon."}
+]},
+{ph:1,head:"THE DEAL ON THE TABLE",body:"Moscow has finally signed the framework — the one with the land swap, the sanctions sunset, and the security guarantee that guarantees, on close reading, a future meeting. Kyiv has not signed. Kyiv is in the Roosevelt Room, right now, not signing.",ch:[
+ {k:"FORCE",t:"Give Zelensky a deadline: sign by Friday or the aid stops",s:"Peace through leverage. On the smaller party.",d:{maga:6,appr:-4,law:-3},blow:10,ledger:"ALLIES",risk:{p:.4,out:"He goes on television — American television — and reads the guarantee clause aloud, slowly, in English. Two NATO allies announce they'll backfill the aid, and the framework starts dying the way frameworks do: publicly, and with your name on it.",d:{appr:-7,gop:-4},blow:8},out:"He signs, ashen, on the Friday. Whether it is peace or an intermission is a question you have brilliantly scheduled for after January 2029. The Nobel posts resume by evening."},
+ {k:"SWEETEN",t:"Sweeten Kyiv's side: real guarantees, real money",s:"A deal both sides hate slightly less.",d:{appr:5,law:3,econ:-2,maga:-4},out:"You put actual teeth in the guarantee, which Moscow protests, which is how you know it's teeth. The signing photo is three unhappy men, which historians agree is what peace usually looks like."},
+ {k:"WALK",t:"Walk away and blame both of them",s:"“They don't want peace. I wanted peace.”",d:{maga:4,appr:-3},blow:5,out:"The framework joins the pile. The war grinds on at a lower boil, both capitals blame you in briefings and court you in private, and the file stays open on the Resolute Desk, radiating."}
+]},
+{ph:1,head:"THE RIVIERA FILE",body:"The Gaza reconstruction consortium has its financing, its renderings, and one outstanding item flagged by counsel: a resort parcel on the plan, beachfront, whose holding company traces, after four shells, to a name adjacent to yours. The Qataris are ready to break ground. So is the story.",ch:[
+ {k:"DIVEST",t:"Order the family out of the parcel before it prints",s:"The project matters more than the beach.",d:{appr:5,law:5,maga:-2},blow:-6,out:"The divestiture memo goes out at 6 a.m. and the story dies on the vine for lack of a second paragraph. The reconstruction proceeds, and for once the word “Riviera” appears in coverage without the word “conflict.”"},
+ {k:"BRAZEN",t:"“So what? Nobody builds better. Next question.”",s:"The conflict is the credential.",d:{maga:5,appr:-5,law:-6},blow:10,out:"You defend the parcel by praising it, which is somehow both a confession and an advertisement. The ethics complaints stack; the tower renderings trend; the two audiences never meet."},
+ {k:"FREEZE",t:"Freeze the whole consortium pending review",s:"If it costs you the beach, it costs everyone the port.",d:{appr:-2,econ:-2,maga:2},blow:4,out:"The review will take a year and everyone knows it. Doha is furious, the site sits fenced, and the leverage of an unbuilt Riviera turns out, weirdly, to be enormous."}
+]},
+{ph:1,head:"GREENLAND, AGAIN",body:"The mineral survey came back and it is, in the geologists' phrase, “consequential.” The file reopens itself. Denmark has pre-emptively called the idea “absurd” again, Nuuk has scheduled a referendum on something adjacent, and your map guy has already printed the map.",ch:[
+ {k:"OFFER",t:"Make the formal offer. A number. In writing.",s:"Everything has a price. Sovereignty has a big one.",d:{maga:7,appr:-3},blow:6,ledger:"ALLIES",out:"The number leaks in an hour, as intended. Copenhagen refuses, Nuuk pointedly doesn't, and the wedge you have just driven into the Kingdom of Denmark is the actual deliverable. The map guy prints a second map."},
+ {k:"COURT",t:"Court Greenland directly: investment, flights, a consulate the size of a mall",s:"Buy the relationship, not the island.",d:{appr:3,econ:3,gop:2},out:"The soft-power version: rare-earth joint ventures and direct flights from Newark. In ten years this either looks like statesmanship or like the longest acquisition in corporate history, and you are comfortable with both."},
+ {k:"SECURITY",t:"Declare the Arctic a security emergency and expand the bases",s:"Don't buy it. Garrison it.",d:{maga:5,law:-4,appr:-2},blow:6,ledger:"ALLIES",out:"Two new installations under an emergency declaration Denmark learns about from the announcement. NATO's northern flank is “strengthened,” per your caption, “occupied,” per one Danish paper, and the difference is doing a lot of work."}
+]},
+{ph:1,head:"THE UNIVERSITY HOLDOUT",body:"The last big holdout university has rejected the compact — the funding-for-oversight deal every other campus eventually signed. Their president gave a speech about academic freedom that is doing numbers, and your staff has the retaliation menu open before the applause ends.",ch:[
+ {k:"CUT",t:"Cut every federal dollar. Grants, loans, visas, all of it.",s:"Make the holdout the warning.",d:{maga:7,law:-7},blow:8,ledger:"COURTS",risk:{p:.4,out:"An injunction lands in nine days, and the ruling's language about “viewpoint coercion” is bad enough that the signed universities start asking counsel whether their compacts are void too. The warning shot is now aimed at the whole framework.",d:{law:-5,appr:-4},blow:8},out:"Four billion frozen. The lawsuits will run for years, but the other holdouts — there were three more drafting rejection speeches — go quiet, which was the entire point of the exercise."},
+ {k:"AUDIT",t:"Sic the IRS on the endowment instead",s:"Quieter. Meaner. Slower.",d:{maga:4,law:-6},blow:8,ledger:"COURTS",out:"The endowment audit is technically routine, a word nobody in the building can say with a straight face. It will take three years, produce nothing, and cost them forty million in lawyers, which is, an aide notes admiringly, the punishment."},
+ {k:"IGNORE",t:"Let them win this one and starve them of the fight",s:"Martyrs need a Rome.",d:{appr:3,law:3,maga:-4},out:"You post one dismissive line and move on, and without the federal villain the speech tour dies in a month. The compact holds everywhere else. Your staff quietly deletes the menu, disappointed."}
+]},
+{ph:1,head:"THE LAW FIRM SETTLEMENTS, AUDITED",body:"The pro bono commitments the big firms signed in 2025 — the billion dollars of free work for your causes — are coming due, and the firms have been slow-rolling. A memo proposes an enforcement mechanism. The mechanism is you, posting.",ch:[
+ {k:"COLLECT",t:"Post the delinquent firms by name, with balances",s:"An invoice with an audience.",d:{maga:5,law:-6},blow:8,ledger:"COURTS",out:"Three firms deliver briefs within the week on causes they privately despise, which is what the signatures were always for. A fourth un-signs and dares you, and becomes, instantly, the most sought-after firm in the country. Net: unclear, loudly."},
+ {k:"TRADE",t:"Quietly trade the balances for favors as needed",s:"A billion dollars of leverage, dispensed retail.",d:{law:-4,gop:2},blow:6,out:"The commitments become a favor bank drawn on for judicial nominees' defense funds and one very specific antitrust amicus. Nothing is written down, which is itself the system working as designed."},
+ {k:"RELEASE",t:"Declare the debts settled and release them all",s:"Mercy, weaponized as precedent.",d:{appr:4,law:5,maga:-4},blow:-5,out:"You announce the firms have “more than paid their dues,” which converts a shakedown into a pardon and leaves every firm wondering what the next administration will read into their signature. The bar exhales; it does not relax."}
+]},
+{ph:1,head:"THE COIN AT ALL-TIME HIGHS",body:"The family token crossed a market cap that puts it, on paper, ahead of most banks, and the top hundred wallets include — per a blockchain forensics firm with excellent timing — several sovereign wealth funds with business before the government. The word “unprecedented” has stopped meaning anything in this building.",ch:[
+ {k:"DINNER",t:"Host another top-holders dinner at the club",s:"Access, priced transparently, in crypto.",d:{maga:3,econ:2,law:-8},blow:12,ledger:"CRYPTO",out:"Two hundred wallets buy in for a seat, four of them traceable to foreign ministries, and the seating chart is a sanctions-compliance question in a tuxedo. The dinner nets nine figures. The precedent nets whatever comes after nine."},
+ {k:"WALL",t:"Put the holdings in a real blind trust, publicly",s:"The wall between the coin and the desk.",d:{appr:4,law:6,maga:-2},blow:-8,out:"An actual trustee, actually independent, actually announced. The token dips on the news — its whole thesis was proximity — which is the most honest price signal the asset has ever produced."},
+ {k:"PUMP",t:"Post the rocket emoji from the official account",s:"The presidency, as a catalyst.",d:{maga:5,econ:2,law:-9},blow:12,ledger:"CRYPTO",risk:{p:.4,out:"It rips forty percent and then unwinds in an afternoon when a fund exits, and the bagholders are, demographically, your rally crowd. The class action names the account. The account is the presidency.",d:{appr:-6,law:-6,maga:-4},blow:10},out:"Up sixty percent, and the SEC — your SEC — issues guidance that presidential emojis are “not investment advice,” a sentence that will open a law school lecture every year for the next century."}
+]},
+{ph:1,head:"ELON CALLS",body:"He wants back in. The feud cost him contracts and cost you the appearance of a unified tech right, and the proposal on the table is a joint announcement: a Mars-adjacent initiative, some DOGE vindication language, and one post from each of you retiring the ugliest post about the other. The ugliest posts remain very much live.",ch:[
+ {k:"RECONCILE",t:"Take the deal. Rose Garden. Handshake.",s:"The billionaires reunited tour.",d:{maga:4,econ:4,appr:2},risk:{p:.3,out:"It holds for eleven days, then he reposts a poll about your mental acuity and the whole thing re-detonates with footage of the handshake attached. The second divorce is always worse.",d:{appr:-4,maga:-2},blow:6},out:"The handshake happens, the contracts unfreeze, and the joint fan base — which never accepted the divorce — declares the timeline healed. Neither of you has apologized for anything, which both of you consider the whole point."},
+ {k:"TERMS",t:"Make him come to the club, alone, and ask",s:"Reconciliation, with a receipt.",d:{maga:5,gop:2},out:"He flies in, no entourage, and the photo of him waiting in the lobby is worth more than the meeting. You get the endorsement and the satellite favor. He gets the contracts. The lobby photo gets 400 million views."},
+ {k:"NEVER",t:"Leave him out there. Permanently.",s:"Some feuds are load-bearing.",d:{maga:3,econ:-2},blow:3,out:"“I don't know him. Barely knew him. He asked to apologize.” The third act of the feud settles into a stable orbit of quarterly flare-ups, and both fan bases agree it's the best show either of you has produced in years."}
+]},
+{ph:1,head:"THE AGENCY THAT ISN'T THERE",body:"The FAA meltdown makes it undeniable: the workforce cuts went past fat, past muscle, into load-bearing wall. Ground stops in six regions, a near-miss above Denver, and a hearing at which the acting administrator — the fourth this term — did not know a number he should have known.",ch:[
+ {k:"REHIRE",t:"Emergency rehiring surge, and don't call it a reversal",s:"“Refinement.” The word is “refinement.”",d:{appr:5,econ:3,law:2,maga:-4},blow:-5,out:"Two thousand controllers and inspectors come back at signing-bonus rates that erase the savings twice over. It works, which nobody prints, because “government rehires people it fired” is only ever written as comedy."},
+ {k:"PRIVATIZE",t:"Announce air traffic control privatization instead",s:"The meltdown is the sales deck.",d:{maga:4,econ:-2,gop:-3},blow:6,ledger:"DOGE",out:"You pitch the crisis as proof the government shouldn't run the skies, which requires the audience not to ask who ran the government. Half of Congress bites. The controllers' union releases the Denver tape."},
+ {k:"BLAME",t:"Blame the holdovers and fire the administrator on stage",s:"The cuts were perfect. The people failed them.",d:{maga:5,law:-3,appr:-4},blow:6,ledger:"DOGE",out:"The fifth acting administrator is announced at a rally, which is a first for aviation governance. The near-miss files keep arriving in reporters' inboxes from inside the building, which is what firing people on stage buys you."}
+]},
+{ph:1,head:"THE DEBT LIMIT, EARLY",body:"Treasury's X-date moved up eight weeks — the tariff revenue is real but lumpy, and the Big Beautiful Bill's back half is due. The Speaker wants to pair the increase with cuts. The markets want it clean and boring. You have never once been accused of clean and boring.",ch:[
+ {k:"CLEAN",t:"Demand a clean increase and sign it fast",s:"Deprive the drama of oxygen.",d:{econ:5,appr:3,maga:-4,gop:2},out:"It passes with more of their votes than yours, which the Freedom Caucus calls a betrayal and Treasury calls a Tuesday. The ten-year yawns. Sometimes the win is that nothing happens."},
+ {k:"COIN",t:"Mint the trillion-dollar coin, with your face on it",s:"The loophole with a portrait.",d:{maga:6,econ:-3,law:-5},blow:8,out:"Treasury's lawyers say the statute technically allows it; Treasury's secretary ages a decade saying so. The coin is minted, litigated, and displayed — pending appeal — in the new ballroom, which at least is on brand."},
+ {k:"HOSTAGE",t:"Take the hostage: cuts or default, their choice",s:"You've read that it always works.",d:{maga:5,gop:-2},blow:7,risk:{p:.45,out:"A payment wobbles. Not a default — a “technical delay” — but the phrase does nine figures of damage per syllable, and the cuts you extract are worth less than the risk premium you just installed in every Treasury auction for a decade.",d:{econ:-9,appr:-5,gop:-4},blow:8},out:"They blink, you bank $290 billion in cuts, and the whole thing is retold at rallies as single combat. The ratings agencies put out a note using the word “governance” in a tone."}
+]},
+{ph:1,head:"THE SECRETARY GOES ROGUE",body:"One of your Cabinet secretaries has developed, in the press shop's phrase, “main character syndrome”: freelancing policy on television, contradicting the podium twice this week, and polling — this is the unforgivable part — well. The West Wing wants a decision before Sunday's shows.",ch:[
+ {k:"FIRE",t:"Fire them by post, mid-flight, with a nickname",s:"The classic. The classics work.",d:{maga:5,gop:-3,appr:-2},blow:5,out:"They learn at altitude, like the others. The nickname sticks by landing, the book deal is announced within a month, and the confirmation hearing for the replacement becomes a referendum on the firing. Standard package."},
+ {k:"LEASH",t:"Keep them, humiliate them, own their poll numbers",s:"A popular hostage is still a hostage.",d:{gop:2,maga:2,law:-2},blow:3,out:"They keep the job and lose the bookings, and their popularity becomes, through proximity, yours. Every West Wing has one enclosure like this. Yours is just labeled."},
+ {k:"PROMOTE",t:"Promote them into a bigger job with less airtime",s:"Bury them in responsibility.",d:{appr:2,gop:3,law:2},out:"You move them somewhere vital and dull, where the cameras don't go. Washington calls it deft, which irritates you slightly — it was supposed to be called ruthless — but it works, and their new agency actually improves."}
+]},
+{ph:1,head:"THE PRIMARY FROM THE RIGHT",body:"A thirty-four-year-old streamer-congressman has begun attacking you — you — from the right: the files never fully released, the deportation numbers short of the promise, the deals too soft on Beijing. His clips do enormous numbers with the youngest slice of the base. Yours, technically. On loan.",ch:[
+ {k:"CRUSH",t:"Full spotlight: nickname, rallies, a primary opponent for his seat",s:"Make an example, the old way.",d:{maga:4},blow:5,risk:{p:.4,out:"The nickname doesn't stick — a first — and every attack you launch is content for his channel. His numbers double. You have, a strategist says very quietly, become his algorithm.",d:{maga:-6,appr:-2},blow:5},out:"The machine does what the machine does: his primary opponent gets your endorsement, his committee seats evaporate, and the streams keep growing but the caucus learns, again, what the toll is. Order holds."},
+ {k:"ABSORB",t:"Bring him inside: a task force, a title, a leash",s:"Hire the critic. It always confuses them.",d:{maga:5,gop:2},out:"He gets a “Presidential Commission on Promises Kept,” which is either satire or genius, and his content pivots from attacking you to auditing everyone else on your behalf. The base reads it as accountability. You read it as containment. Both are right."},
+ {k:"OUTFLANK",t:"Steal his issues and go louder than him",s:"Nobody outflanks you to the right. House rule.",d:{maga:8,law:-5,appr:-4},blow:8,out:"You re-open the files question, juice the removal numbers, and threaten the Beijing deal in one 48-hour arc that leaves him applauding you, which was checkmate. The policy consequences of the arc are now real, and someone else's problem. Yours, actually. Later."}
+]}
+]);
+
+/* ph2 the succession spring · ph3 the general · ph4 the lame duck */
+TEVENTS=TEVENTS.concat([
+{ph:2,head:"THE ENDORSEMENT AUCTION",body:"Every Republican running for anything in 2028 wants the post, and the price has been floating upward all winter. The latest ask on your desk comes with a signed pledge — public, notarized — to support “the president's chosen successor, whoever that may be, or the president himself, as circumstances permit.” Someone drafted that clause carefully.",ch:[
+ {k:"PLEDGE",t:"Make the pledge the price for every endorsement",s:"Loyalty, in writing, forever.",d:{maga:6,gop:-4,law:-3},blow:6,out:"Two hundred and eleven candidates sign. The four who refuse become famous for a week and unemployed by summer. The party now runs on a document your own counsel describes as “fascinating,” in the tone lawyers use for radioactive things."},
+ {k:"MERIT",t:"Endorse on electability and nothing else",s:"Win the map. Skip the ceremony.",d:{gop:6,appr:3,maga:-4},out:"You back the strongest general-election candidate in every race, including two who once criticized you, which causes a system-wide error in the commentary industry. The slate over-performs. The pledge-drafters sulk."},
+ {k:"CASH",t:"Route endorsements through the super PAC's fundraising",s:"The list price is the list price.",d:{econ:2,law:-6,maga:2},blow:8,ledger:"CRYPTO",out:"Endorsements start correlating, visibly, with committee transfers, and a campaign-finance complaint gets filed with an agency you have thinned to two commissioners. The machine hums. The paper trail also hums."}
+]},
+{ph:2,head:"THE DEBATE YOU'RE NOT IN",body:"The GOP primary debate is Thursday in Manchester. You are not a candidate — currently, officially — and the organizers have made the catastrophic error of saying, on the record, that this one “isn't about Trump.” The plane is fueled either way. It's always fueled.",ch:[
+ {k:"CRASH",t:"Show up. Walk in. Take a seat in the front row.",s:"See how “not about you” survives contact.",d:{maga:8,appr:-3,gop:-3},blow:4,out:"The candidates spend two hours auditioning to your seat, second row center, and the post-debate poll question that matters is “who did he nod at.” The organizers' statement is not mentioned again by anyone, ever."},
+ {k:"COUNTER",t:"Counter-program: a rally, same city, same hour",s:"Split screen. You always win the split screen.",d:{maga:7,appr:-2},out:"The networks cut between a debate about you and a rally by you, and the ratings print the verdict at 11: rally by two-to-one. The candidates' best moments air, if at all, inside your reaction content."},
+ {k:"GRADE",t:"Live-post grades during the broadcast",s:"The judge's table is wherever your phone is.",d:{maga:6,gop:2},out:"You issue letter grades in real time, including a D-minus that visibly reaches a candidate's podium via their earpiece-adjacent staff. The grades lead every writeup. The debate itself places fourth in its own coverage."}
+]},
+{ph:2,head:"THE LIBRARY",body:"The presidential library — part archive, part resort, part, per the renderings, golf simulator — needs its final funding round, and the donor list needs your sign-off. Half the names on it have business before the government. The other half would like to.",ch:[
+ {k:"OPEN",t:"Take every check. It's a library. Allegedly.",s:"Knowledge wants to be funded.",d:{econ:2,law:-8},blow:10,ledger:"CRYPTO",out:"Four hundred million in a quarter, a record, from donors whose regulatory matters are, their lawyers stress, entirely unrelated. The library will be magnificent. The archive wing shrinks in each successive rendering."},
+ {k:"CLEAN",t:"Cap donations and publish every name",s:"A legacy you don't have to defend later.",d:{appr:4,law:5,maga:-2},blow:-5,out:"The clean version raises less and builds slower, and the coverage is so unfamiliar — “Trump library adopts strict ethics rules” — that two outlets triple-check it. The golf simulator survives the cuts. Obviously."},
+ {k:"FOREIGN",t:"Let the sovereign funds in quietly",s:"The Gulf loves libraries.",d:{econ:3,law:-9},blow:12,ledger:"CRYPTO",out:"Three sovereign wealth funds anchor the round through intermediaries with excellent manners. The disclosure, when it comes — and it will come — is a future president's scandal to inherit. Possibly yours. Possibly you'll be there."}
+]},
+{ph:2,head:"THE OTHER SIDE'S PRIMARY",body:"The Democrats are tearing themselves apart in the most watchable primary since 2008 — an establishment governor, an insurgent, and a billionaire nobody asked for. Your feed could decide it. Your feed knows it could decide it. Your thumbs are, at this moment, hovering.",ch:[
+ {k:"BOOST",t:"Boost the weakest one relentlessly",s:"Pick your opponent. The 2016 Rs did it to themselves.",d:{maga:4},blow:5,risk:{p:.4,out:"The weak one you boosted turns out to have a gear nobody scouted, wins the nomination, and enters the general with the one asset money can't buy: your certification, on the record, that they were the one you wanted. Oops is not a strategy memo, but it is this one's title.",d:{appr:-4,gop:-3},blow:6},out:"Your amplification drags the weak candidate through two extra months of viability, draining the field's money and forcing the eventual nominee leftward in four debates that will all be quoted in October. An in-kind contribution to your own ticket, unreported."},
+ {k:"CHAOS",t:"Praise a different one each week",s:"Total narrative confusion.",d:{maga:5,appr:-2},out:"By April, Democratic candidates are issuing statements clarifying that they do not want your praise, which their opponents cite as coordination. Nobody can model it, including you. The primary becomes, in one anchor's words, “a hall of mirrors with a phone.”"},
+ {k:"IGNORE",t:"Say nothing about them for the entire spring",s:"The silence will drive everyone insane.",d:{appr:3,law:2,maga:-3},out:"Your total silence about the Democratic primary becomes the most analyzed non-event in politics. Panels are convened. Theories are floated. You are, for once, just watching television, which no one is able to believe."}
+]},
+{ph:2,head:"THE FACE ON THE THING",body:"The Interior Department has quietly completed the feasibility study you asked for in 2025, and the news is mixed: Rushmore's granite can't take a fifth face without destabilizing the fourth. But there are, the memo notes with the resignation of a career civil servant, “alternative monumental options.” The $250 bill redesign is also attached.",ch:[
+ {k:"MONEY",t:"The $250 bill. Your face. Franklin had a good run.",s:"Legal tender, eternal brand.",d:{maga:7,appr:-4,law:-3},blow:5,out:"Treasury notes that statute forbids living persons on currency, and the response memo — “so change the statute” — is four words long. The bill dies in committee, but the mockup escapes, and the mockup is now on more t-shirts than most actual currency."},
+ {k:"STATUE",t:"The National Garden of American Heroes, with a centerpiece",s:"You commissioned the garden. Gardens have centers.",d:{maga:6,appr:-3},out:"The 250-hero garden breaks ground with a central statue whose subject is officially “The American President,” unofficially nine feet of you. The sculptor's interview — “I was given very specific jaw guidance” — runs everywhere."},
+ {k:"AIRPORT",t:"Rename Dulles. It's time.",s:"People are saying it. You are the people.",d:{maga:5,appr:-3,gop:-2},out:"The bill to create Donald J. Trump International Airport passes the House with three Democratic votes from members in districts you carried, dies in a Senate hold, and is reintroduced the next morning. The airport code battle — DJT is taken by a regional airstrip that refuses to sell — becomes its own saga."}
+]},
+{ph:2,head:"THE TELL-ALL",body:"Your former chief of staff — the second one, the general — has a book out in three weeks. The excerpts drop tonight, and the publisher's teaser promises “the meetings no one else survived.” Advance sales are, an aide reports before thinking better of it, spectacular.",ch:[
+ {k:"PREBUT",t:"Flood the zone before it lands: nicknames, counter-stories, receipts",s:"Drown the launch.",d:{maga:6,appr:-2},blow:4,out:"By publication day the book is a chapter in your story instead of the reverse. Sales stay huge — your denunciation is the best blurb in publishing — but the news cycle bends back to you, where it lives."},
+ {k:"SUE",t:"Sue over the NDA, seek an injunction",s:"The paper he signed is the story you want.",d:{maga:3,law:-5},blow:6,ledger:"COURTS",risk:{p:.45,out:"The injunction fails in nine days — prior restraint, First Amendment, the usual — and the ruling's recitation of the disputed excerpts enters the public record, which means the worst chapter is now a court document, quotable forever, and un-NDA-able.",d:{appr:-5,law:-4},blow:6},out:"The suit won't win, but discovery cuts both ways and his publisher's lawyers know it. The paperback ships with three passages softened. Nobody will ever prove causation. You will imply it constantly."},
+ {k:"SHRUG",t:"“Never heard of him.” Move on in four words.",s:"Contempt, administered in a microdose.",d:{appr:2,maga:2},out:"You served with the man for two years and the four-word dismissal becomes its own genre of merchandise. The book sells; the sequel — there is always a sequel — sells less. The microdose worked."}
+]},
+{ph:3,head:"THE SURROGATE PROBLEM",body:"The nominee's campaign has sent over the fall schedule, and your name appears on it exactly four times, all in deep-red states, all described as “base consolidation events.” Someone in {HEIR}'s shop believes you are a turnout machine best kept away from the suburbs. Someone in their shop has said so, near a reporter.",ch:[
+ {k:"OBEY",t:"Work the schedule as given, flawlessly",s:"The good soldier. For the first time. For the cause.",d:{gop:5,appr:3,maga:2},out:"You do the four rallies, hit the marks, and hand the suburbs to the nominee, and the discipline is so uncharacteristic it becomes the story: TRUMP, CONTAINED, WILLINGLY. The campaign's internals tick up. You archive the reporter's story about the aide, for later."},
+ {k:"FREELANCE",t:"Add your own rallies wherever you like",s:"Nobody schedules you. You are the schedule.",d:{maga:7,gop:-4},blow:4,risk:{p:.35,out:"Your unscheduled Bucks County rally steps on the nominee's biggest policy rollout, your riff makes three headlines the campaign spends a week cleaning, and the aide's quote gets a victory lap. The machine and the movement are now visibly two different vehicles.",d:{appr:-4,gop:-4},blow:5},out:"You add nine stops, all monsters, and the earned media dwarfs the campaign's paid schedule. The nominee's staff decides — pragmatism being undefeated — to claim they planned it, which you permit."},
+ {k:"TOLL",t:"Do the schedule — for a price, in personnel",s:"Your people, inside their campaign. Then you'll rally.",d:{maga:4,gop:2,law:-2},blow:4,out:"Three of your operatives take senior roles in the nominee's shop as the unstated fee for your cooperation. The campaign gains muscle and loses autonomy, and the org chart now has a shadow layer that reports, informally, to a golf club."}
+]},
+{ph:3,head:"THE OPPO ARRIVES",body:"A folder reaches you through the club — not the campaign, the club — containing what appears to be genuinely radioactive material about the Democratic nominee's family finances. Provenance: murky, with a metadata trail that one of your people says, quietly, “smells foreign.” The nominee's campaign — yours, {HEIR}'s — does not know it exists.",ch:[
+ {k:"DEPLOY",t:"Get it out through a cutout, tonight",s:"October is for surprises. It's the rule.",d:{maga:5},blow:12,risk:{p:.45,out:"The metadata trail runs straight back to a foreign intelligence service inside a week, and the story flips from their family to your sourcing before the second news cycle. The word “again” appears in every headline, doing the work of a full paragraph.",d:{appr:-8,law:-8,gop:-4},blow:12},out:"It detonates on schedule, dominates two debates' worth of coverage, and nobody ever quite establishes where it came from, which is the definition of a professional job. The nominee's campaign sends the club a case of something expensive, no card."},
+ {k:"REPORT",t:"Hand it to the FBI and announce that you did",s:"The single most disorienting move available.",d:{appr:6,law:8,maga:-6},blow:-8,out:"“President turns over suspicious oppo, cites foreign interference risk” is a headline that breaks the simulation for half the commentariat. The Bureau confirms the foreign trail within a month. Your approval among people who have never once approved of you registers movement."},
+ {k:"HOLD",t:"Keep the folder. Just… keep it.",s:"Leverage ripens.",d:{law:-3},blow:6,out:"The folder goes in the safe with the other folders. Whether it was ever used, no one can say, though the Democratic nominee's family abruptly settled a dispute in November that nobody had reported existed. The safe stays humming."}
+]},
+{ph:3,head:"THE CROWD MATH",body:"The nominee's rallies are drawing four thousand. Yours are drawing forty. The comparison has become its own beat — there are aerial photographs, there are pivot tables — and it is doing damage to the one thing the ticket cannot afford damaged: the illusion that the movement transfers.",ch:[
+ {k:"JOINT",t:"Joint rallies only, for the rest of the race",s:"Merge the crowds. Blur the math.",d:{gop:5,maga:3,appr:2},out:"Every remaining event is a double bill, the crowds are enormous, and whose they are becomes unmeasurable, which was the assignment. The nominee speaks first, you close, and the political science on what transfers gets deferred to Nov 8."},
+ {k:"MOCK",t:"Mock the nominee's crowds yourself. Publicly. It's honest.",s:"The truth, weaponized against your own ticket.",d:{maga:5,gop:-7,appr:-4},blow:6,out:"“I love {HEIR}, but four thousand? I've had bigger crowds at a funeral. My funeral will be bigger, and I'm not even planning one.” The ticket's staff enters crisis mode; the base enters ecstasy; the general election enters jeopardy. Everyone agrees it was a hell of a riff."},
+ {k:"LEND",t:"Lend the machine: your list, your producers, your stagecraft",s:"Transfer the infrastructure, keep the mystique.",d:{gop:6,maga:-2},out:"Your rally operation — the list, the vendors, the walk-on music rights — moves to the nominee's shop wholesale. Their next event draws thirty thousand and reviews say it “felt like a Trump rally,” which is the product working. What it means for who owns the movement is a question for the second Tuesday of November."}
+]},
+{ph:3,head:"A FRIEND ABROAD OFFERS HELP",body:"A foreign leader you have a genuine rapport with — the kind the papers call a strongman when they're being polite — has floated, through back channels, a pre-election gift: a trade concession, timed for late October, framed as a tribute to your legacy. It would move markets. It would also be, per counsel, “an in-kind foreign contribution the size of a small war.”",ch:[
+ {k:"ACCEPT",t:"Take the October gift and act surprised",s:"A win is a win. Provenance is for wine.",d:{econ:5,maga:3,law:-8},blow:12,ledger:"ALLIES",risk:{p:.4,out:"The back channel leaks — back channels are made of people — and the gift becomes the scandal, five days out. “FOREIGN LEADER BOOSTS TICKET AT TRUMP'S REQUEST” is exactly the October surprise you were promised, pointed the wrong way.",d:{appr:-7,law:-6,gop:-4},blow:10},out:"The concession lands October 24th, the markets pop, the ticket claims the win, and the true story stays inside three governments. For now. Files like this one have a half-life, and it is never zero."},
+ {k:"DEFER",t:"Ask them to hold it until after the election",s:"Same gift, defused timing.",d:{law:2,econ:2},out:"The concession arrives in late November as a “transition gift,” which is novel but not illegal, and the incoming administration — whoever it is — inherits a win with your fingerprints on it. Statecraft as a delayed-release capsule."},
+ {k:"REFUSE",t:"Refuse it flatly and log the contact",s:"The one thing nobody would ever expect.",d:{appr:4,law:7,maga:-3},blow:-6,out:"You decline, the lawyers memorialize it, and when the approach eventually surfaces — they always surface — the story is the refusal. Twenty twenty-eight's strangest sentence gets written: “ethics officials praised the president's handling.”"}
+]},
+{ph:3,head:"THE MAIL VOTE, AGAIN",body:"The RNC's data shop has spent two cycles building the exact early-vote machine you spent two cycles calling fraudulent, and it is working: your side banks votes now. Then last night, at a rally you watched from the residence, the nominee's crowd booed mail ballots. They learned that from someone.",ch:[
+ {k:"BLESS",t:"Cut the ad: you, endorsing early voting, to camera",s:"Eat the whole contradiction in one take.",d:{gop:6,appr:3,maga:-3},out:"“I used to have concerns. We fixed it. Now we bank votes and win — bank your vote.” The reversal is total, shameless, and effective, the trifecta. The data shop frames a printout of the next week's returns."},
+ {k:"BOTH",t:"Endorse it and cast doubt on it, alternating, by state",s:"Secure where you're winning, suspicious where you're not.",d:{maga:4,law:-6,gop:-2},blow:8,out:"The message calibrates by geography: “safe and patriotic” in Florida, “under review” in Pennsylvania. It is cynical to a degree that impresses even your critics, and it seeds exactly the litigation infrastructure November may require. Both parties notice."},
+ {k:"WAR",t:"Full war on the early vote, machine be damned",s:"The instinct never left.",d:{maga:6,gop:-8,appr:-3},blow:8,out:"You torch two cycles of your own party's infrastructure in one riff, the banked-vote advantage evaporates by the following Tuesday, and the RNC data team's group chat, later subpoenaed for unrelated reasons, enters the historical record as pure anguish."}
+]},
+{ph:3,head:"THE FINAL DEBATE INTERVENTION",body:"The nominee is prepping for the last debate and the prep team has asked you — formally, in writing, which took courage — to please not live-post during the broadcast. Your commentary during the first debate generated more coverage than the debate, some of it about the wrong side's answer being “actually right.”",ch:[
+ {k:"DARK",t:"Go dark for the full ninety minutes",s:"The discipline play, one more time.",d:{gop:5,appr:2,maga:-2},out:"Your silence during the debate trends harder than most of the debate, but it holds, and the nominee's best night of the fall goes uninterrupted. The prep team's thank-you note is framed somewhere. You claim not to know where."},
+ {k:"LIVE",t:"Live-post anyway. The people expect it.",s:"You are the second screen. You are, frankly, the first screen.",d:{maga:6,gop:-4},blow:3,out:"Ninety minutes, forty posts, one accidental compliment to the moderator that becomes the night's headline. The nominee wins the debate and loses the coverage, an arrangement you have made peace with on their behalf."},
+ {k:"CAMEO",t:"Show up in the spin room in person",s:"Nobody spins like the original.",d:{maga:7,gop:-2,appr:-2},out:"You materialize in the spin room at 10:58 p.m. and the entire press corps physically migrates, mid-interview, away from both campaigns' surrogates. The nominee's team gets the clip they need — you, on camera, saying they “destroyed” the opponent — wrapped in a spectacle they did not order."}
+]},
+{ph:4,head:"THE BOXES, AGAIN",body:"The Archives has sent the transition records request, standard for an outgoing administration, and the response from your side of the building has been, so far, forty pallets of shrink-wrapped uncertainty in a Florida ballroom that the Archives does not know about yet. Counsel has used the phrase “not this again” in a privileged memo.",ch:[
+ {k:"COMPLY",t:"Full inventory, full handover, cameras invited",s:"Deny the sequel its script.",d:{appr:4,law:7,maga:-3},blow:-8,out:"You turn the handover into a televised event — “the most transparent transition in history” — and the Archives, braced for war, receives instead a photo op and forty pallets. The prosecutors who had begun stretching quietly sit back down."},
+ {k:"SLOW",t:"Comply at the pace of a glacier with a lawyer",s:"Everything eventually. Nothing today.",d:{maga:3,law:-6},blow:10,ledger:"COURTS",out:"The production schedule stretches past the horizon, the correspondence grows teeth, and somewhere in Washington a grand jury clerk refreshes a docket. You have run this play before. Everyone has seen the film. The film did not end well."},
+ {k:"DECLASS",t:"Declassify everything in the boxes by proclamation, retroactively",s:"Can't mishandle what isn't classified. Checkmate?",d:{maga:5,law:-9},blow:10,ledger:"COURTS",out:"The blanket declassification order covers “all materials in the President's custody, wherever located, whenever moved,” which is less a legal instrument than a confession with letterhead. The national security establishment's collective aneurysm is audible from the Beltway."}
+]},
+{ph:4,head:"THE SHADOW TRANSITION",body:"The president-elect's teams are arriving for agency briefings, and your appointees have called asking, in effect, how helpful to be. The range of available postures runs from “model transition” to “forty days of bureaucratic rope-a-dope,” and precedent — yours, both directions — is unhelpful.",ch:[
+ {k:"MODEL",t:"Order the model transition. Full cooperation.",s:"Leave like an institution.",d:{appr:5,law:6,maga:-4},out:"The briefings run on time, the binders are real, and the incoming chief of staff tells a pool reporter, visibly confused, that it has been “seamless.” The word does more for your legacy than three rallies, which you would dispute, incorrectly."},
+ {k:"ROPE",t:"Slow everything. Forty days of paperwork fog.",s:"They want the government? Let them find it.",d:{maga:4,law:-7},blow:8,out:"Briefings reschedule, badges misprint, org charts arrive redacted for “deliberative process.” It is petty at industrial scale, and when the histories are written, this chapter's title will be a single arched eyebrow."},
+ {k:"BURROW",t:"Burrow your people into the civil service on the way out",s:"The movement goes career-track.",d:{maga:5,law:-8},blow:8,ledger:"COURTS",out:"Three hundred political appointees convert to protected civil-service roles in six weeks, a velocity the Office of Personnel Management has never processed and cannot, it turns out, easily reverse. The next administration will spend two years and four lawsuits finding them all."}
+]},
+{ph:4,head:"THE NETWORK",body:"The term ends in weeks and the thing after the thing is on the table: a media venture — streaming, rallies-as-programming, the whole apparatus — with a valuation, per the bankers, “anywhere from four billion to none, depending on you.” The anchor slot is yours. The equity structure is where the knives are.",ch:[
+ {k:"LAUNCH",t:"Announce it now, from the White House",s:"The residence as a launch studio.",d:{maga:7,econ:2,law:-6},blow:8,ledger:"CRYPTO",out:"Announcing a for-profit venture from the Blue Room violates norms that, your counsel concedes mid-sentence, have no enforcement mechanism. Pre-orders crash the site. The ethics complaint crashes nothing, as usual."},
+ {k:"WAIT",t:"Wait until noon on January 20th, then announce at 12:04",s:"Four minutes of restraint.",d:{appr:3,maga:5,econ:2},out:"The announcement drops before the inaugural luncheon is seated, which is either perfect discipline or its exact opposite. The venture launches clean, unencumbered by office, encumbered instead by your programming instincts, which is the bet everyone is pricing."},
+ {k:"DECLINE",t:"Skip the network. Kingmaker suits you better.",s:"Own the movement, not the middleman.",d:{maga:4,appr:2,law:2},out:"You pass on the venture and keep the list, the feed, and the endorsement power, unencumbered by quarterly earnings. Every 2032 hopeful now travels to you. The bankers, denied their fee, write the year's saddest pitch-deck postmortem."}
+]},
+{ph:4,head:"THE LAST GRIEVANCE",body:"With days left, a cabinet of loyalists brings you the omnibus grievance file: every prosecutor, board, bar association, and streaming documentary that wronged you, cross-referenced with every lever the office still holds. It is 212 pages. There is a cover sheet. The cover sheet says “OPTIONS.”",ch:[
+ {k:"ALL",t:"Pull every lever on the way out",s:"Scorched earth, alphabetized.",d:{maga:7,law:-12,appr:-6},blow:12,ledger:"COURTS",out:"Security clearances revoked, referrals issued, one very confused federal building renamed. Most of it will be reversed by March, but reversal takes energy, and draining the next administration's first hundred days was, per page one, the point."},
+ {k:"SOME",t:"Settle the top five scores, archive the rest",s:"Curated vengeance. Almost restraint.",d:{maga:5,law:-5},blow:6,out:"Five targets, each with a genuine file, each hit with something technically defensible. The other 207 grievances go in the library's sealed collection, dated, like wine, or evidence."},
+ {k:"BURN",t:"Burn the file. On camera. Actually burn it.",s:"The most unexpected exit available.",d:{appr:6,law:6,maga:-5},blow:-6,out:"You feed all 212 pages into a fire in the Oval fireplace while a pool camera rolls, saying only: “We won. Winners don't need lists.” Half the country doesn't believe it was the real file. It was, mostly. The effect is identical either way."}
+]}
+]);
+
+/* ---------------- breaking, second-term edition ----------------
+   things that happen to the presidency between decisions. */
+var TBREAKING=[
+/* the economy */
+{head:"THE TARIFF CHECK ARRIVES",body:"Treasury has begun mailing the “External Revenue Dividend” — $412 per filer, your signature printed on the memo line at your request. The checks land the same week the price of a washing machine finishes its third consecutive quarterly increase.",d:{appr:3,maga:4,econ:-2}},
+{head:"THE INFLATION PRINT RUNS HOT",body:"Four-tenths over forecast, and the BLS commissioner you installed after firing the last one over a bad number now has the unenviable job of announcing a worse one, which at least settles the question of whether the numbers were the problem.",d:{econ:-4,appr:-2}},
+{head:"THE MARKET RIPS ON CUT HOPES",body:"Eleven hundred points in two sessions on a single dovish adjective in the Fed minutes. You take credit within the hour. The adjective's author remains anonymous, and briefly becomes the most powerful person in the country.",d:{econ:5,appr:2}},
+{head:"THE STRATEGIC BITCOIN RESERVE MARKS TO MARKET",body:"The reserve you established is up, this quarter, an amount the Treasury release calls “significant” and declines to denominate. The release does not mention last quarter. Nobody at the podium can explain what the reserve is for, which has stopped being a question anyone asks.",d:{econ:2,maga:3}},
+{head:"BEEF CROSSES FOURTEEN DOLLARS",body:"A pound of ground beef now costs what a rotisserie chicken cost in 2024, and a local news package about a rancher who voted for you twice — the reporter confirms it twice — airs in every market in the Midwest simultaneously.",d:{econ:-3,appr:-3}},
+{head:"THE REVISIONS GIVETH",body:"Last spring's jobs numbers are revised up by 190,000, which you announce personally from the podium, gesturing at a chart. The bureau that produced the revision is the same one you have called fake eleven times, a tension the chart does not address.",d:{econ:3,appr:2}},
+{head:"THE DOWNGRADE",body:"A ratings agency cuts the sovereign outlook to negative, citing “governance volatility,” which is agency language for a thing they are too polite to name and too scared not to price.",cond:function(){return T.blow>50;},d:{econ:-5,appr:-2},blow:3},
+{head:"HOUSING UNFREEZES, SLIGHTLY",body:"Mortgage applications post their best month in three years as rates drift down, and for one news cycle the housing story is a family getting keys instead of a family getting priced out. Your team clips it before the cycle turns.",d:{econ:4,appr:3}},
+{head:"THE DOLLAR HAS A WEEK",body:"Three central banks trim their dollar reserves in the same month, each calling it routine. The word “de-dollarization” trends for a day, is declared overblown by economists, and quietly enters four sovereign planning documents anyway.",cond:function(){return T.flags.powellFired||T.law<35;},d:{econ:-5},blow:4},
+{head:"THE AI CAPEX MIRACLE",body:"Quarterly GDP prints hot and the entire overshoot, per the footnotes, is data centers — server farms rising out of farmland you have personally rezoned by proclamation. The boom is real. Whether anything else is growing is a footnote to the footnote.",d:{econ:4,maga:2}},
+/* the world */
+{head:"THE PUTIN CALL LEAKS",body:"Ninety minutes of transcript, leaked from the other end, in which you are — this is the damaging part — audibly friendly. The Kremlin calls the leak fabricated and simultaneously confirms its accuracy by complaining about a specific page.",d:{appr:-3,law:-2},blow:5},
+{head:"THE CEASEFIRE HOLDS, TECHNICALLY",body:"The Gaza phase-three arrangement survives its worst week yet — two violations, one emergency call, zero collapses. The State Department calls it “durable.” The families on both sides call it something with more syllables and less certainty.",d:{appr:2,law:1}},
+{head:"BEIJING BUYS THE SOYBEANS",body:"The purchase agreement kicks in: eleven million tons, announced at 6 a.m. Iowa time, which was not an accident. The futures market moves, the farm-state senators applaud, and the question of what was traded for it is deferred, as is traditional.",d:{econ:3,maga:2,appr:2}},
+{head:"AN ALLY HEDGES, PUBLICLY",body:"A NATO foreign minister, asked if America remains a reliable ally, pauses for four seconds. The pause is clipped, translated into nine languages, and set to music. The minister's clarification the next day is not set to music.",cond:function(){return T.ledger.indexOf("ALLIES")>=0;},d:{appr:-2},blow:4},
+{head:"THE ENRICHMENT REPORT",body:"The IAEA reports centrifuge activity at a site the 2025 strikes were said to have ended, which reopens the argument about what “obliterated” meant, syllable by syllable, on every network at once.",d:{appr:-3,maga:-2},blow:5},
+{head:"FOUR AMERICANS COME HOME",body:"A tarmac, dawn, a live feed, and four families who stopped believing this would happen. Your envoy negotiated it in a hotel bar, which will be a movie. For eleven hours there is nothing to argue about in any of it.",d:{appr:4,maga:2}},
+{head:"THE CANAL INCIDENT",body:"A U.S. destroyer transits the Panama Canal without the customary notifications, which the Pentagon calls an administrative oversight and Panama calls, in a formal note, “the fourth administrative oversight this year.”",d:{maga:2,appr:-2},blow:4},
+{head:"THE NOBEL SHORTLIST LEAKS",body:"Your name is on it. The committee refuses comment, three laureates threaten to return their medals, and the betting markets — which you check, an aide confirms, hourly — price you at nine percent, which the account describes as “rigged, but improving.”",d:{maga:4,appr:1}},
+/* the home front */
+{head:"A COURT BLOCKS THE EO",body:"A district judge enjoins the executive order nationwide, the fourth this quarter. The Justice Department appeals before the ink dries; the podium calls the judge “a radical nobody”; the judge, protected by lifetime tenure, corrects a citation in a footnote.",cond:function(){return T.ledger.indexOf("COURTS")>=0;},d:{law:-2,maga:2},blow:4},
+{head:"A GOVERNOR SAYS NO",body:"A Democratic governor refuses a federal directive on camera and dares the administration to enforce it. The standoff produces no policy outcome whatsoever and two presidential candidacies — theirs, and the attorney general's, who threatened them.",d:{appr:-2,maga:2},blow:3},
+{head:"THE CHECKPOINT VIDEO",body:"Nine seconds of phone footage from a workplace raid, involving a crying child and an agent who — this is what makes it unusable — does everything correctly. The correctness does not matter. Nine seconds is nine seconds.",cond:function(){return T.ledger.indexOf("GUARD")>=0;},d:{appr:-4},blow:5},
+{head:"A PARDONEE RESURFACES",body:"One of the January 6th pardonees is arrested again — this time for something unrelated, armed, and extensively livestreamed by the man himself. Every story includes the word “pardoned” in the first sentence, which is, arithmetically, your name in the first sentence.",d:{appr:-3,law:-2},blow:5},
+{head:"THE OVERSIGHT AVALANCHE",body:"The House drops fourteen subpoenas in one morning — finances, flights, the ballroom contracts, the coin. The strategy, an aide notes, is saturation: too many to fight, too many to answer, too many to fit in one chyron. The chyron tries anyway.",cond:function(){return !T.flags.houseGOP;},d:{law:-2,appr:-2},blow:8},
+{head:"THE CROSSTAB STORY",body:"A quality poll finds your approval among voters under thirty at a level the write-up calls “historically low” and your pollster calls “a framing issue.” The framing issue is nineteen percent.",cond:function(){return T.appr<42;},d:{maga:-3,appr:-1}},
+{head:"THE TRANCHE DROPS QUIETLY",body:"The Justice Department releases 40,000 pages of Epstein material on a Friday afternoon, as required by the law you signed under protest. Your name appears in contexts your lawyers call “social and irrelevant” and the internet calls a weekend project.",d:{appr:-2,maga:-2},blow:6},
+/* the country is not well */
+{head:"THE BALLROOM HOSTS ITS FIRST WEDDING",body:"A megadonor's daughter is married in the new White House ballroom, which is available, it turns out, for “events of national significance,” a category the counsel's office invented under deadline. The chandeliers photograph beautifully. The invoice does not exist, in any searchable system.",d:{maga:2,law:-2},blow:4},
+{head:"THE GULF SURVEY COMES BACK",body:"Two years after the renaming, a marine survey of the Gulf of America finds a previously uncharted reef, which NOAA — at the suggestion of an account it declines to identify — has provisionally named after you. The reef is described as “aggressive for its size.”",d:{maga:3}},
+{head:"THE KENNEDY CENTER HONORS ITS CHAIRMAN",body:"The Kennedy Center Honors, chaired by you, this year honor: you. You attend as both host and honoree, seated in a box facing a tribute to yourself, an arrangement the broadcast handles with one camera and no comment. Ratings: enormous.",d:{maga:4,appr:-2}},
+{head:"THE WALK OF FAME EXPANDS",body:"The National Garden of American Heroes announces its first 25 statues, a list including Washington, Lincoln, Babe Ruth, and — pending a review the review board denies is occurring — a “living figures” category with one nominee. The sculptor has, again, received jaw guidance.",d:{maga:3,appr:-1}},
+{head:"THE 3 A.M. POST",body:"At 3:14 a.m. the account posts a single word — “Tomorrow.” — and by sunrise it has 200 million views, four thousand news mentions, and a small market reaction in Asia. There was no tomorrow. There was never a plan. You had simply woken up, seen the phone, and felt like it.",d:{maga:3},blow:2}
+];
+
+/* ---------------- the bill comes due ----------------
+   the ledger's tags, called in. every entry keyed to something
+   already on the record — pre-loaded or self-inflicted. */
+var TREP=[
+{tag:"EPSTEIN",head:"THE FILES, AGAIN",body:"A federal judge has ordered another tranche unsealed and a name in the exhibits is doing numbers. It is not your name. It is close enough to your orbit that the question at today's spray is not going to be about the trade deal.",ch:[
+ {k:"RELEASE",t:"Order everything out — every page, today",s:"You have been saying you would. Do it.",d:{appr:6,law:5,maga:-8},blow:-12,out:"The dump lands on a Friday and is enormous, boring, and 96 percent redactions of things already public. Your base's podcasts spend a week explaining why the real files are still hidden, which is a problem, but it is no longer your problem."},
+ {k:"HOAX",t:"Call it a hoax cooked up by the radical left",s:"Worked before. Sort of.",d:{maga:-6,appr:-4,law:-3},blow:8,out:"For the first time the hoax line gets booed at your own rally. Not loudly. But you heard it, and so did every reporter in the pen."},
+ {k:"LAWYERS",t:"Fight the unsealing on executive privilege",s:"Buy months. Pay interest.",d:{law:-6,appr:-3,maga:2},blow:6,ledger:"COURTS",out:"You win the stay and lose the headline, which is “TRUMP FIGHTS TO KEEP EPSTEIN FILES SEALED,” and it will be the second paragraph of every story about you until the next tranche."}
+]},
+{tag:"J6PARDONS",head:"THE PARDON COMES BACK ARMED",body:"One of the January 6th pardonees has been arrested outside a state capitol with a rifle, a manifesto, and a printout of one of your posts, annotated. The prosecutor is elected, ambitious, and currently walking to a podium.",ch:[
+ {k:"DISAVOW",t:"Disavow him completely, by name",s:"He was never really one of yours. Say it.",d:{appr:4,law:4,maga:-7},blow:-6,out:"You cut him loose in one post and the story becomes about him instead of about the pardons, mostly. The forums that treated the pardons as a covenant notice the covenant has an exit clause, and log it."},
+ {k:"DEFLECT",t:"“The radicalization came after. Look at how he was treated.”",s:"The system made him. Not the pardon.",d:{maga:4,appr:-4,law:-3},blow:6,out:"The base accepts the framing; nobody else does. The annotated printout gets its own news cycle, then its own congressional exhibit, laminated, at a hearing you will describe as a witch hunt from a podium with the seal on it."},
+ {k:"DOUBLE",t:"Announce a Pardon Review Office to defend all of them, forever",s:"No hostage left behind. Ever.",d:{maga:7,law:-7,appr:-5},blow:8,out:"A standing office of government now exists to litigate on behalf of your pardonees, staffed, funded, and — a law professor observes on six networks — completely without precedent. The base calls it loyalty. The bar calls it a clinic in reverse."}
+]},
+{tag:"TARIFFS",head:"THE REFUND RULING",body:"The appellate court has ruled the 2025 emergency-tariff tranche unlawful, and the remedy is the nightmare scenario: refunds. Ninety billion dollars, plus interest, owed to the importers you have spent three years calling grifters, payable by the Treasury you have spent three years crediting with the proceeds.",ch:[
+ {k:"PAY",t:"Pay it out and reframe: “We invested it well.”",s:"Eat the loss with a straight face.",d:{econ:-6,appr:-3,law:5},blow:-8,out:"Treasury processes the refunds over eight quarters, the checks arrive with no memo line at all, and the fiscal hole is real but survivable. The straight face is the hard part, and you almost hold it."},
+ {k:"STALL",t:"Appeal to the Supreme Court and slow-pay in the meantime",s:"The interest accrues. So does the leverage.",d:{law:-5,econ:-2},blow:6,ledger:"COURTS",out:"The slow-pay works until a shipping conglomerate gets a contempt order with a daily fine attached, at which point the government of the United States is officially a delinquent debtor, a status the bond market prices in eleven basis points of side-eye."},
+ {k:"RETALIATE",t:"Announce new tariffs to fund the refunds of the old tariffs",s:"An ouroboros, but make it trade policy.",d:{maga:5,econ:-5,law:-4},blow:8,ledger:"TARIFFS",out:"The new tranche is announced as “refund recovery duties,” a phrase your own trade counsel refused to sign, which is why it went out under an autopen. The circuit court schedules oral argument with what observers describe as enthusiasm."}
+]},
+{tag:"IRAN",head:"THE SLEEPER FILE",body:"The FBI has rolled up a plot — real, funded, far along — tied to the 2025 strikes, targeting a former official on your own security detail's protectee list. The arrests are clean. The question at the podium is why the protection for that official was cut last year, by you, in a post.",ch:[
+ {k:"RESTORE",t:"Restore every detail you cut, quietly, today",s:"Fix it before the hearing does.",d:{appr:3,law:4,maga:-2},blow:-6,out:"The details are restored in an afternoon and the story softens from scandal to close call. The former official — who has spent a year on television being wrong about you — issues a thank-you so grudging it reads as hostage verse, which you frame."},
+ {k:"CREDIT",t:"Take credit for the arrests and skip the protection question",s:"The Bureau works for you now. So does the win.",d:{maga:4,appr:2},blow:4,risk:{p:.4,out:"The protection question does not skip. A reporter reads your original post aloud at the briefing — the one mocking the official's “security blanket” — and the juxtaposition with the word “assassination” runs all week under your byline, effectively.",d:{appr:-6,law:-3},blow:6},out:"The victory lap mostly holds: FOILED leads the coverage, the plot's operational details are genuinely chilling, and the protection question survives only in outlets the base has been trained not to read."},
+ {k:"ESCALATE",t:"Strike the network abroad that ran the plot",s:"The 2025 playbook. It polled well.",d:{maga:6,appr:-2,law:-4},blow:10,ledger:"IRAN",out:"The strike package is executed cleanly and announced with the 2025 graphics template, which the networks note. Whether this closes the account or compounds it is a question with a half-life, and the half-life is the foreign policy."}
+]},
+{tag:"DOGE",head:"THE MISSING RECORDS",body:"A federal retiree in Ohio has been underpaid for eighteen months because her records were in a system DOGE decommissioned in 2025, and she has become — via one local news package and forty million views — the face of an error class the agency now admits affects 340,000 people.",ch:[
+ {k:"FIX",t:"Emergency fix: back pay, interest, a named czar",s:"Own the cleanup, loudly.",d:{appr:5,econ:-2,law:3},blow:-8,out:"The back-pay surge costs a fraction of what the cuts saved and buys back a fraction of what they cost, which is the whole DOGE ledger in one line item. The retiree gets her check, then gets a podium, and is mercifully kind."},
+ {k:"MINIMIZE",t:"“340,000 out of three million is a rounding error.”",s:"The math is defensible. The sentence is not.",d:{maga:2,appr:-6},blow:8,out:"You say the sentence. The sentence becomes a t-shirt within four hours, worn, within eight, by the retiree, on television. Arithmetic has never once won a news cycle and remains 0-for-history."},
+ {k:"BLAME",t:"Blame the agency holdovers who ran the old system",s:"The cuts were fine. The bureaucracy failed the cuts.",d:{maga:3,law:-3,appr:-3},blow:6,ledger:"DOGE",out:"The framing requires the audience to believe the people you fired sabotaged the system by being fired, a causality loop that briefly trends as a diagram. The inspector general's report, out in spring, will have a cover page and your quote on it."}
+]},
+{tag:"GUARD",head:"THE DEPLOYMENT RULING",body:"The appeals court has ruled the city deployments unlawful — not one of them, all of them, root and branch, with a remedies section that uses the phrase “pattern of pretext.” Six hundred Guardsmen are on street corners this morning in cities the ruling says they cannot be in by Friday.",ch:[
+ {k:"WITHDRAW",t:"Pull them out on schedule, with a parade",s:"Comply, but make it a victory lap.",d:{law:6,appr:3,maga:-6},blow:-8,out:"The withdrawal is staged as a mission-accomplished ceremony in each city, complete with crime statistics of contested provenance. The compliance is real, the framing is shameless, and both work."},
+ {k:"FEDERALIZE",t:"Re-badge them as federal agents and leave them there",s:"Same boots, different patch. The lawyers hate it.",d:{maga:6,law:-9},blow:10,ledger:"COURTS",out:"The re-badging memo hits the docket by Monday and the judge's response uses the word “contumacious,” which sends the country to the dictionary and your solicitor general to the medicine cabinet."},
+ {k:"EMERGENCY",t:"Declare a national crime emergency and start over",s:"New authority, new litigation, new clock.",d:{maga:7,law:-10,appr:-4},blow:12,ledger:"GUARD",out:"The emergency declaration resets the legal chessboard at the cost of pushing the constitutional question up a weight class. The Supreme Court grants cert with unusual speed, which either side reads as encouraging, and one side is wrong."}
+]},
+{tag:"COURTS",head:"THE CONTEMPT FINDING",body:"It finally lands: a federal judge holds the administration in contempt — not an official, the administration — for slow-walking an order past every deadline including the extended ones. The fine is symbolic. The word is not. No White House has carried it before.",ch:[
+ {k:"PURGE",t:"Comply fully and fire whoever let it get this far",s:"Feed the process a body.",d:{law:5,appr:2,gop:2,maga:-3},blow:-6,out:"Compliance lands in seventy-two hours, an associate counsel is renamed “former,” and the contempt is purged — the legal term, which the podium uses nine times because it sounds like absolution. It mostly is."},
+ {k:"WEAR",t:"Wear it as a badge: fundraise off the word",s:"“CONTEMPT” looks incredible on a black t-shirt.",d:{maga:7,law:-6,appr:-4},blow:8,out:"The merch drops before the appeal does. Nine million dollars in small donations in a week, a durable rally chant, and a precedent — the executive branch monetizing its own contempt citation — that the republic files under “new.”"},
+ {k:"JURISDICTION",t:"Introduce the court-stripping bill",s:"If the referee keeps calling fouls, shrink the field.",d:{maga:6,law:-11,gop:-4},blow:10,ledger:"COURTS",out:"The bill to strip district courts of nationwide-injunction power gets a hearing, a hashtag, and a Federalist Society statement of concern so carefully worded it reads like a ransom note in reverse. It will not pass. It was not meant to pass. It was meant to be seen."}
+]},
+{tag:"FED",head:"THE PRICE OF THE FED",body:"Eight months after you took the Fed, the bill arrives: inflation expectations have become unanchored — the technical term, and for once the technical term is scarier than the plain one. The cut you demanded came, and the ten-year rate went up anyway, which was the one outcome the memo said mattered.",ch:[
+ {k:"REVERSE",t:"Let the new chair hike, and take the hit",s:"Swallow the medicine you fired a man to avoid.",d:{econ:-4,appr:-3,law:4},blow:-6,out:"Your chair hikes twice, the expectations re-anchor over two ugly quarters, and the episode enters the textbooks with a name you won't like. The economy survives. The precedent is in the ICU, but the economy survives."},
+ {k:"DOUBLE",t:"Demand another cut. Louder.",s:"The problem is insufficient obedience.",d:{maga:4,econ:-8,law:-5},blow:10,out:"The second cut prints and the long end of the curve does something that gets its own Wikipedia page by Thursday. Mortgage rates — the number your people see — go up on the news, which no post can reframe, though eleven attempt it."},
+ {k:"GOLD",t:"Announce a commission on “sound money.” Change the subject.",s:"When in doubt, gold standard noises.",d:{maga:3,econ:-2},blow:4,out:"The commission holds hearings featuring two Nobel laureates and one podcast guy, produces a report endorsing nothing, and successfully occupies the financial press for a quarter. As subject changes go, expensive but effective."}
+]},
+{tag:"ALLIES",head:"THE BLOC WITHOUT US",body:"It has a name now, a signing ceremony, and a communiqué: nineteen countries — most of them formal U.S. allies — launching a trade-and-defense procurement bloc explicitly designed, per a leaked drafting note, “to be Washington-proof.” The note's author has been promoted.",ch:[
+ {k:"CHARM",t:"Launch a repair tour: three capitals, real concessions",s:"Win them back retail.",d:{appr:4,law:3,econ:2,maga:-5},blow:-6,out:"The tour is grudging, effective diplomacy: two of the nineteen quietly downgrade their participation in exchange for tariff relief you'd have given anyway. The bloc survives, smaller. The drafting note's author is promoted again, out of reach."},
+ {k:"PUNISH",t:"Tariff the bloc's members as a bloc",s:"Collective action, meet collective consequences.",d:{maga:6,econ:-5},blow:8,ledger:"TARIFFS",out:"The retaliatory matrix now has nineteen rows and the WTO — an organization you have described as “dead, and I killed it” — receives its largest-ever joint complaint, filed, with some ceremony, on the anniversary of your inauguration."},
+ {k:"SPLIT",t:"Peel off the weakest member with a golden bilateral",s:"Every bloc has a seam. Find it. Pay it.",d:{econ:2,maga:3,law:-2},blow:4,out:"The smallest signatory gets a deal too rich to refuse and exits the bloc within a season, proving the seam exists. The remaining eighteen respond by deepening the pact, proving the seam was also load-bearing. Net assessment: classified, meaning: mixed."}
+]},
+{tag:"CRYPTO",head:"THE COIN COMES DOWN",body:"The token is down 81 percent from the dinner-week high, the forensics firms have mapped the exit wallets, and the holders left holding are — per a devastating wallet-demographics analysis — disproportionately small accounts created during your rallies. The class action has 41,000 signatories and a press conference.",ch:[
+ {k:"BAILOUT",t:"Have the family buy the dip, publicly, big",s:"Defend the coin. Defend the holders. Same thing?",d:{maga:4,econ:-2,law:-6},blow:8,risk:{p:.4,out:"The buy props the price for nine days, the exit wallets sell into your family's bid — an on-chain humiliation visible to anyone with a browser — and the class action amends its complaint to include the rescue as Exhibit C.",d:{econ:-4,appr:-4,law:-4},blow:8},out:"The dip purchase halts the slide and the holders who hung on are made half-whole, which the base receives as loyalty rewarded. The SEC's inquiry proceeds at the speed you appointed it to proceed at."},
+ {k:"DISTANCE",t:"“It was always independent. I barely knew the coin.”",s:"The four-word shrug, asset edition.",d:{appr:-3,maga:-5,law:-2},blow:6,out:"The distancing lands poorly with the one audience that matters: the rally-crowd bagholders, who have receipts, timestamps, and a folk memory of the rocket emoji. The first “he sold us out” sign appears at a rally in Ohio. Security removes it. A second appears."},
+ {k:"REGULATE",t:"Champion the victims: retail-protection crypto rules, named for a bagholder",s:"Become the sheriff of the thing you rode in on.",d:{appr:5,law:5,maga:-3},blow:-8,out:"The “Retail Holder Protection Act” — named for a drywall contractor from Scranton who lost $30,000 — passes with bipartisan margins nobody can quite believe. That its namesake lost the money on your coin is a fact the bill's text does not mention and every story does."}
+]},
+{tag:"SUBPOENA",head:"THE WITNESS LIST",body:"The House committee has subpoenaed the inner circle: the chief of staff, the counsel, two family members, and the club's membership director, who knows — this is the phrase your lawyer used, slowly — “where everything is.” Privilege will cover some of it. Arithmetic says not all.",ch:[
+ {k:"PRIVILEGE",t:"Assert everything: executive privilege, wall to wall",s:"Fight every name. Concede nothing.",d:{maga:4,law:-7},blow:8,ledger:"COURTS",out:"The privilege fights will outlive the Congress asserting them, which is the strategy, stated openly, in a filing. The membership director, however, has no privilege to assert, a fact both sides' lawyers underline in different colors."},
+ {k:"TRADE",t:"Negotiate: documents yes, testimony no",s:"Feed the process paper. Paper doesn't cry on camera.",d:{law:2,appr:2,maga:-2},blow:-4,out:"Forty thousand pages buy back four witnesses. The committee gets headlines from the documents, but document headlines have no faces, and the hearings without faces get cable numbers that quietly end the committee's prime-time ambitions."},
+ {k:"DEFYALL",t:"Instruct everyone to defy, and dare the House to enforce",s:"Contempt referrals to a Justice Department you staff.",d:{maga:6,law:-10},blow:10,ledger:"IMPEACH3",out:"The referrals land at a Justice Department run by your appointees and enter a queue whose length is itself a policy. The House, denied enforcement, reaches for the only tool it has left, and its name is on the tag of this file."}
+]},
+{tag:"IMPEACH3",cond:function(){return !T.flags.houseGOP;},head:"THE THIRD IMPEACHMENT",body:"The articles drop at noon: obstruction of the committees, defiance of court orders, and — the new one — “monetization of the office.” The votes are there; everyone's whip count agrees. You would be the only president impeached three times, a superlative even you have not chased.",ch:[
+ {k:"WAR",t:"Total war: rally in the Speaker's district the night of the vote",s:"Make every Democrat own it live.",d:{maga:8,appr:-4,law:-4},blow:8,imp:1,ledger:["REMOVAL","REMOVAL","REMOVAL"],out:"The vote passes during your rally and you announce it from the stage yourself — “they just did it, folks” — to the loudest boo ever recorded at one of your events, which the sound engineer, a professional, logs with a note: “not at him.” The Senate trial is now a war with a date."},
+ {k:"LAWYER",t:"Run the process lane: counsel, decorum, delay",s:"Impeachment as paperwork. Boring it to death.",d:{law:2,appr:2,maga:-3},blow:4,imp:1,out:"Your team treats the articles like a zoning dispute, and the strategy's genius is its tedium: without a raging counterparty the hearings sag, the ratings slide, and the trial arrives pre-deflated. Impeached, again, technically. Asterisk, arguably."},
+ {k:"SETTLE",t:"Cut the deal: censure instead, plus document concessions",s:"Trade a scar for a scratch.",d:{appr:3,law:3,maga:-6},blow:-6,out:"The censure resolution passes with both parties claiming victory, the documents go over in tranches, and the base — which wanted the war — files this under softness. History files it under Cleveland, who also got censured and also told everyone it didn't matter."}
+]},
+{tag:"REMOVAL",cond:function(){return T.flags.impeached>0&&(T.law<30||T.gop<40);},head:"THE TRIAL TURNS",body:"The Senate trial was supposed to be arithmetic, and the arithmetic is moving. Four Republican senators are “undecided” in public, which means worse in private; the membership director testified for six hours; and the Majority Leader's office has stopped returning the counsel's calls, which has never once meant anything good.",ch:[
+ {k:"DEAL",t:"Offer the holdouts everything: projects, pardons, planes",s:"Buy the acquittal wholesale.",d:{law:-8,gop:4},blow:8,risk:{p:.4,out:"One of the holdouts records the offer. The tape reaches the trial as evidence — of the original articles and, freshly, of this — and the arithmetic stops moving and starts running. The final count clears two-thirds with three votes to spare.",d:{law:-6,appr:-6},removed:true},out:"The projects are announced, the planes are chartered, and the four holdouts discover reasons for confidence in the president. Acquittal, 52-48. The tape of the offers does not surface for eleven months, which in this business is called clean."},
+ {k:"PUBLIC",t:"Take the stand yourself. Demand it. Testify.",s:"No lawyer on earth advises this. Overrule them all.",d:{maga:8},blow:6,risk:{p:.5,out:"Six hours under oath produces four perjury referrals and one exchange — “Was it your account?” “It's always my account.” — that convicts you in the building where it must not. Two-thirds, plus one. The Chief Justice reads the result without inflection, which is somehow the loudest part.",d:{law:-8,appr:-5},removed:true},out:"It is the greatest courtroom television since O.J., and you are — no neutral observer disputes it — magnificent: unkillable, unbothered, quotable in nine-second units. The holdouts fold under the sheer gravitational pull. Acquittal, and the merch was ready by verdict."},
+ {k:"RESIGN",t:"Negotiate the exit: resign for immunity, Nixon-plus",s:"Leave the table with your chips.",d:{appr:2,law:4,maga:-10},blow:-10,removed:true,flag:"resigned",out:"The deal is struck in a senator's hideaway office over two days: resignation, a sweeping immunity framework of contested validity, and the first presidential resignation since 1974, announced — your one condition — from the ballroom."}
+]}
+];
+
+/* ---------------- election night, 2026 ---------------- */
+function tMidterms(step){
+  tSetChyron(step);
+  /* the party in the white house pays the midterm toll unless the country
+     is genuinely happy: at neutral numbers the house is a coin flip, tilted against */
+  var gb=(T.appr-42)*.35+(T.econ-55)*.20+(T.gop-60)*.10+noise(1.6);
+  T.house=clamp(Math.round(216+gb*4.2),175,248);
+  T.senate=clamp(Math.round(52+gb*.55+noise(.9)),45,58);
+  T.flags.houseGOP=T.house>=218;
+  T.flags.senGOP=T.senate>=50;
+  var flash={},g=T.flags.houseGOP?6:-10;
+  T.gop=clamp(T.gop+g,0,100);flash.gop=g;
+  if(!T.flags.houseGOP){
+    T.ledger.push("SUBPOENA","SUBPOENA","IMPEACH3","IMPEACH3","IMPEACH3");
+    T.blow=clamp(T.blow+10,0,100);flash.blow=10;
+  }
+  var head=T.flags.houseGOP&&T.flags.senGOP?"THE WALL HOLDS"
+    :T.flags.houseGOP?"THE SENATE SLIPS"
+    :T.flags.senGOP?"THE HOUSE FALLS":"THE GAVELS ARE GONE";
+  var verdict=T.flags.houseGOP&&T.flags.senGOP
+    ?"Both chambers hold. Cable spends the night explaining why the thing they said would happen did not happen, and by morning you have already posted that it was the greatest midterm victory in history, which nobody can technically disprove."
+    :T.flags.houseGOP
+    ?"The House holds and the Senate goes. Your judges are done being confirmed and your Cabinet vacancies are now permanent, but the gavel that matters most stays out of the other side's hands."
+    :T.flags.senGOP
+    ?"The House flips. The word “subpoena” appears in eleven headlines before midnight, and somewhere in a transition office a committee staffer is already labeling binders with the names of people you know."
+    :"Both gavels are gone. The next two years of your presidency will be conducted under oath, and the party spends election night arguing on television about whose fault you are.";
+  var hh=Math.max(T.house,435-T.house),hl=Math.min(T.house,435-T.house);
+  var sh=Math.max(T.senate,100-T.senate),sl=Math.min(T.senate,100-T.senate);
+  var st=$("#t-stage");
+  st.innerHTML=tReceipt()+
+    '<div class="flash"><p class="slug">ELECTION NIGHT · '+step.d+'</p>'+
+    '<h3>'+head+'</h3><p>'+verdict+'</p>'+
+    '<p class="fx"><span class="'+(T.flags.houseGOP?"up":"down")+'">HOUSE '+(T.flags.houseGOP?"R ":"D ")+hh+'–'+hl+'</span> &nbsp; '+
+    '<span class="'+(T.flags.senGOP?"up":"down")+'">SENATE '+(T.flags.senGOP?"R ":"D ")+sh+'–'+sl+'</span></p></div>'+
+    '<button class="btn" id="t-midgo">The morning after</button>';
+  T.log.push({w:step.d,head:"MIDTERMS · "+head,pick:"The country voted.",out:verdict,d:flash});
+  T.lastOut="";
+  tDrawGauges(flash);
+  $("#t-midgo").addEventListener("click",function(){T.turn++;tTurn();});
+  window.scrollTo(0,0);
+}
+
+/* ---------------- election night, 2028 ---------------- */
+function tGeneral28(step){
+  tSetChyron(step);
+  if(!T.flags.heir&&!T.flags.thirdTerm)T.flags.heir="J.D. Vance";
+  var m=(T.appr-46)*.45+(T.econ-55)*.22+(T.maga-70)*.08+(T.law-48)*.10+noise(2.2);
+  if(T.flags.thirdTerm)m-=6;
+  T.flags.won28=m>0;
+  var evR=clamp(Math.round(270+m*8),170,400);
+  var name=T.flags.thirdTerm?"DONALD J. TRUMP":(T.flags.heir||"J.D. Vance").toUpperCase();
+  var won=T.flags.won28;
+  var head=won?(T.flags.thirdTerm?"HE IS NOT LEAVING":name+" WINS"):(T.flags.thirdTerm?"THE COUNTRY SAYS NO":name+" GOES DOWN");
+  var verdict=T.flags.thirdTerm
+    ?(won?"The name on the ballot was yours, the number on the hats was three, and enough of the country went along with it that the rest of the country is now in the streets. The networks decline to use the word “historic.” They use other words."
+         :"The gambit dies at the ballot box, which the historians will note is the best possible place for it to die. The margin is not close enough to litigate, though an attempt is made.")
+    :(won?"Your movement outlives your term. "+name+" wins on your issues, your map, and your voters, and by 11 p.m. the only argument left on television is over how much of it was you."
+         :"The other side takes it back. The autopsy will run four hundred pages and the first paragraph is already written: the coalition was his, and it did not transfer.");
+  var st=$("#t-stage");
+  st.innerHTML=tReceipt()+
+    '<div class="flash"><p class="slug">ELECTION NIGHT · '+step.d+'</p>'+
+    '<h3>'+head+'</h3><p>'+verdict+'</p>'+
+    '<p class="fx"><span class="'+(won?"up":"down")+'">EV '+(won?"R ":"D ")+Math.max(evR,538-evR)+'–'+Math.min(evR,538-evR)+'</span> &nbsp; '+
+    '<span class="'+(m>=0?"up":"down")+'">PV '+fmt(m*.6)+'</span></p></div>'+
+    '<button class="btn" id="t-e28go">The lame duck begins</button>';
+  T.log.push({w:step.d,head:"2028 · "+head,pick:"The country voted. Again.",out:verdict,d:{}});
+  T.lastOut="";
+  tDrawGauges();
+  $("#t-e28go").addEventListener("click",function(){T.turn++;tTurn();});
+  window.scrollTo(0,0);
+}
+
+/* ---------------- the legacy ---------------- */
+function tEnding(early){
+  if(T.ended)return;
+  T.ended=true;
+  document.body.classList.add("desk");
+  show("s-night");
+  var f=T.flags;
+  var usedTags={};TREP.forEach(function(r){if(T.usedRep.indexOf(r.head)>=0)usedTags[r.tag]=1;});
+  var open=[];T.ledger.forEach(function(g){if(!usedTags[g]&&open.indexOf(g)<0)open.push(g);});
+  var score=Math.max(0,Math.round(T.appr*1.2+T.econ*.7+T.maga*.4+T.law*.9-T.blow*.5+
+    (f.won28?60:0)+(f.houseGOP?15:0)-f.impeached*25-(f.removed?80:0)));
+  var grade=f.removed?"F":(f.thirdTerm&&f.won28)?"?":
+    score>=270?"A":score>=235?"B+":score>=205?"B":score>=175?"C+":score>=145?"C":score>=115?"D":"F";
+  var hi=score>=195;
+  var title,text,quote,date=early?"BEFORE THE TERM WAS OUT":"JANUARY 20, 2029 · NOON";
+  if(f.removed&&f.resigned){
+    title="THE DEAL";
+    text="You resigned, which you will spend the rest of your life explaining was a victory, and the immunity framework you traded for is already in front of a court. The ballroom hosted the announcement. The chandeliers, at least, were on your side.";
+    quote="“Nixon got nothing. I got everything. Look it up.”";
+  }else if(f.removed){
+    title="REMOVED";
+    text="Two-thirds of the Senate, on the record, on live television. You are the first, which you would ordinarily like. The motorcade to the airport is shorter than the one that brought you, and the band does not play.";
+    quote="“I won that trial. Everyone says so.”";
+  }else if(f.thirdTerm&&f.won28){
+    title="THE THIRD TERM";
+    text="There is no precedent, which has never once slowed you down. Half the country calls it the end of the republic and the other half bought the hat. The historians have stopped grading on the old scale, which is why the grade box below has given up.";
+    quote="“Twelve is a beautiful number. Some people are saying sixteen.”";
+  }else if(f.gambit&&!f.won28&&f.thirdTerm){
+    title="THE GAMBIT FAILS";
+    text="You ran the play all the way to the ballot and the country called it back. The movement wanted a forever president and got a concession that concedes nothing, delivered from a golf cart. The party begins the work of pretending it never went along with any of it.";
+    quote="“We caught them again. Details soon.”";
+  }else if(f.won28&&f.heir==="J.D. Vance"){
+    title="THE HEIR";
+    text=hi?"Vance takes the oath on your Bible, figuratively, and in the front row you are the only spectator who has ever mattered. The movement has a second act and the second act knows exactly whose name built the theater."
+           :"Vance takes the oath and the cameras keep cutting to you, which you count. The movement survives you; whether it obeys him is next year's show, and you have already teased a cameo.";
+    quote="“I handed him a perfect country. Perfect.”";
+  }else if(f.won28){
+    title="THE PARTY OUTLIVES HIM";
+    text=hi?"Not your first choice, but your voters, your map, and your rallies carried them over, and every camera at the inaugural finds you first. The party is bigger than one man now. It is, however, still shaped exactly like him."
+           :"The nominee you never quite blessed wins anyway, which everyone around you has been instructed not to say out loud. The new White House returns your calls, for now.";
+    quote="“People forget I endorsed him. I endorsed him very strongly.”";
+  }else if(!f.won28&&T.law<30){
+    title="THE RECKONING";
+    text="The country did not just change parties, it voted against the way you governed, and the new administration's first hundred days are structured entirely around undoing yours. The subpoenas resume in February. This time there is no office to argue from.";
+    quote="“Presidential immunity. Look it up. They can't do it.”";
+  }else{
+    title="THE HANDOFF";
+    text=hi?"You leave at noon with the economy upright, the base intact, and an opposition that won by promising calm. It is the most conventional thing you have ever done, and it drives everyone crazy, which you consider a parting gift."
+           :"You attend the inauguration, which surprises people, and leave before the lunch, which does not. The library fundraising begins on the flight home. So does the 2032 speculation, most of it yours.";
+    quote="“We'll see what happens. You always have to say it that way: we'll see what happens.”";
+  }
+  var econtxt=T.econ>=62?"HUMMING":T.econ>=48?"UPRIGHT":T.econ>=35?"WOBBLING":"IN THE DITCH";
+  var lawtxt=T.law>=60?"INTACT":T.law>=40?"BRUISED":T.law>=25?"BENT":"BROKEN";
+  $("#board").innerHTML=
+   '<p class="eyebrow" style="color:#8fa8bd">THE SECOND TERM · '+date+'</p>'+
+   '<h1 class="verdict" style="color:'+((f.won28&&!f.removed)?"var(--phos)":"#fff")+'">'+title.replace(/ /g,"<br>")+'</h1>'+
+   '<div class="statline"><span>FINAL APPROVAL</span><b>'+Math.round(T.appr)+'%</b></div>'+
+   '<div class="statline"><span>THE ECONOMY HE LEAVES</span><b>'+econtxt+' ('+Math.round(T.econ)+')</b></div>'+
+   '<div class="statline"><span>MAGA BASE</span><b>'+Math.round(T.maga)+'</b></div>'+
+   '<div class="statline"><span>RULE OF LAW</span><b>'+lawtxt+' ('+Math.round(T.law)+')</b></div>'+
+   '<div class="statline"><span>THE HOUSE</span><b>'+(f.houseGOP?"R ":"D ")+Math.max(T.house,435-T.house)+'–'+Math.min(T.house,435-T.house)+'</b></div>'+
+   '<div class="statline"><span>THE SENATE</span><b>'+(f.senGOP?"R ":"D ")+Math.max(T.senate,100-T.senate)+'–'+Math.min(T.senate,100-T.senate)+'</b></div>'+
+   '<div class="statline"><span>IMPEACHMENTS THIS TERM</span><b>'+f.impeached+'</b></div>'+
+   '<div class="statline"><span>2028</span><b>'+(f.won28==null?"NEVER REACHED":(f.thirdTerm?"HIMSELF":(f.heir||"—").toUpperCase())+(f.won28?" · WON":" · LOST"))+'</b></div>'+
+   '<div class="statline"><span>BLOWBACK OUTSTANDING</span><b>'+(open.length?open.join(", "):"PAID IN FULL")+'</b></div>'+
+   '<div class="statline"><span>SEED</span><b>'+seedText(SEED)+'</b></div>'+
+   '<div class="gradebox"><span class="gr">'+grade+'</span><span class="gt">SCORE '+score+'<br>'+text+'</span></div>'+
+   '<p class="quote">'+quote+'<br><span style="font-family:var(--mono);font-size:11px;color:#8fa8bd">the 45th and 47th president, on the way out. or not.</span></p>'+
+   '<div class="btnrow"><button class="btn ghost" id="t-copy">Copy result</button><button class="btn" id="t-again">Back to the title</button></div>'+
+   '<div class="btnrow" style="margin-top:8px"><button class="btn ghost" id="t-brief2">The daily brief</button></div>';
+  $("#t-again").addEventListener("click",function(){
+    document.body.classList.remove("desk");
+    showSeed();
+    show("s-title");
+  });
+  $("#t-brief2").addEventListener("click",tOpenTrail);
+  $("#t-copy").addEventListener("click",function(){
+    var t="THE SECOND TERM · seed "+seedText(SEED)+"\n"+title+"\n"+
+      "Approval "+Math.round(T.appr)+"% · Economy "+Math.round(T.econ)+" · Base "+Math.round(T.maga)+" · Rule of law "+Math.round(T.law)+"\n"+
+      "House "+(f.houseGOP?"R":"D")+" · Senate "+(f.senGOP?"R":"D")+" · Impeachments "+f.impeached+"\n"+
+      "Grade "+grade+" · Score "+score;
+    if(navigator.clipboard)navigator.clipboard.writeText(t);
+    $("#t-copy").textContent="Copied";
+  });
+  window.scrollTo(0,0);
+}
+
+/* ---------------- the daily brief ---------------- */
+function tOpenTrail(){
+  var o=$("#trail");
+  var rows=T.log.map(function(l){
+    var deltas=Object.keys(l.d||{}).map(function(k){
+      var v=Math.round(l.d[k]);if(!v)return"";
+      return k.toUpperCase()+" "+(v>0?"+":"")+v;
+    }).filter(Boolean).join("  ");
+    return '<div class="trailrow"><span class="w">'+l.w+'</span><span class="c"><b>'+l.head+'</b>'+
+      (l.bad?"⚠ ":"")+l.pick+'<br><i>'+deltas+'</i></span></div>';
+  }).join("")||'<div class="trailrow"><span class="c">Nothing has happened yet, which will not last.</span></div>';
+  var uniq=[];T.ledger.forEach(function(g){if(uniq.indexOf(g)<0)uniq.push(g);});
+  o.innerHTML='<div class="paper"><h2>THE DAILY BRIEF · THE SECOND TERM</h2>'+
+    '<div style="padding:12px 12px 0"><div class="ledgerbox"><b>THE LEDGER</b> · BLOWBACK '+Math.round(T.blow)+
+    '° · EVERYTHING BELOW CAN STILL COME BACK AROUND<br>'+uniq.join(" · ")+'</div></div>'+
+    rows+'<div style="padding:12px"><button class="btn alt" id="t-closetrail">Back to the building</button></div></div>';
+  o.classList.remove("hidden");
+  $("#t-closetrail").addEventListener("click",function(){o.classList.add("hidden");});
+}
+
+/* ---------------- entry ---------------- */
+function tStart(){
+  var v=parseSeed($("#seedin").value);
+  if(v)setSeed(v);
+  showSeed();
+  tNewGame();
+  tBuildQueue();
+  show("s-trump");
+  tDrawGauges();
+  tTurn();
+}
+$("#go-trump").addEventListener("click",tStart);
+$("#t-trail").addEventListener("click",function(){if(T)tOpenTrail();});
 })();
 </script>
 </body>
