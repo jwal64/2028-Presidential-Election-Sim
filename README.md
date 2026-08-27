@@ -38,6 +38,28 @@ Ocasio-Cortez, anyone on the list. They come off the ballot, their name and home
 state fill themselves in, and you start the primary at their standing instead of
 as an unknown.
 
+**Eighty-eight decisions and a calendar that asks for twenty-six of them.**
+Every run draws a fresh set: eleven in the primary, three at the convention,
+seven in the fall, two in debate prep and three in the closing fortnight. Most
+of them are actual political questions with actual answers — the number in
+weeks, the deportation figure, the top marginal rate, single payer versus the
+public option, tariffs versus the price of a washing machine, the third rail,
+the plank fight, the pledge with four bullet points and a problem in the fourth,
+and whether you will say plainly that you'll accept the result. Every answer
+moves base, swing voters, press, money and the regional map, which is to say
+every answer moves the polls. Choices tagged to your signature issue land 35
+percent harder. The riskier ones can backfire outright.
+
+**Things that happen to you.** Between decisions, the news arrives and you do
+not get a vote. Thirty-seven bulletins — the jobs number, a hot inflation print,
+gas under three dollars, a 900-point drop, hostages on a tarmac, an embassy
+roof, a bad four seconds of tape, a small-dollar surge, a bundler who stops
+calling, a heckler you handle well, forty thousand yard signs printed with the
+wrong year — fire between turns, at most one per two turns and never twice in a
+run. Some hit your own numbers. Some move the national mood, a country-level
+figure that shifts every state at once and now has its own readout on the
+gauges.
+
 **The supporting cast.** Media anchors and networks, the podcast circuit,
 celebrity endorsers, and billionaire donors — cast fresh each turn from
 party-appropriate pools, so the same event reads differently depending on who

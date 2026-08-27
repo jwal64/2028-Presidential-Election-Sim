@@ -94,6 +94,15 @@ h1,h2,h3{font-family:var(--disp);font-weight:600;letter-spacing:.01em;margin:0}
   padding:8px 10px;margin:0 0 16px;
 }
 .receipt b{color:var(--ink)}
+.flash{background:#0a1524;border:1px solid #24435f;padding:13px;margin:0 0 16px}
+.flash .slug{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--phos);margin:0 0 7px}
+.flash h3{font-family:var(--disp);font-size:23px;line-height:1.05;font-weight:600;color:#fff;
+  text-transform:uppercase;margin:0 0 7px}
+.flash p{font-size:14.5px;color:#cfe0f0;margin:0}
+.flash .fx{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;margin-top:10px;line-height:1.9}
+.flash .fx .up{color:var(--phos)}
+.flash .fx .down{color:#ff9d8a}
+.pullbars.mood{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--ink2)}
 .quotebox{font-family:var(--disp);font-size:17px;line-height:1.25;font-weight:400;
   border-left:3px solid var(--mark);padding:2px 0 2px 11px;margin:0 0 16px;color:#1d2622}
 .quotebox cite{display:block;font-family:var(--mono);font-size:10px;font-style:normal;
@@ -735,29 +744,39 @@ var STEPS=[
  {k:"ct",ci:0,d:"JAN 17",o:295,s:"IOWA"},
  {k:"ev",ph:0,d:"JAN 21",o:291,s:"PRIMARY"},
  {k:"ct",ci:1,d:"JAN 25",o:287,s:"N.H."},
+ {k:"ev",ph:0,d:"JAN 29",o:283,s:"PRIMARY"},
  {k:"ev",ph:0,d:"FEB 1",o:280,s:"PRIMARY"},
  {k:"ct",ci:2,d:"FEB 5",o:276,s:"NEVADA"},
  {k:"ct",ci:3,d:"FEB 12",o:269,s:"S.C."},
  {k:"ev",ph:0,d:"FEB 24",o:257,s:"PRIMARY"},
+ {k:"ev",ph:0,d:"MAR 1",o:251,s:"PRIMARY"},
  {k:"ct",ci:4,d:"MAR 7",o:245,s:"SUPER<br>TUESDAY"},
  {k:"ev",ph:0,d:"MAR 15",o:237,s:"PRIMARY"},
  {k:"ct",ci:5,d:"MAR 21",o:231,s:"RUST BELT"},
  {k:"ev",ph:0,d:"MAR 29",o:223,s:"PRIMARY"},
  {k:"ct",ci:6,d:"APR 4",o:217,s:"SUN BELT"},
+ {k:"ev",ph:0,d:"APR 11",o:210,s:"PRIMARY"},
  {k:"ct",ci:7,d:"APR 25",o:196,s:"NY / PA"},
+ {k:"ev",ph:0,d:"MAY 9",o:182,s:"PRIMARY"},
  {k:"nom",d:"JUN 9",o:151,s:"NOMINEE"},
  {k:"mate",d:"JUL 18",o:112,s:"CONVENTION"},
  {k:"ev",ph:1,d:"JUL 22",o:108,s:"CONVENTION"},
+ {k:"ev",ph:1,d:"AUG 5",o:94,s:"CONVENTION"},
  {k:"ev",ph:1,d:"AUG 20",o:79,s:"CONVENTION"},
  {k:"ads",d:"AUG 28",o:71,s:"AIR WAR"},
  {k:"ev",ph:2,d:"SEP 3",o:65,s:"GENERAL"},
+ {k:"ev",ph:2,d:"SEP 9",o:59,s:"GENERAL"},
  {k:"ev",ph:2,d:"SEP 15",o:53,s:"GENERAL"},
+ {k:"ev",ph:2,d:"SEP 20",o:48,s:"GENERAL"},
  {k:"ev",ph:2,d:"SEP 26",o:42,s:"GENERAL"},
  {k:"ev",ph:2,d:"OCT 1",o:37,s:"GENERAL"},
+ {k:"ev",ph:2,d:"OCT 3",o:35,s:"GENERAL"},
  {k:"ev",ph:3,d:"OCT 5",o:33,s:"DEBATE<br>PREP"},
+ {k:"ev",ph:3,d:"OCT 7",o:31,s:"DEBATE<br>PREP"},
  {k:"deb",dn:1,d:"OCT 9",o:29,s:"DEBATE<br>ONE"},
  {k:"deb",dn:2,d:"OCT 15",o:23,s:"DEBATE<br>TWO"},
  {k:"ads",d:"OCT 18",o:20,s:"CLOSING"},
+ {k:"ev",ph:4,d:"OCT 21",o:17,s:"CLOSING"},
  {k:"ev",ph:4,d:"OCT 24",o:14,s:"CLOSING"},
  {k:"ev",ph:4,d:"NOV 2",o:5,s:"CLOSING"}
 ];
@@ -792,6 +811,65 @@ var SCANDALS=[
   {k:"DENY",t:"Deny it flatly",s:"If it is false this is right. If it is not, it is fatal.",d:{base:6,press:-6},heat:16,integ:-2,out:"You deny it flatly. Two more people go on the record within the week and now you have denied it flatly."},
   {k:"QUIET",t:"Settle it quietly tonight",s:"Money and an agreement.",d:{cash:-8,press:-3},heat:8,integ:-2,out:"It goes away. The existence of the agreement does not, and it is the second story in October."}
  ]}
+];
+
+
+/* ================= BREAKING =================
+   things that happen to you. you do not get a choice about any of them.
+   w    "pri" primary only · "gen" after the nomination · "any" either
+   env  moves the national environment, stated the same way as a state lean:
+        a positive number is a shift toward the Republicans. the party in the
+        White House going into 2028 is the Republican one, so good news about
+        the country is usually a positive number and bad news usually is not.
+   cond gates the item on the state of your campaign.
+========================================================================= */
+var BREAKING=[
+/* ---- the economy, which is nobody's campaign and everybody's problem ---- */
+{w:"any",head:"THE JOBS NUMBER LANDS",body:"310,000, with upward revisions to the two months before it, and wages finally ahead of prices. The party holding the White House takes the credit, the way the party holding the White House always does.",env:.7,d:{swing:-1}},
+{w:"any",head:"THE REVISIONS ARE UGLY",body:"Last quarter's jobs numbers are revised down by 240,000 in a single release. Nobody outside the building understands the methodology and everybody outside the building understands the direction.",env:-.7,d:{press:2}},
+{w:"any",head:"THE INFLATION PRINT RUNS HOT",body:"Three-tenths above the forecast, driven almost entirely by rent and car insurance, which are the two things nobody has ever successfully explained on a debate stage.",env:-.6,d:{swing:-2}},
+{w:"any",head:"GAS DROPS UNDER THREE DOLLARS",body:"It is under three dollars in 31 states for the first time in four years. No president has ever done anything about the price of gas and no president has ever declined to take credit for it.",env:.6},
+{w:"any",head:"THE FED CUTS",body:"Twenty-five basis points, with language in the statement that two economists read as dovish and one reads as a warning. Mortgage applications move within a week.",env:.5,d:{cash:3}},
+{w:"any",head:"THE MARKET DROPS 900 POINTS",body:"It is about a credit event at a firm nobody outside finance had heard of on Monday. Everyone's retirement statement arrives the week after next.",env:-.5,d:{cash:-4}},
+{w:"any",head:"A PLANT ANNOUNCEMENT IN THE MIDWEST",body:"Eleven thousand jobs across four states, announced from a stage with three governors on it. Two of the three governors are in your party and all three are running for something.",env:.4,r:{MW:.5}},
+{w:"any",head:"THE GROCERY NUMBER AGAIN",body:"Beef is up nine percent, coffee is up fourteen, and a local news package about a family of four cutting back is airing tonight in every market in the country simultaneously.",env:-.4,d:{swing:-1}},
+{w:"any",head:"THE SHUTDOWN CLOCK STARTS",body:"Eleven days to a funding deadline and both chambers have gone home. Nobody has ever been rewarded by a voter for how this ends.",env:-.5,d:{press:3}},
+
+/* ---- the world, which does not check your schedule ---- */
+{w:"any",head:"THE HOSTAGES COME HOME",body:"Four Americans, on a tarmac, at 6 a.m. Eastern, with a live feed. It is the only thing on television for eleven hours and there is nothing to argue with in any of it.",env:.6,d:{press:-2}},
+{w:"any",head:"THE EMBASSY IS EVACUATED",body:"Helicopters, a roof, and footage that every network runs beside footage from 1975 within about forty minutes of it going out.",env:-.6,d:{press:3}},
+{w:"gen",head:"AN INCIDENT IN THE GULF",body:"A drone, a tanker, and eleven minutes of confusion at the Pentagon podium. Both campaigns pull their attack ads by noon and restore them by Thursday.",env:-.3,d:{swing:-2,press:2}},
+{w:"any",head:"THE ALLIES MEET WITHOUT US",body:"Six heads of government, one communiqué, and a paragraph in it that four foreign ministries confirm is about the United States without saying so.",env:-.35,d:{press:2}},
+
+/* ---- the campaign, which is mostly weather ---- */
+{w:"any",head:"THE CLIP GETS AWAY FROM EVERYONE",body:"Ninety seconds of you answering a question at a diner, unedited, badly lit, and shared four million times by people who have never heard of your campaign.",d:{press:8,swing:3,base:2}},
+{w:"any",head:"A BAD FOUR SECONDS",body:"You say a word you did not mean in a sentence you have said nine hundred times. It is four seconds long and it will outlive the policy you were describing.",d:{press:-7,swing:-4},heat:4},
+{w:"any",head:"THE SMALL-DOLLAR NUMBER BREAKS",body:"$9.4 million in seventy-two hours, average donation $34, and 61 percent of it from people who have never given to anything before.",cond:function(){return S.press>=54;},d:{cash:12,press:3}},
+{w:"any",head:"A BUNDLER GOES QUIET",body:"He has not returned four calls, his event is off the calendar, and a reporter mentions offhand that he was at a dinner for somebody else on Tuesday.",cond:function(){return S.heat>=18||S.integ<0;},d:{cash:-10,press:-2}},
+{w:"any",head:"THE PAPER IN {HOME} ENDORSES",body:"Nine hundred words, on the front, from an editorial board that has endorsed the other party twice this decade. Circulation 41,000 and every one of them a likely voter.",d:{swing:3,press:4},r:{HOMEREG:.5}},
+{w:"gen",head:"THE GENERALS SIGN A LETTER",body:"Twenty-eight retired flag officers, four stars among them, one page. The signatures are the entire text and the list is checked by every defense reporter in Washington within the hour.",d:{swing:4,press:3,base:-1}},
+{w:"any",head:"THE BUS DIES OUTSIDE A TOWN OF 900",body:"Two hours on the shoulder of a state highway. Somebody's phone catches you helping the driver with the hood up, and the photograph does better than anything your team has staged all year.",d:{press:3,swing:2,base:2}},
+{w:"any",head:"THE HECKLER",body:"He gets forty feet from the stage and about eleven words out. You let him finish, answer the actual question inside the shouting, and the room goes quiet in a way rooms rarely do.",d:{press:5,swing:3}},
+{w:"any",head:"THE SIGNS CAME BACK WRONG",body:"Forty thousand yard signs, your name spelled correctly, the state spelled correctly, and the year printed as 2027. The vendor is very sorry. The invoice has been paid.",d:{cash:-4,press:-2}},
+{w:"any",head:"A STAFFER RESIGNS ON A THURSDAY",body:"A deputy political director, no explanation in the memo, and a reporter who has clearly already read the memo asking your press shop about morale.",d:{press:-5,base:-2},heat:5},
+{w:"any",head:"THE WEATHER TAKES TWO DAYS",body:"Ice from Des Moines to Columbus. Four events cancelled, one charter grounded, and a rare and completely unwelcome forty hours in which nothing whatsoever happens to your campaign.",d:{press:-3,cash:3}},
+{w:"any",head:"{CELEB} POSTS ABOUT YOU",body:"{CELEBNOTE}. It is eleven words and a photograph and it reaches more people under thirty in one night than your entire digital budget has since March.",d:{base:6,press:4,swing:-2}},
+{w:"any",head:"THE MONOLOGUE",body:"Six minutes at the top of a late-night show, mostly at your expense, and about a third of it genuinely funny. You are told, by three people, that being the joke is better than not being mentioned.",d:{press:4,swing:1,base:-2}},
+
+/* ---- the primary ---- */
+{w:"pri",head:"{R1} HAS A BAD NIGHT",body:"A town hall in a state they have to win, a question they have answered a hundred times, and an answer that comes out in a register nobody has heard from them before.",phi:3,d:{press:2}},
+{w:"pri",head:"THE OPPO ON {R1} LANDS",body:"Somebody's file, somebody's reporter, and a story with three named sources in the second paragraph. It is not your file. Everyone will assume it is your file.",phi:4,d:{press:-3},heat:4},
+{w:"pri",head:"{R2} CONSOLIDATES THE LANE",body:"Two county chairs, a former senator and a labor council all in one morning. It is coordinated, it is obvious, and it is working.",phi:-3,d:{base:-2}},
+{w:"pri",head:"A DEBATE STAGE GETS SMALLER",body:"The committee raises the polling threshold. Two candidates fall off the stage and their voters, all of them, are now in play for the first time since November.",phi:2,d:{press:3}},
+{w:"pri",head:"THE FIELD PILES ON",body:"You are the second name in every answer at tonight's forum. It is the clearest evidence yet that you are winning and it is a genuinely miserable ninety minutes.",phi:2,d:{press:4,swing:-2}},
+
+/* ---- the general ---- */
+{w:"gen",head:"THEIR CONVENTION BOUNCE ARRIVES",body:"Four points across the public averages, most of it consolidation of people who were always going to come home. It will be gone in nine days and it is on every screen tonight.",d:{swing:-4,press:-2}},
+{w:"gen",head:"A THIRD NAME QUALIFIES",body:"Ballot access in 34 states, four percent in the averages, and two competing memos in your inbox about which of you it hurts. Both memos are confident.",d:{swing:-3,base:-2}},
+{w:"gen",head:"{NOM} CANCELS TWO DAYS",body:"No explanation beyond a scheduling note, which produces about nine hours of speculation and one on-camera statement that makes it worse.",d:{press:3,swing:2}},
+{w:"gen",head:"{VP} GOES OFF THE CARD",body:"A local interview in a market of 200,000 people, one answer that is not the answer on the card, and a national pickup by 4 p.m.",cond:function(){return !!S.mate;},d:{press:-5,swing:-3},heat:3},
+{w:"gen",head:"THE POLL THAT MOVES THE ROOM",body:"One survey, one outlier, and three days of coverage about momentum. Your own numbers have not moved a tenth and your field directors are calling anyway.",d:{press:5,base:3,swing:-1}},
+{w:"gen",head:"A SENATE CANDIDATE ASKS YOU NOT TO COME",body:"Politely, privately, and through a consultant, in a state where the ticket is running eight points apart. It is in a newspaper by Sunday.",d:{press:-4,base:-3},r:{SO:-.3}}
 ];
 
 /* ================= EVENTS =================
@@ -1079,6 +1157,221 @@ var EVENTS=[
  {k:"TRUST",t:"Trust the internals and move resources",s:"Your model or theirs.",d:{swing:4,cash:-4},r:{MW:.7,SO:.3},risk:{p:.35,out:"The internals were wrong in the same direction as everyone else’s. You spent four days and nine million dollars in the wrong three counties.",d:{swing:-7,cash:-4}},out:"You shift the last four days into the places your own data says are moving, and your own data turns out to be right."},
  {k:"PUBLIC",t:"Follow the public polls",s:"The wisdom of the crowd, roughly.",d:{swing:2},out:"You do the obvious thing in the obvious places. It is fine. Everything about it is fine."},
  {k:"NEITHER",t:"Ignore both and go where the crowds are biggest",s:"An entire theory of politics, and a bad one.",d:{base:7,press:3,swing:-3},out:"The rallies are enormous. Rally size has correctly predicted a presidential election approximately zero times."}
+]},
+
+/* ---------------- PRIMARY · THE QUESTIONS ---------------- */
+{ph:0,pty:"REP",head:"THE FIFTEEN-WEEK QUESTION",body:"{ANCH} of {NET} asks it the way it is always asked now: a number, in weeks, on camera, with a follow-up already loaded. {R1} gave a number last month and has been explaining it ever since.",ch:[
+ {k:"NUMBER",t:"Give the number and defend it",s:"A position is a thing you can be held to. That is the point and the problem.",d:{base:9,swing:-7,press:4},phi:4,out:"You say fifteen and you say why, twice, without blinking. The room respects it. Two groups on your own side put out statements before you are off the stage, and neither of them is happy."},
+ {k:"STATES",t:"Say it belongs to the states and stop there",s:"The answer half the party wants and the other half calls a dodge.",tag:"DEMO",d:{swing:4,base:-4,press:2},phi:1,out:"It is the most defensible answer available in a general election and the least satisfying one available in a primary, which is exactly where you are standing."},
+ {k:"PIVOT",t:"Refuse the number and talk about {ISSUE}",s:"Discipline, or evasion, depending on the write-up.",d:{base:2,press:-4,swing:1},phi:-1,risk:{p:.35,out:"You are asked it four more times that night and eleven more times that week. The compilation video of you not answering it is ninety seconds long and gets six million views.",d:{press:-9,swing:-5},phi:-3},out:"You do not give the number. Nobody gets a clip out of you, which is worth more than it looks like on the night."}
+]},
+
+{ph:0,pty:"DEM",head:"THE QUESTION ABOUT THE COURT",body:"A moderator asks whether you would add seats. {R1} said yes in 2020 and has been asked about it at every event since. Half your primary electorate considers the answer a character test.",ch:[
+ {k:"EXPAND",t:"Say yes, and name the number",s:"The base has wanted somebody to say it out loud for eight years.",tag:"DEMO",d:{base:12,swing:-8,press:5},phi:5,out:"The room comes up out of the chairs. Every editorial board in the country writes the same editorial by Thursday and none of them change a single primary vote."},
+ {k:"COMMISSION",t:"Propose term limits and a commission",s:"Structural, serious, and profoundly boring.",tag:"DEMO",d:{swing:6,press:4,base:-4},phi:1,out:"Four law professors call it the most workable proposal in the field. The clip does eleven thousand views and one of them is your mother."},
+ {k:"NO",t:"Say no, plainly",s:"Nobody in this primary wants to hear it.",d:{swing:7,press:2,base:-9},phi:-3,out:"You are booed, on camera, by your own side. A general-election consultant somewhere frames the footage and hangs it on the wall."}
+]},
+
+{ph:0,head:"THE TARIFF NUMBER",body:"A machine-tool plant in {HOME} has 400 jobs, a Chinese competitor, and a payroll that depends on which way you answer this. The reporter has the price of a washing machine written on his hand.",ch:[
+ {k:"WALL",t:"Back the tariff and say the word protection out loud",s:"Popular in the county. Unpopular in the model.",tag:"WORK",d:{base:9,swing:2,press:-3},phi:3,r:{MW:1.1},risk:{p:.3,out:"An economist you have never heard of goes on three networks with a chart of what it costs the average household. The chart is on cable for nine days.",d:{swing:-7,press:-6},phi:-2},out:"The plant floor gives you eleven minutes of applause and the local affiliate leads with it for two nights. Somewhere a think tank publishes a paper nobody reads."},
+ {k:"TARGET",t:"Back a narrow one and name the four industries",s:"Specific enough to defend, small enough to be true.",tag:"WORK",d:{swing:5,press:4,base:1},phi:2,r:{MW:.7},out:"You name steel, chips, pharmaceuticals and rare earths, and you can explain all four without notes. It is the rare answer that survives both a rally and a fact-check."},
+ {k:"COST",t:"Say tariffs are a tax and take the boos",s:"True. Also a terrible clip.",tag:"COST",d:{swing:6,press:5,base:-10},phi:-3,out:"You are the only candidate in the field who says it and the only one the business press writes about all week. The plant floor is very quiet on the way out."}
+]},
+
+{ph:0,head:"THE THIRD RAIL",body:"The trustees' report came out this morning. The trust fund is a decade from a shortfall and every candidate in this field has promised to touch nothing. A retired steamfitter in the second row asks what you are actually going to do.",ch:[
+ {k:"NEVER",t:"Promise not one dollar, not one benefit, ever",s:"The only answer that has ever won a primary.",tag:"COST",d:{base:10,swing:3,press:-5},phi:4,out:"The room loves it. Every budget reporter in America writes the same paragraph about the arithmetic and you have said the words on tape, which is the point of having said them."},
+ {k:"CAP",t:"Lift the cap on high earners and say so",s:"Polls at seventy percent and terrifies your donors.",tag:"COST",d:{base:6,swing:5,cash:-9},phi:2,out:"It polls exactly as well as your pollster said it would. Four bundlers call your finance director that night and two of them are shouting."},
+ {k:"TRUTH",t:"Tell the steamfitter the real numbers",s:"Nobody has ever been rewarded for this.",tag:"COST",d:{press:9,swing:4,base:-8},phi:-2,integ:1,out:"You walk him through it for six minutes without a talking point. It is the best answer anyone gives all cycle and it moves nothing, anywhere, at all."}
+]},
+
+{ph:0,pty:"REP",head:"THE DEPORTATION NUMBER",body:"{R1} has committed to a figure with six zeroes in it. You are asked whether you will match it, in a hall in {HOME}, with the cameras live and a family in the fourth row.",ch:[
+ {k:"MATCH",t:"Match the number and go higher",s:"There is no ceiling in this primary. That is the danger.",tag:"BORD",d:{base:13,swing:-10,press:-3},phi:6,r:{SO:.8},out:"You own the news cycle and the lane. Somewhere in a suburb of Phoenix a focus group of independents watches the clip in silence and the moderator writes one word on her pad."},
+ {k:"CRIME",t:"Commit to the criminal cases and the recent crossings only",s:"Enforceable, defensible, smaller.",tag:"BORD",d:{base:4,swing:6,press:5},phi:1,out:"It is the answer the border patrol union actually asked for. It is not the answer the room came for, and the room lets you know."},
+ {k:"LEGAL",t:"Pair enforcement with a legal-workers expansion",s:"Growers and packers have been begging somebody to say this.",tag:"BORD",d:{swing:8,cash:7,base:-9},phi:-3,out:"Three agricultural state parties and every meatpacker in the Midwest send private thanks. One talk host spends forty minutes on you and it is not a friendly forty minutes."}
+]},
+
+{ph:0,pty:"DEM",head:"THE BORDER QUESTION",body:"Crossings are down and the polling has not moved an inch. A Democratic mayor of a border city is in the front row and has been on television twice this month asking your party to say something coherent.",ch:[
+ {k:"TOUGH",t:"Back the enforcement bill, all of it",s:"The one your own side killed twice.",tag:"BORD",d:{swing:9,press:4,base:-9},phi:-1,r:{WE:.9,SO:.5},out:"Every general-election model in your party's polling shop improves. Four advocacy groups you have worked with for a decade put out a joint statement with your name in the first sentence."},
+ {k:"BOTH",t:"Enforcement plus a path, in the same sentence",s:"The 2013 answer. It has never once passed.",tag:"BORD",d:{swing:5,base:2,press:3},phi:2,out:"You say both halves without hedging either one, which nobody in your party has managed on camera in four years. It gets you a good write-up and a genuinely hostile question at the next stop."},
+ {k:"HUMANE",t:"Lead with the asylum system and the kids",s:"The base is not asking about crossings.",tag:"BORD",d:{base:11,swing:-8,press:2},phi:3,out:"The room is with you completely. The mayor in the front row does not clap, and a camera finds him not clapping, and that is the photograph that runs."}
+]},
+
+{ph:0,pty:"DEM",head:"THE HEALTH CARE FIGHT",body:"A nurses' union with 90,000 members will endorse tonight. They want single payer said out loud, by name, with the private-insurance question answered. {R1} has already refused.",ch:[
+ {k:"SINGLE",t:"Endorse single payer and answer the insurance question",s:"Yes, it ends the plan 150 million people have. Say it or do not say it.",tag:"CARE",d:{base:14,swing:-9,cash:-6},phi:5,out:"The endorsement is yours within the hour and the volunteer number is real. The clip of you saying the second half runs in a general-election ad in October, which you already know."},
+ {k:"PUBLIC",t:"Public option, capped premiums, keep what you have",s:"The answer that has actually passed a chamber.",tag:"CARE",d:{swing:7,press:4,base:-3},phi:1,out:"You lose the endorsement to {R1} by Thursday. Every swing-district House member in the country calls to say thank you and none of them do it publicly."},
+ {k:"DRUGS",t:"Skip the architecture, run on drug prices",s:"Insulin, inhalers, the cost of one pill. Nothing else.",tag:"CARE",d:{swing:8,base:4,press:2},phi:2,r:{MW:.6},out:"It is the most popular thing anyone in the field says all month and it is not what the nurses asked for. They endorse somebody else and their members do not necessarily follow."}
+]},
+
+{ph:0,head:"THE ASSAULT WEAPONS QUESTION",body:"There was a shooting Tuesday. Every candidate in the field has now been asked the same question and every answer has been graded against every other answer.",ch:[
+ {k:"BAN",t:"Back the ban, by name, with the list",s:"Popular nationally, fatal in six states, and the base can tell if you hedge.",tag:"CRIM",d:{base:9,swing:-4,press:5},phi:3,out:"You say it cleanly and you take the follow-up about what happens to the ones already out there, which is where everyone else stops talking. The write-ups use the word candid."},
+ {k:"REDFLAG",t:"Red flag laws and the background check bill only",s:"The eighty-percent answer nobody gets credit for.",tag:"CRIM",d:{swing:7,press:3,base:-2},phi:1,out:"Two sheriffs' associations and a gun club in {HOME} say they can live with it, which is genuinely rare and produces exactly zero minutes of national coverage."},
+ {k:"RIGHTS",t:"Refuse the premise and talk about the courts and the mentally ill",s:"The base wants the fight, not the policy.",tag:"CRIM",d:{base:11,swing:-7,press:-4},phi:3,out:"You get the loudest four minutes of the night. A father from Tuesday is booked on three networks by morning and asked to respond to you by name."}
+]},
+
+{ph:0,head:"THE WAR THAT WILL NOT END",body:"A supplemental is on the floor next week. Your party is split roughly down the middle and both halves think the other half is the reason you lose in November.",ch:[
+ {k:"FUND",t:"Back the full package and say why in one paragraph",s:"Allies, deterrence, and a line about what the alternative costs.",tag:"WAR",d:{press:7,swing:4,base:-8},phi:-1,out:"Every foreign-policy hand in your party emails the paragraph to somebody. A third of your primary electorate has decided, permanently, that you are the establishment candidate."},
+ {k:"CONDITION",t:"Fund it with an audit, a cap and an end date",s:"The answer that survives both rooms and satisfies neither.",tag:"WAR",d:{swing:4,base:2,press:1},phi:2,out:"You get through the week without a clip in either direction, which your communications director calls a win and your policy director calls a coward's peace."},
+ {k:"HOME",t:"Vote no and say the money should be spent here",s:"It polls. It also ends a seventy-year argument in your party.",tag:"WAR",d:{base:12,swing:-3,press:-7},phi:4,out:"Two former secretaries of state write op-eds about you by name. The op-eds are read by the people who already agreed with them and by nobody in Iowa."}
+]},
+
+{ph:0,head:"THE DATA CENTER",body:"A hyperscaler wants 900 acres, four gigawatts and a twenty-year tax abatement in a county you must win. It is 120 permanent jobs. The utility has already told residents what it does to their bill.",ch:[
+ {k:"BUILD",t:"Back it, hard hat and all",s:"Growth, chips, the future, and one photograph of you in a hard hat.",tag:"AI",d:{cash:11,press:3,swing:1,base:-2},phi:2,r:{SO:.5},risk:{p:.3,out:"The county board releases the abatement schedule. It is 900 acres and 120 jobs and your face is on the press release. Local talk radio does nothing else for a week.",d:{swing:-8,press:-6},r:{SO:-.6}},out:"The company announces on a stage with you on it. Two chip suppliers open offices in the same county within a month and your name is in both press releases."},
+ {k:"TERMS",t:"Back it only if they eat the grid costs",s:"Somebody has to say who pays for the substation.",tag:"AI",d:{swing:7,base:4,press:4,cash:-4},phi:2,r:{MW:.6},out:"The company grumbles publicly and agrees privately. The line about who pays for the substation ends up in four other candidates' stump speeches inside a month."},
+ {k:"MORATORIUM",t:"Call for a moratorium until the rate case is settled",s:"The county commission will love this. The party will not.",tag:"COST",d:{base:8,swing:2,cash:-12},phi:1,out:"You are the first candidate in either party to say it and the crowd noise tells you it will not be the last. Three tech donors move to {R1} the same afternoon."}
+]},
+
+{ph:0,head:"THE HOUSING NUMBER",body:"The median house in the county you are standing in costs eleven times the median income. A 29-year-old with a job and a down payment asks the only question anyone under 40 has asked you all year.",ch:[
+ {k:"BUILD",t:"Run on supply: preempt the zoning, build the units",s:"Every economist agrees. Every homeowner votes.",tag:"COST",d:{swing:8,press:6,base:-4},phi:2,out:"You get the best coverage of your campaign from people who write newsletters. A county supervisors' association in {HOME} passes a resolution about you, and it is not a nice one."},
+ {k:"BUYERS",t:"Down payment help and a credit for first-time buyers",s:"Popular, immediate, and it does not build one house.",tag:"COST",d:{base:7,swing:5},phi:3,out:"It is the single most popular thing you say all cycle. Every housing economist in the country writes the same thread about what it does to prices and not one voter reads it."},
+ {k:"WALLST",t:"Go after the funds buying single-family homes",s:"Six percent of the problem and a hundred percent of the villain.",tag:"COST",d:{base:10,swing:4,cash:-7},phi:3,out:"The line gets a standing ovation in three consecutive stops. A housing researcher goes on a podcast to explain the six percent and the podcast has 400 listeners."}
+]},
+
+{ph:0,head:"THE HARDEST QUESTION IN THE ROOM",body:"A high school athletic association ruling made the news Tuesday. The question comes from a parent, not a reporter, and the room goes quieter than it has gone all night.",ch:[
+ {k:"ANSWER",t:"Answer the sports question directly and stop there",s:"One sentence. Then take the next question.",d:{swing:5,base:1,press:2},phi:1,out:"You give the narrow answer about the narrow question and decline to be drawn any wider, three separate times. Nobody gets the clip they wanted, which is the closest thing to a win available here."},
+ {k:"BROAD",t:"Widen it into a culture-war argument",s:"There is an enormous amount of applause available.",d:{base:12,swing:-9,press:-4},phi:4,out:"The room is on its feet. The clip is enormous. It is also the clip the other side buys time to play in October, unedited, without commentary."},
+ {k:"KIDS",t:"Answer it as a question about the kids in front of you",s:"Refuse the frame. Talk about the actual children.",d:{swing:4,press:6,base:-5},phi:-1,out:"Two columnists call it the most human thirty seconds anyone has managed on the subject. Your own side's online accounts spend the night explaining what you should have said instead."}
+]},
+
+{ph:0,head:"THE PLEDGE ON THE CLIPBOARD",body:"An issue group with a mailing list of two million and a scorecard nobody wants a bad grade on wants your signature on a single-page pledge. It is four bullet points. The fourth one is the problem.",ch:[
+ {k:"ALL",t:"Sign all four",s:"The list is real. So is the fourth bullet.",d:{base:11,swing:-8,cash:6},phi:4,out:"The endorsement, the list and the volunteers are yours by morning. The fourth bullet is read aloud on national television nine times between now and November."},
+ {k:"THREE",t:"Sign three and cross out the fourth on camera",s:"Nobody has ever done this to them before.",d:{base:3,press:7,swing:4},phi:1,risk:{p:.3,out:"They call the crossed-out bullet a betrayal and spend their entire list on it. You get the worst two days of your primary from people who agree with you about three-quarters of everything.",d:{base:-11,cash:-6},phi:-4},out:"They are furious for a day and then quietly grade you at 75 percent, which is a passing grade. Two other candidates cross out the fourth bullet within a week."},
+ {k:"NONE",t:"Decline to sign anything, as a policy",s:"A principled position with a real price.",d:{press:6,swing:3,base:-7,cash:-5},phi:-2,integ:1,out:"You explain that you do not sign pledges, to them, in the room. They print your grade as an F and mail it to two million people, several times."}
+]},
+
+{ph:0,head:"THE ENERGY ANSWER",body:"You are in a county with a refinery, a wind farm and an unemployment rate of 3 percent, and both sets of workers are in the same hall tonight.",ch:[
+ {k:"ALL",t:"All of the above, and name every source",s:"The answer that offends nobody and moves nobody.",tag:"WORK",d:{swing:5,base:2,press:1},phi:1,r:{MW:.6},out:"Both halves of the room clap at different sentences. The local paper's headline uses the phrase struck a balance, which is what papers write when nothing happened."},
+ {k:"DRILL",t:"Permits, pipelines, and the word energy dominance",s:"One half of this room builds things for a living.",tag:"WORK",d:{base:10,swing:-3,cash:8},phi:3,r:{SO:.7},out:"The refinery local endorses inside a week. Every clip of you saying dominance is downloaded by four campaigns before the night is out."},
+ {k:"BUILD",t:"Run on the buildout: transmission, nuclear, the grid",s:"Nobody has ever lost a vote over a transmission line, mostly because nobody has ever mentioned one.",tag:"WORK",d:{swing:6,press:5,base:-2},phi:2,r:{MW:.8},out:"An IBEW hall you did not expect calls the next morning. You spend eleven minutes on interconnection queues and a reporter files it under things that will never be on television."}
+]},
+
+{ph:0,head:"THE DEBT NUMBER",body:"Interest on the debt now exceeds defense spending. A questioner in a sweater vest has the figure printed out and would like you to react to it in front of 900 people.",ch:[
+ {k:"CUTS",t:"Name three programs you would actually cut",s:"Almost nobody does this, for excellent reasons.",tag:"COST",d:{press:9,swing:5,base:-9},phi:-2,integ:1,out:"You name three, out loud, with numbers. It is the most substantive ninety seconds of the entire primary and every one of the three has a constituency with a bus."},
+ {k:"GROWTH",t:"Say you will grow out of it",s:"The answer both parties have given for forty years.",tag:"COST",d:{base:5,swing:2,cash:4},phi:2,out:"The sweater vest is not satisfied. Neither is the Congressional Budget Office, which nobody in the room has ever met."},
+ {k:"THEM",t:"Blame the other party's last bill, by name and dollar figure",s:"Accurate, partial, and extremely effective.",d:{base:9,press:-3,swing:-1},phi:3,out:"The number is right and the story around it is not. It works completely and you will hear it repeated back to you at every stop for a month."}
+]},
+
+{ph:0,head:"THE ENDORSEMENT WITH A PRICE",body:"A sitting governor in a Super Tuesday state will endorse you Thursday. He wants one thing in exchange: a public commitment on a project his state has been trying to fund for nine years.",ch:[
+ {k:"DEAL",t:"Make the commitment, take the endorsement",s:"This is how it has always worked.",d:{cash:8,base:3},phi:5,r:{SO:.9},integ:-1,out:"The endorsement lands with the whole state party attached. A reporter finds the project's cost estimate in about forty minutes and it is a very large number."},
+ {k:"VAGUE",t:"Say you are supportive and commit to nothing",s:"He will notice. He may endorse anyway.",d:{press:2},phi:2,risk:{p:.4,out:"He notices. He endorses {R1} on Thursday instead, in a hangar, with the state party chair standing behind him.",phi:-4,d:{base:-3}},out:"He endorses anyway, a week late and with visibly less enthusiasm, which is still a governor and still a state party."},
+ {k:"NO",t:"Turn it down and say why publicly",s:"An extremely expensive way to be right.",d:{press:8,swing:4},phi:-3,integ:2,out:"Two editorial boards write approvingly about the kind of campaign you are running. The governor endorses {R1} and delivers roughly nine points of a state you needed."}
+]},
+
+/* ---------------- CONVENTION · THE PLATFORM ---------------- */
+{ph:1,head:"THE PLANK FIGHT",body:"The platform committee has been in a windowless room since Sunday. One plank is holding up the entire document and both sides have told reporters they will take it to the floor.",ch:[
+ {k:"WIN",t:"Impose your language and end it tonight",s:"You are the nominee. Act like it once.",d:{base:6,press:4,swing:-2},out:"It is over in twenty minutes and the document reads the way you wanted. Eleven delegates walk out and a camera follows every one of them into the hallway."},
+ {k:"SPLIT",t:"Take their language, add your sentence at the end",s:"Nobody reads the platform. Everybody reads the fight about the platform.",d:{base:3,swing:3,press:2},out:"Both sides declare victory in the same hour, which means there is nothing to cover, which means the convention leads with your speech instead."},
+ {k:"OPEN",t:"Let it go to the floor and take the vote",s:"Democracy, on television, in prime time.",d:{press:7,base:-3,swing:1},risk:{p:.35,out:"The floor vote is close, loud and gavel-banging, and it runs live during the exact hour your veterans' video was scheduled to air.",d:{press:-10,swing:-6,base:-4}},out:"The debate is genuine, the vote is clean, and three networks call it the most interesting hour of either convention. Your side loses the vote and you look enormous for allowing it."}
+]},
+
+{ph:1,head:"THE PRIME-TIME SLOT",body:"Ten o'clock on Wednesday is the only hour the broadcast networks are carrying live. Four people want it and one of them is the person you beat.",ch:[
+ {k:"RIVAL",t:"Give it to {R1}",s:"Unity, on camera, whether they mean it or not.",d:{base:9,press:5,swing:3},out:"They deliver, fully and without a single hedge, and the shot of the two of you afterward is on the front of every paper in the country. Their staff is furious, which is not your problem."},
+ {k:"FAMILY",t:"Give it to the family and the biography film",s:"Softening, humanizing, and utterly safe.",d:{swing:6,press:2},out:"The film tests better than anything your campaign has produced. The word likeable appears in nine write-ups, including two that clearly resent typing it."},
+ {k:"BASE",t:"Give it to the loudest surrogate you have",s:"Red meat, in prime time, on broadcast.",d:{base:12,swing:-8,press:-3},out:"The hall has never been louder. The eleven minutes are clipped and rerun by the other side for the next eleven weeks."}
+]},
+
+{ph:1,head:"ONE PROMISE",body:"The acceptance speech is 4,200 words and your speechwriters have left a gap on page nine for one specific commitment with a number in it. Everything else is written.",ch:[
+ {k:"COST",t:"A number on household costs, with a date",s:"The thing every voter says they care about.",tag:"COST",d:{swing:9,base:4,press:3},out:"It is the only line anyone quotes and it is quoted everywhere. It is also a number with a date on it, and there are people whose entire job for the next four years will be that date."},
+ {k:"BIG",t:"A structural promise: the system, the rules, the money",s:"Historic, ambitious, and hard to picture.",tag:"DEMO",d:{base:11,press:6,swing:-4},out:"Your side stands for ninety seconds. A focus group in Erie is asked afterward what you promised and four of the twelve can name it."},
+ {k:"SMALL",t:"Something small, concrete and finishable",s:"A bridge, a benefit, one line at one agency.",d:{swing:7,press:4,base:-2},out:"The speech is graded a B-minus by every columnist and an A by the only two people it was aimed at, who live in Wisconsin and did not watch the rest of it."}
+]},
+
+/* ---------------- GENERAL · THE ARGUMENT ---------------- */
+{ph:2,head:"THE PRICE OF EVERYTHING",body:"The grocery number came out this morning. It is better than last year and worse than 2019, and {NOM} has already been in a supermarket this week holding a receipt.",ch:[
+ {k:"RECEIPT",t:"Do your own receipt, in a store, with a number",s:"Everybody does this now. It works anyway.",tag:"COST",d:{swing:8,base:4,press:-2},r:{MW:.8},out:"Your receipt is $61.40 and you can name every item on it. Four local affiliates lead with it and one national desk runs a piece about the two campaigns' receipts, side by side, with the prices."},
+ {k:"PLAN",t:"Roll out the actual cost-of-living plan",s:"Fourteen pages. Three of them matter.",tag:"COST",d:{press:7,swing:5,cash:-5},out:"Two economists at opposite ends of the profession say the same three provisions are serious. The plan is covered for one day and the receipt is covered for four."},
+ {k:"BLAME",t:"Put the whole thing on their record, with the chart",s:"Simple, memorable, and about sixty percent true.",tag:"COST",d:{base:9,swing:2,press:-5},out:"The chart is on every screen your side owns within a day. Three fact-checks land by Friday and every one of them makes the chart travel further."}
+]},
+
+{ph:2,head:"THE DRUG PRICE AD",body:"You have a woman in Ohio who rations insulin, on tape, for six minutes, and she has agreed to let you use it. Your general counsel wants three changes and your ad team wants none.",ch:[
+ {k:"RUN",t:"Run it uncut, statewide, this week",s:"The most effective thirty seconds you have.",tag:"CARE",d:{swing:9,press:4,cash:-8},r:{MW:1},out:"It moves numbers in exactly the counties it was cut for. Two weeks later a reporter finds she also has a small business and a complicated tax story, and the ad keeps running anyway because it is still true."},
+ {k:"POLICY",t:"Pair it with the cap and the negotiation list",s:"Story plus number. The textbook.",tag:"CARE",d:{swing:7,base:3,press:5,cash:-6},r:{MW:.7},out:"The pairing tests better than either half alone, which is what your media director has been saying since June and can now prove."},
+ {k:"HOLD",t:"Hold it for October",s:"The best asset you have. Spend it late.",tag:"CARE",d:{cash:5,press:-2},out:"You bank it. The other side runs a health care ad first and by October the whole category is noise, which is what happens to assets you hold."}
+]},
+
+{ph:2,head:"THE FACTORY THAT CLOSED",body:"1,400 jobs, announced at 6 a.m., in a county in {HOME} that has moved eleven points in four years. {NOM}'s plane is already being repositioned.",ch:[
+ {k:"GATE",t:"Be at the gate at shift change tomorrow",s:"No press release. No podium. The gate.",tag:"WORK",d:{swing:8,press:5,base:3,cash:-3},r:{MW:1.2},out:"You stand at the gate for two hours and listen more than you talk, and the local photographer gets a frame that runs in nine papers. {NOM} arrives Thursday to a smaller crowd and the same photograph, taken worse."},
+ {k:"PLAN",t:"Announce a specific retraining and transition package",s:"Real money, real numbers, no gate.",tag:"WORK",d:{swing:5,press:6,cash:-6},r:{MW:.7},out:"The union local reads it and says it is the first proposal from either campaign that mentions the actual pension question. It gets four hundred words in one newspaper."},
+ {k:"BLAME",t:"Name the trade decision that did it",s:"There is one and it has a date on it.",tag:"WORK",d:{base:9,swing:1,press:-3},r:{MW:.6},risk:{p:.3,out:"The decision you named was signed by an administration your own party ran. Somebody has the signing photo within the hour and it is a very clear photo.",d:{press:-9,swing:-6},r:{MW:-.7}},out:"The date is right, the vote count is right, and you can name the four people who cast it. It becomes the standard line in every rally you do in that state."}
+]},
+
+{ph:2,head:"THE TAX QUESTION",body:"The 2017 provisions expire next year and somebody has to say what happens to the top rate. {ANCH} of {NET} asks it in a sit-down with your notes visible on the table.",ch:[
+ {k:"RAISE",t:"Raise the top rate and name the threshold",s:"A number above which you are asking people to pay more.",tag:"COST",d:{base:8,swing:4,cash:-11},out:"You name $400,000 and you do not move off it in four follow-ups. Your finance director's phone does not stop for two days and the polling on it is 62 percent."},
+ {k:"HOLD",t:"Extend everything and pay for it with growth",s:"Simple, popular, and the arithmetic is a rumor.",tag:"COST",d:{base:7,swing:3,cash:9},out:"Business groups you have never heard from send money the same week. Every budget analyst in Washington publishes the same table and the table does not have a constituency."},
+ {k:"MIDDLE",t:"Extend it under $400k, let the top expire",s:"The answer both parties poll and neither says cleanly.",tag:"COST",d:{swing:8,press:5,base:1,cash:-4},out:"It is the most defensible position available in a general election and you say it in one sentence, which is rarer than the position itself."}
+]},
+
+{ph:2,head:"THE STORM",body:"A category four made landfall Tuesday. Nine counties are dark, the recovery money is stuck in a fight nobody outside Washington understands, and every campaign event within 400 miles is cancelled.",ch:[
+ {k:"STAND",t:"Stand down the campaign for four days",s:"No events, no ads, no fundraising emails.",d:{press:9,swing:6,cash:-9},r:{SO:.8},out:"The pause is noticed precisely because it costs you something. Your finance team loses the best four days of the month and the word decent shows up in coverage twice, which is twice more than usual."},
+ {k:"HELP",t:"Send the campaign apparatus into the counties",s:"Field organizers can move water as easily as literature.",d:{swing:7,press:6,base:4,cash:-6},r:{SO:1},risk:{p:.28,out:"A photographer catches an organizer handing out water beside a stack of your yard signs. The photograph is the entire story for three days.",d:{press:-11,swing:-6},r:{SO:-.6}},out:"Four hundred organizers spend a week doing something useful and almost nobody covers it, which is how you know it was real."},
+ {k:"MONEY",t:"Go to Washington and fight for the supplemental",s:"The money is the actual thing they need.",tag:"COST",d:{press:5,swing:4,base:2},r:{SO:.6},out:"You get a version of it moving inside ten days and the governor of the state — from the other party — says your name in a sentence with the word helped in it."}
+]},
+
+{ph:2,head:"THE STRAIT",body:"Two navies are conducting exercises 90 miles apart and a shipping insurer just suspended coverage in the lane. The market opened down 700 points. Your foreign policy team wants a statement in an hour.",ch:[
+ {k:"CALM",t:"Say almost nothing, and say it presidentially",s:"Two sentences. Neither of them a promise.",tag:"WAR",d:{swing:6,press:7,base:-3},out:"It is the correct statement and it is boring, and four former officials from both parties say so publicly, which is the only endorsement that matters this week."},
+ {k:"HARD",t:"Draw the line publicly and name the consequence",s:"Deterrence, or a commitment you will own in office.",tag:"WAR",d:{base:10,press:3,swing:-4},risk:{p:.35,out:"The line is tested inside a week. You are now a candidate with a public red line and no ability to enforce it, and every network has the tape of you drawing it.",d:{press:-10,swing:-8,base:-3}},out:"The line holds. Two allied foreign ministers say supportive things on the record and your numbers on strength move four points in a week."},
+ {k:"COST",t:"Bring it home to the shipping costs and the shelves",s:"Nobody votes on the strait. Everybody votes on the shelf.",tag:"COST",d:{swing:7,base:3,press:1},out:"You are the only one of the two of you who connects it to a price, and the connection is repeated back to you by voters in three states within the month."}
+]},
+
+{ph:2,head:"THE VACANCY",body:"A justice's clerk called a reporter at eleven last night. It is not confirmed and it is not going away, and both campaigns have had a list ready since March.",ch:[
+ {k:"LIST",t:"Release your list of names",s:"Six names. The base reads all six.",tag:"DEMO",d:{base:12,cash:9,swing:-5},out:"Your side's turnout modeling improves overnight in four states. One of the six names has a 2013 speech that becomes an entire news cycle by itself."},
+ {k:"STANDARD",t:"Release a standard, not a list",s:"What you would look for, not who.",tag:"DEMO",d:{swing:6,press:5,base:-3},out:"Editorial pages call it a return to how this used to be done. Your base wanted six names and notices that it did not get six names."},
+ {k:"PROCESS",t:"Make it about the confirmation rules instead",s:"Timing, hearings, and who gets a vote.",tag:"DEMO",d:{base:7,press:3,swing:1},out:"You spend a week on process, which nobody outside the building has ever changed a vote over, and which keeps you from having to say a single name."}
+]},
+
+{ph:2,head:"THE DEEPFAKE",body:"There is a 40-second video of you saying something you did not say. It is good. It has nine million views. Two outlets have already run it as real and pulled it.",ch:[
+ {k:"FAST",t:"Get out in front of it within the hour, with the forensics",s:"Speed is the entire defense.",tag:"AI",d:{press:8,swing:5,base:2,cash:-3},out:"Your team publishes the analysis before lunch and three platforms label it by dinner. The story becomes about the fake, not about you, which is the only good outcome available."},
+ {k:"LAW",t:"Sue, loudly, and make the lawsuit the message",s:"Slow, expensive, and enormously satisfying.",tag:"AI",d:{base:6,cash:-9,press:-2},risk:{p:.35,out:"Discovery is a two-way street and opposing counsel knows it. A filing three weeks later quotes two of your internal emails in full.",d:{press:-10,swing:-5},heat:10},out:"The suit does not resolve before November and was never going to. It does put the words criminal and fabricated in every headline about the video."},
+ {k:"USE",t:"Turn it into an ad about what is coming",s:"The fake, then your face, then a question.",tag:"AI",d:{swing:7,press:6,base:3,cash:-6},out:"The ad is the best-tested thing your shop has made all year. It also runs the fake in front of eleven million more people, which your research director notes in a memo nobody answers."}
+]},
+
+{ph:2,head:"THE CITY",body:"A shooting in a city your party runs, on video, at 4 p.m., with a mayor who has been on television twice today making it worse.",ch:[
+ {k:"GO",t:"Go there. Walk the block. Meet the family.",tag:"CRIM",s:"The hardest thing on the schedule and the only real one.",d:{swing:7,press:6,base:1,cash:-3},r:{MW:.5},out:"You spend three hours where the cameras stop filming after the first forty minutes. The family says one sentence about you afterward and it is worth more than the trip cost."},
+ {k:"POLICE",t:"Stand with the chiefs and fund the department",s:"A number, a podium, and eleven uniforms behind you.",tag:"CRIM",d:{swing:8,base:5,press:-2},risk:{p:.28,out:"One of the eleven uniforms behind you is under investigation, which a reporter establishes before the podium is packed up.",d:{press:-9,swing:-5}},out:"The number is real, the chiefs' association endorses inside a week, and your numbers on safety move in three suburbs that decide states."},
+ {k:"BLAME",t:"Make it about who runs the city",s:"Effective. Also a city full of your voters.",tag:"CRIM",d:{base:10,swing:-5,press:-4},out:"Your side runs it everywhere for a week. The mayor responds by name and the exchange gets you six points of coverage in a city you were never going to win."}
+]},
+
+{ph:2,head:"THE PICKET LINE",body:"18,000 workers walked out at midnight over a contract with an automation clause in it. Both campaigns have been invited to the line and both have been warned about the automation clause.",ch:[
+ {k:"LINE",t:"Walk the line and say the word union into a bullhorn",s:"Twelve minutes. One photograph. Some risk.",tag:"WORK",d:{base:9,swing:4,cash:-5},r:{MW:1.1},out:"The photograph is on the front of four papers and the international endorses within a week. Two manufacturers cancel a fundraiser they had already stopped answering emails about."},
+ {k:"BROKER",t:"Call both sides and try to actually move it",s:"No cameras. Possibly no result.",tag:"WORK",d:{press:6,swing:5},r:{MW:.6},risk:{p:.35,out:"The talks collapse anyway and both sides tell reporters you were involved. You now own a failed negotiation you had no authority to conduct.",d:{press:-8,swing:-4}},out:"A framework moves within nine days and neither side credits you publicly, which is the price of it having worked."},
+ {k:"CLAUSE",t:"Make the automation clause the national argument",s:"Nobody has run on this. Somebody is going to.",tag:"AI",d:{press:8,swing:6,base:4},r:{MW:.8},out:"You are suddenly the only candidate in the race with a position on what happens to 18,000 jobs when the line changes, and every labor reporter in the country calls the same afternoon."}
+]},
+
+{ph:2,head:"THE VETERANS' NUMBER",body:"A backlog figure came out this week and it is worse than the one both parties campaigned on fixing in 2020 and 2024. A veterans' group with 1.2 million members wants forty minutes on the record.",ch:[
+ {k:"FIX",t:"Commit to a number, a date and a name to run it",s:"Specific enough to be graded on.",tag:"CARE",d:{swing:7,press:6,base:3},out:"The group publishes your commitments in a table beside {NOM}'s, which are vaguer, and the table is passed around by 1.2 million people."},
+ {k:"CHOICE",t:"Run on letting them go anywhere for care",s:"Popular with members, opposed by half the staff associations.",tag:"CARE",d:{base:7,swing:5,press:-2},out:"It polls at 70 percent among veterans and starts a fight inside the system that outlasts the campaign, the administration and probably you."},
+ {k:"STORY",t:"Bring the two veterans you have been quoting all year",s:"Faces instead of figures.",tag:"CARE",d:{swing:5,press:4,base:2},out:"Both of them are better on camera than you are. One of them is asked a policy question you have not answered and answers it better than you would have."}
+]},
+
+/* ---------------- DEBATE PREP ---------------- */
+{ph:3,head:"THE NUMBER YOU CANNOT MISS",body:"Your prep team has a list of eleven figures you will be asked for. You have four hours and you have missed two of them in every mock this week.",ch:[
+ {k:"DRILL",t:"Drill all eleven until they are automatic",s:"Four hours of flashcards at 51 years old.",d:{press:5,swing:3},prep:3,out:"You get all eleven, twice, cold. In the actual debate you are asked for exactly one of them and you have it to two decimal places."},
+ {k:"THREE",t:"Learn three cold, deflect the rest with a rule",s:"Nobody can hold eleven. Everybody can hold three.",d:{swing:4,press:3,base:1},prep:2,out:"You learn three perfectly and you build one clean sentence for everything else. It survives the night without a single stumble, which is the whole ambition."},
+ {k:"MESSAGE",t:"Skip the numbers, drill the message discipline",s:"Nobody has ever lost a debate on a decimal point.",d:{base:5,swing:1,press:-2},prep:1,risk:{p:.35,out:"You are asked for a figure you have quoted in every stump speech for six months and you give a number that is wrong by an order of magnitude. It is the clip of the night.",d:{press:-11,swing:-7},prep:1},out:"You stay on message for ninety minutes without a single detour, and two panels afterward call it the most disciplined debate performance of the cycle."}
+]},
+
+{ph:3,head:"THE ATTACK YOU KNOW IS COMING",body:"There is one line about your record that has tested at minus nine every single time your own shop has run it against you. {NOM} has not used it yet. There are two debates left.",ch:[
+ {k:"FIRST",t:"Raise it yourself, in your opening",s:"Take the hit while you control the framing.",d:{press:7,swing:5,base:-3},prep:3,out:"You put it on the table in the first ninety seconds with your own words around it. When it comes back at you in the second hour it lands on ground you already prepared."},
+ {k:"COUNTER",t:"Build a counterpunch and wait for it",s:"One rehearsed answer, held in reserve.",d:{swing:4,base:3},prep:2,risk:{p:.3,out:"The attack comes in a form you did not prepare for and your rehearsed answer does not fit it. Everyone can see you reaching for something that is not there.",d:{swing:-8,press:-6},prep:1},out:"It comes in the sixty-third minute and your answer is ready, tight and slightly funny. It is the exchange every recap leads with."},
+ {k:"IGNORE",t:"Prepare nothing and trust the pivot",s:"You have pivoted off worse.",d:{base:2},prep:1,out:"You pivot. It is visible. Two panelists spend a segment on the pivot rather than the attack, which is a better outcome than it sounds and a worse one than you needed."}
+]},
+
+/* ---------------- CLOSING ---------------- */
+{ph:4,head:"THE CLOSING ARGUMENT",body:"There are two weeks left and one message. Everything after this — every ad, every rally, every surrogate — says the same thing. Your team has three memos and cannot agree.",ch:[
+ {k:"COST",t:"Close on the cost of living, only",s:"The thing people say when nobody is asking about politics.",tag:"COST",d:{swing:9,base:3,press:2},r:{MW:.8,SO:.4},out:"Every ad, every rally, one number. Your late-deciding voters break your way by four in the states where you ran it hardest, which is exactly what your pollster promised in a memo nobody believed."},
+ {k:"DEMO",t:"Close on the rules, the system and the stakes",s:"Your base has been waiting eleven months for this.",tag:"DEMO",d:{base:12,press:6,swing:-5},out:"Turnout among your own goes up measurably. The persuadable middle tells four different focus groups that they had hoped somebody would talk about groceries."},
+ {k:"THEM",t:"Close on {NOM} personally",s:"The negatives are real and they are high.",d:{base:8,swing:2,press:-6},risk:{p:.3,out:"Two weeks of you talking about them is two weeks of them being the subject. Their name recognition and their sympathy both go up, in that order.",d:{swing:-8,base:-3}},out:"Their numbers move down three points in a week. So do yours, by one, which your team decides is a trade worth making."}
+]},
+
+{ph:4,head:"THE QUESTION ABOUT NOVEMBER",body:"{ANCH} of {NET} asks whether you will accept the result. It is the last sit-down before the election and this is the only question anybody will quote from it.",ch:[
+ {k:"YES",t:"Say yes, flatly, and take the follow-up",s:"Six words and then whatever comes next.",tag:"DEMO",d:{swing:8,press:9,base:-6},integ:2,out:"You say yes without a clause attached to it, which is rarer than it should be, and the six words are on the front of every paper in the country the next morning."},
+ {k:"LEGAL",t:"Say yes if the count is clean, and define clean",s:"A conditional, carefully drawn.",tag:"DEMO",d:{base:5,swing:-1,press:-3},out:"The clause is the story by lunch. You spend the last week of the campaign explaining a subordinate clause to people who have already decided what it meant."},
+ {k:"FIGHT",t:"Refuse to answer and talk about the count",s:"Your loudest voters want to hear it. Nobody else does.",d:{base:11,swing:-10,press:-8},heat:8,out:"Four secretaries of state — two from your own party — respond by name within the day. It is the last thing a great many voters hear about you before they vote."}
+]},
+
+{ph:4,head:"THE LAST HUNDRED HOURS",body:"There are four days, one plane, and eleven places that want you. Your state directors are all on the same call and all of them are lying slightly about their numbers.",ch:[
+ {k:"BLUEWALL",t:"Live in the three Rust Belt states",s:"The old map. It still adds up.",d:{swing:5,base:4,cash:-6},r:{MW:1.4},out:"Nine stops in four days across three states and you sleep on the plane. The crowds in the last two are the biggest of the campaign and your MW field team never forgets it."},
+ {k:"SUNBELT",t:"Live in the Sun Belt and the desert",s:"The new map. It is younger and less reliable.",d:{swing:5,base:4,cash:-6},r:{SO:.9,WE:.9},out:"You do four states in four days with a translator at two of the stops and your own numbers among voters under 35 move in a way nobody's model predicted."},
+ {k:"EVERY",t:"Try to touch all eleven",s:"Nobody has ever been persuaded by a wheels-down rally at 1 a.m.",d:{press:6,base:5,swing:-2,cash:-9},stam:true,r:{MW:.4,SO:.4,WE:.4,NE:.4},out:"You hit all eleven and you are visibly finished by the last one. Every local affiliate in eleven markets leads with you, which is either the whole point or a very expensive way to be tired."}
 ]}
 ];
 
@@ -1089,7 +1382,7 @@ function newGame(){
      base:52,swing:46,cash:40,press:50,phi:9,
      reg:{MW:0,SO:0,WE:0,NE:0},
      lanes:["ESTAB"],integ:0,heat:0,busts:0,usedEx:[],deb:null,prep:1,mo:0,del:0,endorse:0,turn:0,ei:0,ci:0,
-     log:[],ads:{},lastOut:"",cast:{},wire:"",
+     log:[],ads:{},lastOut:"",cast:{},wire:"",seenNews:[],lastNews:-9,newsCount:0,
      field:[],oppField:[],oppNom:null,mate:null,runnerUp:null,
      nominee:false,contested:false,env:0,pollerr:{},sencand:{},surprise:false};
 }
@@ -1304,8 +1597,10 @@ function pickEvents(ph,n){
   var pool=EVENTS.filter(function(e){return e.ph===ph&&!e.ex&&(!e.pty||e.pty===S.party.id);});
   return shuffle(pool).slice(0,n);
 }
+function slots(ph){return STEPS.filter(function(s){return s.k==="ev"&&s.ph===ph;}).length;}
 function buildQueue(){
-  QUEUE={0:pickEvents(0,7),1:pickEvents(1,2),2:pickEvents(2,4),3:pickEvents(3,1),4:pickEvents(4,2)};
+  QUEUE={};
+  [0,1,2,3,4].forEach(function(ph){QUEUE[ph]=pickEvents(ph,slots(ph));});
   if(S.surprise){
     var oct=EVENTS.filter(function(e){return e.ph===4&&/OCTOBER SURPRISE/.test(e.head);})[0];
     if(oct)QUEUE[4]=[oct].concat(QUEUE[4].filter(function(e){return e!==oct;})).slice(0,2);
@@ -1377,6 +1672,13 @@ function drawGauges(flash){
       return '<b>'+k+'</b>'+(new Array(n+1).join("▮")||"·");
     }).join(" ")+'</span><span class="val"></span>';
   h.appendChild(pull);
+  var me=(S.party.tilt===1?S.env:-S.env);
+  var mood=document.createElement("div");
+  mood.className="g pull";
+  mood.innerHTML='<span class="lab">NAT. MOOD</span><span class="pullbars mood">'+
+    (Math.abs(me)<.4?"EVEN":(me>0?"BLOWING YOUR WAY":"BLOWING AGAINST YOU"))+
+    '</span><span class="val">'+fmt(me)+'</span>';
+  h.appendChild(mood);
 }
 function drift(){
   S.base += (S.party.base-S.base)*.10;
@@ -1396,6 +1698,7 @@ function drift(){
 /* ================= TURN LOOP ================= */
 function turn(){
   if(S.turn>=STEPS.length)return night();
+  if(rollBreaking())return;
   var step=STEPS[S.turn];
   setChyron(step);
   window.scrollTo(0,0);
@@ -1472,6 +1775,69 @@ function resolve(step,ev,c){
   S.turn++;
   drawGauges(flash);
   if(!rollScandal())turn();
+}
+
+/* ================= BREAKING =================
+   between one decision and the next, something happens that you did not
+   choose and cannot answer. it is rolled once per turn, never twice in a
+   row, and never repeats inside a single run.
+========================================================================= */
+function newsPool(){
+  var pri=!S.nominee;
+  return BREAKING.filter(function(b){
+    if(b.w==="pri"&&!pri)return false;
+    if(b.w==="gen"&&pri)return false;
+    if(b.pty&&b.pty!==S.party.id)return false;
+    if(S.seenNews.indexOf(b.head)>=0)return false;
+    if(b.cond&&!b.cond())return false;
+    return true;
+  });
+}
+function rollBreaking(){
+  if(S.turn<1||S.turn>=STEPS.length)return false;
+  if(S.turn-S.lastNews<2)return false;
+  if(rand()>=.42)return false;
+  var pool=newsPool();
+  if(!pool.length)return false;
+  var b=rnd(pool);
+  S.seenNews.push(b.head);
+  S.lastNews=S.turn;
+  S.newsCount++;
+
+  var flash={};
+  ["base","swing","press","cash"].forEach(function(k){
+    if(b.d&&b.d[k]!=null){S[k]=clamp(S[k]+b.d[k],0,k==="cash"?120:100);flash[k]=b.d[k];}
+  });
+  for(var rk in (b.r||{}))addReg((rk==="HOMEREG")?S.homeReg:rk,b.r[rk]);
+  if(b.phi&&!S.nominee){S.phi=clamp(S.phi+b.phi,1,60);flash.phi=b.phi;}
+  if(b.env)S.env=clamp(S.env+b.env,-4.5,4.5);
+  if(b.heat)addHeat(b.heat);
+
+  setChyron(STEPS[S.turn]);
+  var head=tpl(b.head), body=tpl(b.body);
+  var lines=Object.keys(flash).map(function(k){
+    var v=flash[k];
+    return '<span class="'+(v>0?"up":"down")+'">'+k.toUpperCase()+" "+(v>0?"+":"")+Math.round(v)+'</span>';
+  });
+  if(b.env){
+    var me=(S.party.tilt===1?b.env:-b.env);
+    lines.push('<span class="'+(me>0?"up":"down")+'">NATIONAL MOOD '+fmt(me)+'</span>');
+  }
+  if(!lines.length)lines.push('<span class="down">NO MEASURABLE EFFECT ON ANYTHING</span>');
+
+  var st=$("#stage");
+  st.innerHTML=receipt()+
+    '<div class="flash"><p class="slug">BREAKING · '+STEPS[S.turn].d+', 2028</p>'+
+    '<h3>'+head+'</h3><p>'+body+'</p>'+
+    '<p class="fx">'+lines.join(" &nbsp; ")+'</p></div>'+
+    '<button class="btn" id="newsgo">Back to the campaign</button>';
+  wireNews(head);
+  S.log.push({w:STEPS[S.turn].d,head:head,pick:"Nobody asked you.",out:body,d:flash,news:true});
+  S.lastOut="";
+  drawGauges(flash);
+  $("#newsgo").addEventListener("click",function(){turn();});
+  window.scrollTo(0,0);
+  return true;
 }
 
 /* ================= THE FILE ================= */
