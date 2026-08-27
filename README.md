@@ -17,10 +17,11 @@ you or endorse the person beating you. Fall short of a majority and you get a
 contested convention with three ways to try to win the floor — or a concession
 speech.
 
-**A real field.** Six rivals drawn at random each run from a pool of nine per
-party (Vance, Rubio, DeSantis, Haley, Youngkin, Ramaswamy, Carlson, Cruz,
-Sanders on one side; Newsom, Shapiro, Whitmer, Buttigieg, Ocasio-Cortez, Moore,
-Beshear, Pritzker, Gallego, Crockett on the other). The other party runs its own
+**A real field.** Six rivals each run from a pool of nine per party (Vance,
+Rubio, DeSantis, Haley, Youngkin, Ramaswamy, Carlson, Cruz, Sanders on one side;
+Newsom, Shapiro, Whitmer, Buttigieg, Ocasio-Cortez, Moore, Beshear, Pritzker,
+Gallego, Crockett on the other). Rubio is on the Republican ballot every single
+run; the remaining slots are drawn at random. The other party runs its own
 primary in the background — you watch it on the wire ticker and find out in June
 who you actually have to beat.
 
@@ -30,6 +31,12 @@ and a perk/flaw pair that changes the underlying math — the fundraising machin
 prints $4M a turn, the debate assassin halves debate risk, the carpetbagger
 loses the home-state advantage and gets $10M for the trouble, and "there is a
 file" guarantees the October surprise and makes it worse.
+
+**Or run as somebody who already exists.** Instead of filing your own paperwork
+you can take over any contender in your party's pool — Rubio, Vance, Newsom,
+Ocasio-Cortez, anyone on the list. They come off the ballot, their name and home
+state fill themselves in, and you start the primary at their standing instead of
+as an unknown.
 
 **The supporting cast.** Media anchors and networks, the podcast circuit,
 celebrity endorsers, and billionaire donors — cast fresh each turn from

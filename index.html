@@ -327,6 +327,12 @@ input[type=text]:focus,select:focus{outline:2px solid var(--mark);outline-offset
         <label>PARTY</label>
         <div class="duo" id="partyopts"></div>
       </div>
+      <div class="field">
+        <label>WHO YOU ARE RUNNING AS</label>
+        <p class="hint">File your own paperwork, or take over one of the contenders. Whoever you take
+          comes off the board and you inherit their standing.</p>
+        <div id="rosteropts"></div>
+      </div>
       <div id="fieldpreview"></div>
     </div>
 
@@ -490,13 +496,14 @@ var PARTIES={
 };
 
 /* ================= THE FIELD ================= */
-/* str = raw primary strength. r = regional pull. lane = the slot they occupy. */
+/* str = raw primary strength. r = regional pull. lane = the slot they occupy.
+   pin = never gets cut when the field is drawn. */
 var POOL={
 REP:[
  {n:"J.D. VANCE",str:24,lane:"POP",home:"OH",r:{MW:2.2,SO:1.2,WE:.4,NE:.2},
   d:"The sitting Vice President. A Yale Law millionaire who learned to talk like a man at a diner and has not stopped since.",
   q:"Look, I’m not going to apologize for saying the thing I said in the way I said it."},
- {n:"MARCO RUBIO",str:20,lane:"ESTAB",home:"FL",r:{SO:2.2,WE:1.2,NE:.8,MW:.4},
+ {n:"MARCO RUBIO",str:20,lane:"ESTAB",home:"FL",pin:true,r:{SO:2.2,WE:1.2,NE:.8,MW:.4},
   d:"Secretary of State. Message discipline so tight it squeaks. Has never once been caught without a talking point or a water bottle.",
   q:"This election is a choice between two futures, and I want to be very clear about which one."},
  {n:"RON DESANTIS",str:17,lane:"POP",home:"FL",r:{SO:2.4,MW:.8,WE:.6,NE:0},
@@ -1078,7 +1085,7 @@ var EVENTS=[
 /* ================= STATE ================= */
 var S={},QUEUE=[];
 function newGame(){
-  S={name:"",party:null,home:"",homeReg:"MW",bg:null,issue:null,perk:null,flaw:null,lane:"ESTAB",
+  S={name:"",party:null,persona:null,home:"",homeReg:"MW",bg:null,issue:null,perk:null,flaw:null,lane:"ESTAB",
      base:52,swing:46,cash:40,press:50,phi:9,
      reg:{MW:0,SO:0,WE:0,NE:0},
      lanes:["ESTAB"],integ:0,heat:0,busts:0,usedEx:[],deb:null,prep:1,mo:0,del:0,endorse:0,turn:0,ei:0,ci:0,
@@ -1158,13 +1165,15 @@ function buildSetup(){
     b.className="opt partybtn";b.type="button";b.setAttribute("data-p",pid);b.setAttribute("aria-pressed","false");
     b.innerHTML='<span class="t">'+p.name+'<br>PRIMARY</span><span class="s">'+p.blurb+'</span>';
     b.addEventListener("click",function(){
-      S.party=p;rollField(pid);
+      S.party=p;clearPersona();rollField(pid);
       Array.prototype.forEach.call(ph.children,function(c){c.setAttribute("aria-pressed","false");});
       b.setAttribute("aria-pressed","true");
+      drawRoster();
       drawFieldPreview();
     });
     ph.appendChild(b);
   });
+  drawRoster();
   pickList("#bgopts",BACKGROUNDS,"bg");
   pickList("#issueopts",ISSUES,"issue");
   pickList("#perkopts",PERKS,"perk");
@@ -1184,15 +1193,57 @@ function pickList(sel,list,key){
     host.appendChild(b);
   });
 }
+/* pinned names are always on the ballot. the rest of the slots are drawn. */
+function drawSix(list,skip){
+  var pool=list.filter(function(c){return c.n!==skip;});
+  var pinned=pool.filter(function(c){return c.pin;}).slice(0,6);
+  var rest=shuffle(pool.filter(function(c){return !c.pin;})).slice(0,6-pinned.length);
+  return shuffle(pinned.concat(rest));
+}
 function rollField(pid){
   var other=(pid==="REP"?"DEM":"REP");
-  S.field=shuffle(POOL[pid]).slice(0,6).map(function(c){
+  var me=S.persona?S.persona.n:"";
+  S.field=drawSix(POOL[pid],me).map(function(c){
     return {n:c.n,d:c.d,q:c.q,str:c.str+noise(2.2),lane:c.lane,home:c.home,r:c.r,
             del:0,mo:0,active:true,endorse:0,share:0};
   });
-  S.oppField=shuffle(POOL[other]).slice(0,6).map(function(c){
+  S.oppField=drawSix(POOL[other],"").map(function(c){
     return {n:c.n,d:c.d,q:c.q,str:c.str+noise(2.6),lane:c.lane,home:c.home,r:c.r,del:0,active:true};
   });
+}
+/* the roster of real contenders you can run as instead of filing your own. */
+function drawRoster(){
+  var host=$("#rosteropts");host.innerHTML="";
+  if(!S.party){host.innerHTML='<p class="hint">Pick a party and the names come up.</p>';return;}
+  var opt=function(name,desc,key,c){
+    var b=document.createElement("button");
+    b.className="opt";b.type="button";
+    b.setAttribute("aria-pressed",(S.persona?S.persona.n:"")===key?"true":"false");
+    b.innerHTML='<span class="t">'+name+'</span><span class="s">'+desc+'</span>'+
+      (c?'<span class="k">'+stName(c.home).toUpperCase()+' · '+c.str+' PCT ON DAY ONE</span>':
+         '<span class="k">Nobody has heard of you. That is the whole game.</span>');
+    b.addEventListener("click",function(){pickPersona(c);});
+    host.appendChild(b);
+  };
+  opt("FILE YOUR OWN PAPERWORK","A name nobody in the room recognizes yet.","",null);
+  POOL[S.party.id].forEach(function(c){opt(c.n,c.d,c.n,c);});
+}
+/* switching parties drops whoever you had taken over, and the name with it. */
+function clearPersona(){
+  if(S.persona&&$("#cand").value===S.persona.n){
+    $("#cand").value="";$("#homest").value="";S.home="";
+  }
+  S.persona=null;
+}
+function pickPersona(c){
+  S.persona=c||null;
+  if(c){
+    $("#cand").value=c.n;
+    var sel=$("#homest");sel.value=c.home;S.home=c.home;S.homeReg=stReg(c.home);
+  }
+  if(S.party)rollField(S.party.id);
+  drawRoster();
+  drawFieldPreview();
 }
 function drawFieldPreview(){
   var h=$("#fieldpreview");
@@ -1221,6 +1272,11 @@ $("#go-play").addEventListener("click",function(){
   if(S.bg.r)for(var k in S.bg.r)addReg(k,S.bg.r[k]);
   for(var q in S.issue.r)addReg(q,S.issue.r[q]);
   addReg(S.homeReg,.8);
+  if(S.persona){
+    /* you are already a known quantity: their standing, their map, their coverage. */
+    S.phi+=S.persona.str-13;S.press+=3;S.base+=2;
+    for(var pr in S.persona.r)addReg(pr,S.persona.r[pr]*.5);
+  }
   if(S.perk.id==="MONEY")S.cash+=6;
   if(S.perk.id==="MACHINE")S.phi+=3;
   if(S.flaw.id==="CARPET")S.cash+=10;
