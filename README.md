@@ -41,6 +41,15 @@ walks into it.
 safe Democratic votes behind them. Two media buys, an internal poll with a house
 error you don't find out about until election night, and a live decision desk.
 
+## Balance
+
+Tuned against 70 automated playthroughs that pick every choice at random. A
+random campaign loses the primary about half the time and, if it gets through,
+wins the general about half the time — roughly a one-in-four run overall.
+Neither bot buys advertising, which is the single largest lever a real player
+has, so reading the internal polls and concentrating a buy is worth several
+states on its own.
+
 ## Notes on the satire
 
 Real public figures appear as exaggerated characters. Every event, quote, poll,

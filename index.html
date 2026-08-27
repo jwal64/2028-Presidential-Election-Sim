@@ -593,21 +593,21 @@ var DONORS={
 
 /* ================= BUILDER OPTIONS ================= */
 var BACKGROUNDS=[
- {id:"GOV",n:"GOVERNOR",lane:"ESTAB",d:"Two terms running a state. You have signed things and cut ribbons in front of them.",
+ {id:"GOV",n:"GOVERNOR",lane:"ESTAB",lanes:["ESTAB"],d:"Two terms running a state. You have signed things and cut ribbons in front of them.",
   eff:{swing:5,cash:4,base:1,phi:3},k:"+SWING +CASH · strong at home"},
- {id:"SEN",n:"U.S. SENATOR",lane:"ESTAB",d:"Twelve years of votes, all of them on the record, all of them findable.",
+ {id:"SEN",n:"U.S. SENATOR",lane:"ESTAB",lanes:["ESTAB","PROG"],d:"Twelve years of votes, all of them on the record, all of them findable.",
   eff:{press:5,base:4,swing:-2,phi:4},k:"+PRESS +BASE · a long paper trail"},
- {id:"VET",n:"COMBAT VETERAN",lane:"POP",d:"Two deployments and a story you have never had to embellish.",
+ {id:"VET",n:"COMBAT VETERAN",lane:"POP",lanes:["POP","ESTAB"],d:"Two deployments and a story you have never had to embellish.",
   eff:{swing:7,press:4,cash:-4,base:2,phi:1},k:"+SWING +PRESS · thin donor list"},
- {id:"TEC",n:"TECH FOUNDER",lane:"OUT",d:"You built a company, sold it, and decided the country is basically a scaling problem.",
+ {id:"TEC",n:"TECH FOUNDER",lane:"OUT",lanes:["OUT","ESTAB"],d:"You built a company, sold it, and decided the country is basically a scaling problem.",
   eff:{cash:18,press:2,base:-6,swing:-1,phi:0},k:"++CASH · the base does not trust you"},
- {id:"MED",n:"CABLE AND PODCAST HOST",lane:"OUT",d:"Nine hundred hours of tape. The base already loves you. So does the opposition research shop.",
+ {id:"MED",n:"CABLE AND PODCAST HOST",lane:"OUT",lanes:["OUT","POP"],d:"Nine hundred hours of tape. The base already loves you. So does the opposition research shop.",
   eff:{base:12,press:6,swing:-8,phi:5},k:"++BASE ++PRESS · brutal with swing voters"},
- {id:"MAY",n:"BIG-CITY MAYOR",lane:"ESTAB",d:"You ran a city of two million people and every single one of them has your cell number.",
+ {id:"MAY",n:"BIG-CITY MAYOR",lane:"ESTAB",lanes:["ESTAB","PROG"],d:"You ran a city of two million people and every single one of them has your cell number.",
   eff:{base:6,cash:7,swing:-2,phi:1},k:"+BASE +CASH · urban record to defend"},
- {id:"LAB",n:"UNION PRESIDENT",lane:"POP",d:"Forty thousand members, one bargaining table, zero patience for consultants.",
+ {id:"LAB",n:"UNION PRESIDENT",lane:"POP",lanes:["POP","PROG"],d:"Forty thousand members, one bargaining table, zero patience for consultants.",
   eff:{base:10,swing:2,cash:-5,phi:1},r:{MW:1.2},k:"+BASE · owns the Rust Belt"},
- {id:"AG",n:"STATE ATTORNEY GENERAL",lane:"ESTAB",d:"You prosecuted people on television and it went well enough that you are here.",
+ {id:"AG",n:"STATE ATTORNEY GENERAL",lane:"ESTAB",lanes:["ESTAB"],d:"You prosecuted people on television and it went well enough that you are here.",
   eff:{swing:4,press:5,base:1,phi:2},k:"+PRESS +SWING · balanced"}
 ];
 var ISSUES=[
@@ -964,7 +964,7 @@ function newGame(){
   S={name:"",party:null,home:"",homeReg:"MW",bg:null,issue:null,perk:null,flaw:null,lane:"ESTAB",
      base:52,swing:46,cash:40,press:50,phi:9,
      reg:{MW:0,SO:0,WE:0,NE:0},
-     integ:0,prep:1,mo:0,del:0,endorse:0,turn:0,ei:0,ci:0,
+     lanes:["ESTAB"],integ:0,prep:1,mo:0,del:0,endorse:0,turn:0,ei:0,ci:0,
      log:[],ads:{},lastOut:"",cast:{},wire:"",
      field:[],oppField:[],oppNom:null,mate:null,runnerUp:null,
      nominee:false,contested:false,env:0,pollerr:{},surprise:false};
@@ -1086,7 +1086,7 @@ $("#go-play").addEventListener("click",function(){
   if(!S.party){alert("Pick a party. There are two.");return;}
   if(!S.bg||!S.issue||!S.perk||!S.flaw){alert("Finish the candidate: background, issue, strength and weakness.");return;}
   S.name=n.toUpperCase();
-  S.lane=S.bg.lane;
+  S.lane=S.bg.lane;S.lanes=S.bg.lanes||[S.bg.lane];
   var p=S.party;
   S.base=p.base;S.swing=p.swing;S.cash=p.cash;S.press=p.press;S.phi=13;
   applyEff(S.bg.eff);
@@ -1199,7 +1199,7 @@ function drift(){
     var live=S.field.filter(function(c){return c.active;});
     var avg=live.length?live.reduce(function(a,c){return a+c.str;},0)/live.length:20;
     var top=live.length?live.reduce(function(a,c){return Math.max(a,c.str);},0):22;
-    S.phi=clamp(S.phi+((avg*.45+top*.55)-S.phi)*.05+S.endorse*.08,1,60);
+    S.phi=clamp(S.phi+((avg*.40+top*.60)-S.phi)*.06+S.endorse*.09,1,60);
     S.mo*=.70;
   }
 }
@@ -1362,7 +1362,7 @@ function cullField(ci){
   while(live.length>cap){
     var out=live.pop();
     out.active=false;
-    var chance=.24+(out.lane===S.lane?.34:0)+(S.press-50)*.006+(S.integ>0?.08:0)+(S.del>out.del?.08:0);
+    var chance=.24+((S.lanes||[S.lane]).indexOf(out.lane)>=0?.34:0)+(S.press-50)*.006+(S.integ>0?.08:0)+(S.del>out.del?.08:0);
     if(Math.random()<clamp(chance,.05,.85)){
       out.endorsedMe=true;
       S.endorse+=2.4;S.phi=clamp(S.phi+2.6,1,60);S.base=clamp(S.base+3,0,100);S.cash=clamp(S.cash+4,0,120);
@@ -1491,8 +1491,8 @@ function clinch(step,line){
   var live=S.oppField.filter(function(c){return c.active;})
     .sort(function(a,b){return (b.del+b.str*3)-(a.del+a.str*3);});
   S.oppNom=live[0]||S.oppField[0];
-  S.base=clamp(S.base+7,0,100);S.press=clamp(S.press+5,0,100);S.cash=clamp(S.cash+26,0,120);
-  S.env += (17-S.oppNom.str)*.13*S.party.tilt;
+  S.base=clamp(S.base+4,0,100);S.press=clamp(S.press+3,0,100);S.cash=clamp(S.cash+24,0,120);
+  S.env += (19-S.oppNom.str)*.20*S.party.tilt;
   wireNews("GENERAL ELECTION SET · "+S.name+" ("+S.party.short+") vs. "+S.oppNom.n+" ("+PARTIES[other].short+")");
   var st=$("#stage");
   st.innerHTML='<p class="eyebrow">JUNE 9, 2028 · PRESUMPTIVE NOMINEE</p>'+
@@ -1552,7 +1552,7 @@ function baseMargin(s){
   var R = s.lean + S.env;
   var mine = (S.party.tilt===1 ? R : -R);
   var adf=(S.flaw.id==="COLD")?.26:.4;
-  return mine
+  return mine - 1.2   /* the other side is also running a good campaign */
     + (S.base-(S.party.base+1))*.06
     + (S.swing-50)*.20
     + (S.press-51)*.04
